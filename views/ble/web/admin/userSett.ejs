@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+<script src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/js/admin/chat.js"></script>
+<script type="text/javascript" src="/js/admin/userSett.js"></script>
+<script type="text/javascript" src="/js/upload/load-image.all.min.js"></script>
+<script type="text/javascript" src="/js/upload/img_upload.js"></script>
+
+<link href="/js/pieProgress/asPieProgress.css" rel="stylesheet" />
+<script type="text/javascript" src="/js/pieProgress/jquery-asPieProgress.min.js"></script>
+
+<link href="/js/image-popup/magnific-popup.css" rel="stylesheet" />
+<script type="text/javascript" src="/js/image-popup/jquery.magnific-popup.js"></script>
+
+<script type="text/javascript">
+    var userKey;
+    var subKey;
+    var sdate = "";
+	var edate = "";
+    var userName = "";
+    var userAppo = "";
+    var userUse = "";
+
+    var userTotal = 0;
+    var userPage = 0;
+    var userPageSize = 11;
+    var userSelectPage = 1;
+
+    var hotelCode = "<%=hotelCode%>";
+
+    $(window).ready(function() {
+
+        codeInit();
+        user_init();
+        
+        var myCal = bulmaCalendar.attach('.date_default_inp', {
+            isRange: true,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd'
+        });
+        var myCal2 = bulmaCalendar.attach('.pop_inout_date', {
+            isRange: true,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd'
+        });
+        var myCal3 = bulmaCalendar.attach('.pop_user_edate', {
+            isRange: false,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd',
+            minDate:curDate("-"),
+            
+        });
+        // var myCal4 = bulmaCalendar.attach('.pop_member_edate', {
+        //     isRange: false,
+        //     type: 'date',
+        //     showFooter: false,
+        //     dateFormat: 'yyyy-MM-dd',
+        //     minDate:curDate("-"),
+            
+        // });
+        var element = document.querySelector('.pop_user_edate');
+        if (element) {
+            element.bulmaCalendar.on('select', function(datepicker) {
+                $(element).val(datepicker.data.value());
+            });
+        }
+        // var element2 = document.querySelector('.pop_member_edate');
+        // if (element2) {
+        //     element2.bulmaCalendar.on('select', function(datepicker) {
+        //         $(element2).val(datepicker.data.value());
+        //     });
+        // }
+        $("select[name='search_addr1']").on("change",function(){
+            $(".search_icon").click();
+        });
+        $("select[name='user_appo_inp']").on("change",function(){
+            $(".search_icon").click();
+        });
+        $("select[name='user_use_inp']").on("change",function(){
+            $(".search_icon").click();
+        });
+        $("#search_btn").on("click",function(){
+            $(".search_icon").click();
+        });
+        $(".search_icon").on("click" ,function(){
+            var dateInput = $("input[name='user_date']").val();
+			dateInput = dateInput.split(" ~ ");
+			sdate = dateInput[0];
+			edate = dateInput[1];
+            userName = $("input[name='user_name_inp']").val();
+            if(userName == undefined){
+                userName = "";
+            }
+            userAppo = $("select[name='user_appo_inp']").val();
+            userUse = $("select[name='user_use_inp']").val();
+            user_init();
+        });
+        $("select[name='user_use_inp']").val('1');
+        $(".search_icon").click();
+        
+        $(document).on("click", "#user_table .td_ck", function(){
+            $(".popbox_back").css("display", "block");
+            userKey = $(this).parents("tr").attr("data-userKey");
+            popUserInfo();
+        });
+        $(document).on("click", ".member_listbox li", function(){
+            subKey = $(this).attr("data-subKey");
+            $(".member_listbox li").removeClass("active");
+            $(this).addClass("active");
+            $(".block_cont_none_list").css("display", "none");
+            $(".block_cont_click").css("display", "block");
+            subUserSelect();
+            
+        });
+        $(".table_division").on("click", ".dcod_row", function(){
+            if(!($(this).hasClass("active"))){
+                $(this).closest("tbody").find(".dcod_row").removeClass("active");
+                $(this).addClass("active");
+                var dcod = $(this).data("dcod");
+                addrList(dcod);
+            }else{
+                // $(this).removeClass("active");
+            }
+        });
+        $(".pop_cancel_btn, .pop_btn_cancel").on("click", function(){
+            $(".popbox_back").css("display", "none");
+            $("#pwResetBtn").css("display", "block");
+            $("#userDelBtn").css("display", "block");
+            popReset();
+        });
+        $("#member_pw_reset").on("click", function(){
+            if(subKey == ""){
+                Alert("구성원을 선택해 주세요.");
+                return;
+            }
+            Confirm("비밀번호를 초기화 하시겠습니까?\n비밀번호는 [123456]으로 초기화 됩니다.", function(){
+                $.ajax({
+                    url:"/mysql/user",
+                    data:{
+                        xml: "sub_user_pw_reset",
+                        pass:"123456",
+                        subKey: subKey,
+                        userId: "<%=session.id%>"
+                    },success:function(res){
+                        if(res != null){
+                            Alert("초기화 되었습니다.");
+                        }
+                    }
+                });
+            });
+        });
+        $("#pwResetBtn").on("click", function(){
+            Confirm("비밀번호를 초기화 하시겠습니까?\n비밀번호는 [123456]으로 초기화 됩니다.", function(){
+                $.ajax({
+                    url:"/mysql/user",
+                    data:{
+                        xml: "user_pw_reset",
+                        pass:"123456",
+                        userKey: userKey,
+                        userId: "<%=session.id%>"
+                    },success:function(res){
+                        if(res != null){
+                            Alert("초기화 되었습니다.");
+                        }
+                    }
+                });
+            });
+        });
+        $("#userDelBtn").on("click", function(){
+            Confirm("회원탈퇴 처리하시겠습니까?\n(해당 세대주의 구성원도 모두 탈퇴처리 처리됩니다.)", function(){
+                $.ajax({
+                    url:"/mysql/user",
+                    data:{
+                        xml: "user_not_use",
+                        userKey: userKey,
+                        userId: "<%=session.id%>"
+                    },success:function(res){
+                        if(res != null){
+                            $.ajax({
+                                url:"/mysql/user",
+                                data:{
+                                    xml: "user_not_use_member",
+                                    userKey: userKey,
+                                    userId: "<%=session.id%>"
+                                },success:function(res){
+                                    if(res != null){
+                                        Alert("처리되었습니다.",function(){
+                                            location.reload();
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        });
+        $("#pop_user_save_btn2").on("click", function(){
+            addrSave();
+
+        });
+        $("#pop_user_save_btn").on("click", function(){
+            if( $("#pop_user_div").css("display") == "block"){
+                if($("input[name='pop_user_name']").val() == ""){Alert("이름을 입력해 주세요.",function(){$("input[name='pop_user_name']").focus();});return;}
+                if($("input[name='pop_user_tel']").val() == ""){Alert("전화번호를 입력해 주세요.",function(){$("input[name='pop_user_tel']").focus();});return;}
+                if($("input[name='pop_user_id']").val() == ""){Alert("아이디를 입력해 주세요.",function(){$("input[name='pop_user_id']").focus();});return;}
+                if(!($("select[name='pop_user_addr1']").val())){Alert("동을 선택해 주세요.",function(){});return;}
+                if(!($("select[name='pop_user_addr2']").val())){Alert("호를 선택해 주세요.",function(){});return;}
+                if($("input[name='pop_user_edate']").val() == ""){Alert("유효기간을 입력해 주세요.",function(){$("input[name='pop_user_edate']").focus();});return;}
+
+                if(userKey != ""){
+                    $.ajax({
+                    url : "/mysql/user",
+                    data: {
+                        xml: "user_update_info",
+                        userId: "<%=session.id%>",
+                            userKey: userKey,
+                            name: $("input[name='pop_user_name'").val(),
+                            tel: $("input[name='pop_user_tel']").val(),
+                            addr1: $("select[name='pop_user_addr1']").val(),
+                            addr2: $("select[name='pop_user_addr2']").val(),
+                            appo: $("select[name='pop_user_appo']").val(),
+                            edate:replaceAll($("input[name='pop_user_edate']").val(),"-",""),
+
+                    } ,success: function(re){
+                        if(re != null){
+                            Alert("저장 되었습니다.", function(){
+                                window.location.reload(true);
+                            });
+                        }
+                        }  
+                    });
+                }else{
+                    
+                    
+                    $.ajax({
+                        url : '/mysql/user',
+                        data : {
+                            xml : 'select_find_id',
+                            id : $("input[name='pop_user_id']").val()
+                        },
+                        success : function(res){
+                            var idCnt = res.length;
+                            if(idCnt > 0){
+                                Alert("이미 사용중인 ID입니다.",function(){
+                                    $("input[name='pop_user_id']");
+                                    return;
+                                });
+                            } else {
+                                $.ajax({
+                                    url : "/mysql/user",
+                                    data: {
+                                        xml : 'insert_user_admin',
+                                        id : $("input[name='pop_user_id']").val(),
+                                        pass : '123456',
+                                        addr1 : $("select[name='pop_user_addr1']").val(),
+                                        addr2 : $("select[name='pop_user_addr2']").val(),
+                                        name : $("input[name='pop_user_name'").val(),
+                                        tel : $("input[name='pop_user_tel']").val(),
+                                        appo: $("select[name='pop_user_appo']").val(),
+                                        userId: "<%=session.id%>",
+                                        hotelCode: "<%=hotelCode%>",
+                                        edate:replaceAll($("input[name='pop_user_edate']").val(),"-",""),
+                                    } ,success: function(re){
+                                        if(re != null){
+                                            Alert("저장 되었습니다.\n*초기 비밀번호는 [123456]입니다", function(){
+                                                window.location.reload(true);
+                                            });
+                                        }
+                                    }  
+                                });
+                            }
+                        },
+                        error : function(e){
+                            console.log(e.responseText);
+                        }
+                    });
+                    
+                }
+            }else {
+                if($("input[name='pop_member_name']").val() == ""){Alert("이름을 입력해 주세요.",function(){$("input[name='pop_member_name']").focus();});return;}
+                if($("input[name='pop_member_id']").val() == ""){Alert("아이디를 입력해 주세요.",function(){$("input[name='pop_member_id']").focus();});return;}
+                if($("input[name='pop_member_rs']").val() == ""){Alert("관계를 입력해 주세요.",function(){$("input[name='pop_member_rs']").focus();});return;}
+                if($("input[name='pop_member_edate']").val() == ""){Alert("유효기간를 입력해 주세요.",function(){$("input[name='pop_member_edate']").focus();});return;}
+
+                if(subKey != ""){
+                    $.ajax({
+                        url:"/mysql/user",
+                        data:{
+                            xml:"update_user_sub_admin",
+                            user_key: userKey,
+                            sub_name: $("input[name='pop_member_name']").val(),
+                            edate: replaceAll($("input[name='pop_member_edate']").val(),'-',''),
+                            sub_rs: $("input[name='pop_member_rs']").val(),
+                            adminKey: "<%=session.id%>",
+                            use: $("select[name='pop_member_use']").val(),
+                            sub_key: subKey
+                        },success: function(res){
+                            if(res){
+                                Alert("저장 되었습니다");
+                                popMemberList();
+                            }
+                        }
+                    });
+                }else{
+                    $.ajax({
+                        url : '/mysql/user',
+                        data : {
+                            xml : 'select_find_id',
+                            id : $("input[name='pop_member_id']").val()
+                        },
+                        success : function(res){
+                            var idCnt = res.length;
+                            if(idCnt > 0){
+                                Alert("이미 사용중인 ID입니다.",function(){
+                                    $("input[name='pop_member_id']");
+                                    return;
+                                });
+                            } else {
+                                $.ajax({
+                                    url:"/mysql/user",
+                                    data:{
+                                        xml:"user_insert_sub_admin",
+                                        user_key: userKey,
+                                        sub_id: $("input[name='pop_member_id']").val(),
+                                        sub_pass: "123456",
+                                        sub_name: $("input[name='pop_member_name']").val(),
+                                        edate: replaceAll($("input[name='pop_member_edate']").val(),'-',''),
+                                        sub_tel: '',
+                                        sub_rs: $("input[name='pop_member_rs']").val(),
+                                        adminKey: "<%=session.id%>",
+                                        use: $("select[name='pop_member_use']").val()
+                                    },success: function(re){
+                                        if(re){
+                                            Alert("저장 되었습니다\n*초기 비밀번호는 [123456]입니다.");
+                                            popMemberList();
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        error : function(e){
+                            console.log(e.responseText);
+                        }
+                    });
+                    
+                    
+                }
+            }
+            
+            
+        });
+        $("#pop_memb_add").on("click", function(){
+            subKey = "";
+            $(".member_listbox li").removeClass("active");
+            $(".block_cont_none_list").css("display","none");
+            $(".block_cont_click").css("display","block");
+            $("input[name='pop_member_name']").val('');
+            $("input[name='pop_member_edate']").val('');
+            $("input[name='pop_member_id']").val('');
+            $("input[name='pop_member_rs']").val('');
+            $("select[name='pop_member_use']").val("1");
+            $("input[name='pop_member_id']").attr("readonly", false);
+        });
+        $(".pop_tab_listbox li").on("click", function(){
+            $(".pop_tab_listbox li").removeClass("active");
+            $(this).addClass("active");
+
+            $("#pop_user_div").css("display", "none");
+            $("#pop_addr_div").css("display", "none");
+            $("#pop_chat_div").css("display", "none");
+            $("#pop_member_div").css("display", "none");
+            $("#pop_inout_div").css("display", "none");
+            $("#pop_user_save_btn").css("display","block");
+            $("#pop_user_save_btn2").css("display","none");
+
+            if($(this).attr("data-tab") == "pop_user"){
+                $("#pop_user_div").css("display", "block");
+                $("#pop_user_save_btn").css("display","block");
+            }else if($(this).attr("data-tab") == "pop_member"){
+                $("#pop_member_div").css("display", "block");
+                $("#sub_user_img").css("background-image", "url()");
+                popMemberList();
+            }else if($(this).attr("data-tab") == "pop_addr"){
+                console.log($("#pop_user_save_btn2"));
+                $("#pop_addr_div").css("display", "block");
+                $("#pop_user_save_btn").css("display","none");
+                $("#pop_user_save_btn2").css("display","block");
+                dcodList("<%=hotelCode%>");
+            }else if($(this).attr("data-tab") == "pop_chat"){
+                $("#pop_chat_div").css("display", "block");
+                $("#pop_user_save_btn").css("display","none");
+                $("#pop_user_save_btn2").css("display","none");
+                chatList();
+            }else{
+                $("#pop_user_save_btn").css("display","none");
+                $("#pop_inout_div").css("display", "block");
+                userList();
+                openList();
+                openListTotal();
+            }
+        });
+        $("#in_out_search_btn").on("click", function(){
+            var dateInput = $("input[name='inOutSdate']").val();
+            dateInput = dateInput.split(" ~ ");
+            inOutSdate = dateInput[0];
+            inOutEdate = dateInput[1];
+			subUser = $("select[name='sub_user_list']").val();
+            openListTotal();
+            openList();
+        });
+        var allcheck = true;
+        $("#all_click_btn").on("click", function(){
+            allcheck = !allcheck;
+            $.each($("input[type='checkbox']"), function(i, v){
+                if(!allcheck){
+                    $(this).prop("checked", true);
+                }else{
+                    $(this).prop("checked", false);
+                }
+            });
+        });
+        var allcheck2 = true;
+        $("#all_click_btn2").on("click", function(){
+            allcheck2 = !allcheck2;
+            $.each($(".key_list_tb_dcod input[type='checkbox']"), function(i, v){
+                // $(this).click();
+                if(!allcheck2){
+                    $(this).prop("checked", true);
+                }else{
+                    $(this).prop("checked", false);
+                }
+            });
+        });
+        var allcheck3 = true;
+        $("#all_click_btn3").on("click", function(){
+            // allcheck3 = !allcheck3;
+            allcheck3 = $(this).prop("checked");
+            $.each($(".key_list_tb_floor input[type='checkbox']"), function(i, v){
+                // $(this).click();
+                if(allcheck3){
+                    $(this).prop("checked", true);
+                }else{
+                    $(this).prop("checked", false);
+                }
+            });
+            if(allcheck3){
+                $("#all_click_btn4").prop("checked", false);
+            }else{
+                $("#all_click_btn4").prop("checked", true);
+            }
+            $("#all_click_btn4").click();
+        });
+        var allcheck4 = true;
+        $("#all_click_btn4").on("click", function(){
+            // allcheck4 = !allcheck4;
+            allcheck4 = $(this).prop("checked");
+            $.each($(".key_list_tb_addr input[type='checkbox']"), function(i, v){
+                // $(this).click();
+                if(allcheck4){
+                    $(this).prop("checked", true);
+                }else{
+                    $(this).prop("checked", false);
+                }
+            });
+        });
+        $(document).on("click",".ck_floor", function(){
+            console.log($(this));
+            var floor = $(this).data("floor");
+            var isCheck = $(this).prop("checked");
+            $.each($(".key_list_tb_addr input[type='checkbox'][data-floor='"+floor+"']"), function(i, v){
+                // $(this).click();
+                if(isCheck){
+                    $(this).prop("checked", true);
+                }else{
+                    $(this).prop("checked", false);
+                }
+            });
+            
+            // var isCheck2 = $(this).prop("checked");
+            // $.each($(".key_list_tb_addr input[type='checkbox']"), function(i, v){
+            //     if(!$(this).prop("checked")){
+            //         isCheck2 = false;
+            //     }
+            // });
+            // var all_click_btn3 = $("#all_click_btn3");
+            // if(isCheck2){
+            //     all_click_btn3.prop("checked", true);
+            // }else{
+            //     all_click_btn3.prop("checked", false);
+            // }
+        });
+        $(document).on("click",".ck_addr", function(){
+            console.log($(this));
+            var floor = $(this).data("floor");
+            // var isCheck = $(this).prop("checked");
+            // $.each($(".key_list_tb_addr input[type='checkbox'][data-floor='"+floor+"']"), function(i, v){
+            //     if(!$(this).prop("checked")){
+            //         isCheck = false;
+            //     }
+            // });
+            // var rowFloor = $(".key_list_tb_floor input[type='checkbox'][data-floor='"+floor+"']");
+            // // rowFloor.click();
+            // if(isCheck){
+            //     rowFloor.prop("checked", true);
+            // }else{
+            //     rowFloor.prop("checked", false);
+            // }
+
+            // var isCheck2 = $(this).prop("checked");
+            // $.each($(".key_list_tb_addr input[type='checkbox']"), function(i, v){
+            //     if(!$(this).prop("checked")){
+            //         isCheck2 = false;
+            //     }
+            // });
+            // var all_click_btn4 = $("#all_click_btn4");
+            // // rowFloor.click();
+            // if(isCheck2){
+            //     all_click_btn4.prop("checked", true);
+            // }else{
+            //     all_click_btn4.prop("checked", false);
+            // }
+        });
+
+        $("#all_appo_btn").on("click", function(){
+            var data = [];
+            $.each($("#user_table tbody tr"), function(i, v){
+                var userKey = $(this).attr("data-userkey");
+                var ck = $(this).find("input[type='checkbox']").is(":checked");
+                if(ck){
+                    data.push({
+                        userKey: userKey,
+                    });
+                }
+            });
+            $.ajax({
+                url:"./mysql/all_user_appo_update",
+                data:{
+                    xml: "user_update_appo",
+                    data: JSON.stringify(data),
+                    ck: "1",
+                    userId:"<%=session.id%>"
+                },
+                success: function(result){
+                    if(result){
+                        Alert("저장 되었습니다.", function(){
+                            location.reload();
+                        });
+                    }
+                }
+            });
+        });
+        $("#all_un_appo_btn").on("click", function(){
+            var data = [];
+            $.each($("#user_table tbody tr"), function(i, v){
+                var userKey = $(this).attr("data-userkey");
+                var ck = $(this).find("input[type='checkbox']").is(":checked");
+                if(ck){
+                    data.push({
+                        userKey: userKey,
+                    });
+                }
+            });
+            $.ajax({
+                url:"./mysql/all_user_appo_update",
+                data:{
+                    xml: "user_update_appo",
+                    data: JSON.stringify(data),
+                    ck: "0",
+                    userId:"<%=session.id%>"
+                },
+                success: function(result){
+                    if(result){
+                        Alert("저장 되었습니다.", function(){
+                            location.reload();
+                        });
+                    }
+                }
+            });
+        });
+        $("#user_add_btn").on("click", function(){
+            userKey = "";
+            $("#userTitle").html("회원추가");
+            $(".pop_tab_list").hide();
+            $(".popbox_back").css("display", "block");
+            $("#pwResetBtn").css("display", "none");
+            $("#userDelBtn").css("display", "none");
+            $("select[name='pop_user_appo']").val("1");
+            $("[name='pop_user_edate']").val('');
+            $.ajax({
+                url:"/mysql/room",
+                data:{
+                    xml : "empty_room_list",
+                    hotelCode: "<%=hotelCode%>",
+                    dcod: $("select[name='pop_user_addr1']").val()
+                },
+                success: function(res){
+                    if(res.length > 0){
+                        var item = "";
+                        if(userKey != ""){
+                            item+=userAddr2;
+                        }
+                        for(var i=0; i<res.length; i++){
+                            item += "<option value='"+res[i].ROOM_CODE_CODE+"'>"+$("select[name='pop_user_addr1'] option:selected").text() + " " + res[i].ROOM_CODE_NUM+"호</option>"
+                        }
+                        $("select[name='pop_user_addr2']").empty();
+                        $("select[name='pop_user_addr2']").append(item);
+                    }else{
+                        $("select[name='pop_user_addr2']").empty();
+                        $("select[name='pop_user_addr2']").append('<option value="">모든 세대가 가입 했습니다.</option>');
+                    }
+                }
+            });
+        });
+        
+        $("select[name='pop_user_addr1']").on("change", function(){
+            $("select[name='pop_user_addr2']").empty();
+            $.ajax({
+                url:"/mysql/room",
+                data:{
+                    xml : "empty_room_list",
+                    hotelCode: "<%=hotelCode%>",
+                    dcod: $("select[name='pop_user_addr1']").val()
+                },
+                success: function(res){
+                    console.log(res);
+                    if(res.length > 0){
+                        var item = "";
+                        if(userKey != ""){
+                            item+=userAddr2;
+                        }
+                        for(var i=0; i<res.length; i++){
+                            item += "<option value='"+res[i].ROOM_CODE_CODE+"'>"+$("select[name='pop_user_addr1'] option:selected").text() + " " + res[i].ROOM_CODE_NUM+"호</option>"
+                        }
+                        $("select[name='pop_user_addr2']").empty();
+                        $("select[name='pop_user_addr2']").append(item);
+                    }else{
+                        Alert("모든 세대가 가입 했습니다.");
+                        $("select[name='pop_user_addr2']").empty();
+                        $("select[name='pop_user_addr2']").append('<option value="">모든 세대가 가입 했습니다.</option>');
+                    }
+                    
+                    
+                }
+            });
+        });
+
+    });
+
+    var userAddr2 = "";
+    function codeInit(){
+        $.ajax({
+			url:"/mysql/common",
+			data:{
+				xml : "codeList",
+				cod: "003"
+			},
+			success: function(res){
+				var item = "";
+				for(var i=0; i<res.length; i++){
+					item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>"
+				}
+				$("select[name='pop_user_addr1']").append(item);
+                $("select[name='search_addr1']").append(item);
+			}
+		});
+		
+    }
+    function user_init(){
+        
+        $.ajax({
+            url:"/mysql/user",
+            data:{
+                xml: "user_list_admin",
+                sdate: sdate,
+                edate: edate,
+                appo: userAppo,
+                use: userUse,
+                name: userName,
+                page: userPage,
+                pageSize: userPageSize,
+                addr1: $("select[name='search_addr1']").val()
+            }, success: function(res){
+                console.log(res);
+                if(res.length > 0){
+                    userTotal = res[0].TOTAL;
+                    // userTotal = res.length;
+                    $("#totalCnt").text("총 : "+userTotal+"명");
+                    var item = "";
+                    paging(userTotal, userPageSize, userSelectPage);
+                    for(var i=0; i<res.length; i++){
+                        var addr1 = "<p class='table_td_txt table_td_txt_none'>없음</p>";
+                        if(res[i].USER_ADDR1 != ""){
+                            addr1 = "<p class='table_td_txt'>"+res[i].USER_ADDR1+"</p>";
+                        }
+                        var addr2 = "<p class='table_td_txt table_td_txt_none'>없음</p>";
+                        if(res[i].USER_ADDR2 != ""){
+                            addr2 = "<p class='table_td_txt'>"+res[i].USER_ADDR2+"</p>";
+                        }
+                        var appoUser = "<p class='table_td_txt table_td_txt_none'>미승인</p>";
+                        if(res[i].USER_APPO == "1"){
+                            appoUser = "<p class='table_td_txt table_td_use'>승인</p>";
+                        }
+                        var faceUser = "<p class='table_td_txt table_td_txt_none'>미등록</p>";
+                        if(res[i].FACE_USE == "1"){
+                            faceUser = "<p class='table_td_txt table_td_use'>등록</p>";
+                        }
+                        var useUser = "<p class='table_td_txt table_td_txt_none'>탈퇴</p>";
+                        if(res[i].USER_USE == "1"){
+                            useUser = "<p class='table_td_txt table_td_use'>가입</p>";
+                        }
+                        var edate = res[i].USER_EDATE;
+                        if(edate.length==8){
+                            edate = edate.substring(0,4)+"-"+edate.substring(4,6)+"-"+edate.substring(6,8);
+                        }
+                        item += "<tr data-userKey='"+res[i].USER_KEY+"'>"
+                            + "<td class='table_td td_ck'>"
+                            + addr1
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + addr2
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<p class='table_td_txt'>"+res[i].USER_NAME+"</p>"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<p class='table_td_txt'>"+res[i].USER_ID+"</p>"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<p class='table_td_txt'>"+res[i].USER_FDATE+"</p>"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<p class='table_td_txt'>"+edate+"</p>"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + appoUser
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + faceUser
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + useUser
+                            + "</td>"
+                            + "<td class='table_td table_td_center'>"
+                            + "<div class='check_box_btn'>"
+                            + "<input style='display:none;' type='checkbox' class='ck' id='user_"+i+"'>"
+                            + "<label class='dis_inblock ck_btn' for='user_"+i+"'></label>"
+                            + "</div>"
+                            + "</td>" 
+                            + "</tr>";
+                    }
+                    $("#user_table tbody").empty();
+                    $("#user_table tbody").append(item);
+                }else{
+                    $("#totalCnt").text("총 : 0명");
+                    item = "";
+                    item += "<td colspan='7' class='empty_td'>"
+                          + "<p class='empty_td_txt'>조회된 자료가 없습니다.</p>"
+                          + "</td>"
+                    $("#user_table tbody").empty();
+                    $("#user_table tbody").append(item);
+                }
+            }
+        });
+    }
+</script>
+<!-- chatting -->
+<script type="text/javascript">
+    // var mainKey = "";
+    var mainStatus = "";
+    var asListData;
+    var chatBotList;
+    var adminTF = "1";
+    var userId = "<%=session.id%>";
+    var imgName = "";
+	var imgPath = "";
+
+    var selectUserImg = "";
+    var selectUserPath = "";
+    var level = "<%=session.level%>";
+    $(window).ready(function() {
+       
+        $("#imgPlusBtn").on("click", function(){
+			$("input[name='addFile']").click();
+		});
+		$("input[name='addFile']").on("change", function(e){
+            addFiles(e, this);
+        });
+        
+
+        $("input[name='msgInput']").on("keyup",function(key){
+			if(key.keyCode==13) {
+				$("#msgBtn").click();
+			}
+		});
+        
+        
+        
+		$("#msgBtn").on("click", function(){
+            if(mainKey==""){
+                $.ajax({
+                    url:"/mysql/chat",
+                    data:{
+                        xml: "chat_main_user_insert",
+                        status: '0050000',
+                        userid: mainUserId,
+                        code : '0040000'
+                    }, success:function(res){
+                        mainKey = res.insertId;
+                        console.log(mainKey);
+                        inputChat();
+                        socket.emit("joinRoom", mainKey, mainUserId, "0");
+                    }
+                });
+            }else{
+                inputChat();
+            }
+			
+		});
+        function inputChat(){
+            var msg = $("input[name='msgInput']").val();
+            $.ajax({
+                url : "/mysql/insertChat",
+                data: {
+                    xml:"chat_sub_insert",
+                    mainKey: mainKey,
+                    msg: msg,
+                    imgName: '',
+                    imgPath: '',
+                    view: '0',
+                    userId: "<%=session.id%>",
+                    admin: "1"
+                }, success: function(re){
+                    console.log(re);
+                    if(re){
+                        var date = re[0].DATE;
+                        sendMsg(msg, date);
+                        $("input[name='msgInput'").val("");
+                    }else{
+                        Alert("메세지 전송 실패");
+                    }
+                }
+            });
+        }
+        
+        //메인리스트 스크롤처리
+        
+        $("#chat_list_ul").scroll(function(){
+            var scrollTop = $(this).scrollTop();
+            var innerHeight = $(this).innerHeight();
+            var scrollHeight = $(this).prop('scrollHeight');
+
+            if (scrollTop + innerHeight >= scrollHeight) {
+                clearTimeout( mainTimer );
+                mainTimer = setTimeout( mainScroll(), 150 );
+            }
+        });
+    });
+    function popImg(){
+        alert();
+        $('.popup-link').magnificPopup({
+        type: 'image'
+        // other options
+        });
+    }
+    var mainTotal=0;
+    var mainPage = 0;
+    var mainPageSize = 20;
+    var mainTimer;
+    function init(){
+        //채팅 호출
+        $.ajax({
+            url:"/mysql/chat",
+            data :{
+                xml: "chat_list_admin",
+                status: '0050000',
+                mainPage: mainPage,
+                mainPageSize: mainPageSize,
+                userId: userId,
+                level : "<%=session.level%>"
+            }, success:function(res){
+                if(res.length > 0){
+                    mainTotal = Number(res[0].TOTAL);
+                    if(mainTotal == 0){
+                        $(".wait_list_ulbox").css("display", "none");
+                        
+                    }else{
+                        $("#chat_list_ul").css("display", "block");
+                        $(".wait_list_ulbox").css("display", "none");
+                    }
+                    $("#chat_list_ul").empty();
+                    $("#chat_list_ul").append(mainList(res));
+                    $.loading.end();
+                }else{
+                    $.loading.end();
+                }
+                
+            }
+        });
+    }
+    function init_two(){
+        $.ajax({
+            url:"/mysql/chat",
+            data :{
+                xml: "chat_status_ing"
+            }, success:function(res){
+                chatIng(res);
+            }
+        });
+        $.ajax({
+			url:"/mysql/common",
+			data:{
+				xml : "codeList",
+				cod: "006"
+			},
+			success: function(res){
+                chatBotList = res;
+			}
+		});
+    }
+    function sendMsg(msg, date){
+        var msgData = {};
+        msgData = {
+            msg: msg,
+            mainKey: mainKey,
+            admin: adminTF,
+            imgName : imgName,
+            imgPath : imgPath,
+            rm: "rm_"+mainKey,
+			date: date,
+			userId: userId,
+			userName: "<%=session.name%>"
+        }
+        imgName = "";
+		imgPath = "";
+        socket.emit("msg", msgData);
+        scrollBottom($('#chat_sub_box'));
+    }
+</script>
+</head>
+<style>
+    .table_body_box{
+        height: 400px;
+    }
+    .table_division{
+        float: left;
+        width: 32%;
+        margin-right: 10px;
+    }
+</style>
+<body>
+	
+    <div class="cont_shadow_box cont_shadow_box_800px padding0">
+        <div class="cont_tit_box cont_tit_box_padding20">
+            <h2 class="cont_tit">회원 관리</h2>
+            <ul class="top_right_btnbox">
+                <li class="top_right_list">
+                    <button id="search_btn" class="btn btn_gray">조회</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="all_click_btn" class="btn btn_gray">전체 선택</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="all_appo_btn" class="btn btn_gray">승인</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="all_un_appo_btn"class="btn btn_gray">미승인</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="user_add_btn"class="btn btn_blue">회원 추가</button>
+                </li>
+            </ul>
+        </div>
+        <ul class="table_shbox dis_flex_row">
+            <li class="table_sh_list table_sh_list01">
+                <div class="sh_inpbox_widthbox dis_flex_row">
+                    <div class="inp_box sh_inpbox01">
+                        <h2 class="sh_inpbox_tit">동</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="search_addr1" class="default_sel">
+                            <option value="">전체</option>
+                        </select>
+                    </div>
+                    <div class="inp_box sh_inpbox04">
+                        <h2 class="sh_inpbox_tit">가입날짜</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <input name="user_date" type="text" class="date_default_inp date_inp" placeholder="날짜를 선택해주세요.">
+                    </div>
+                    <div class="inp_box sh_inpbox04">
+                        <h2 class="sh_inpbox_tit">승인여부</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="user_appo_inp" class="default_sel">
+                            <option value="">전체</option>
+                            <option value="0">미승인</option>
+                            <option value="1">승인</option>
+                        </select>
+                    </div>
+                    <div class="inp_box sh_inpbox04">
+                        <h2 class="sh_inpbox_tit">탈퇴여부</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="user_use_inp" class="default_sel">
+                            <option value="">전체</option>
+                            <option value="0">탈퇴</option>
+                            <option value="1">가입</option>
+                        </select>
+                    </div>
+                </div>
+                
+            </li>
+            <li class="table_sh_list table_sh_list02">
+                <div class="sh_inpbox_widthbox dis_flex_row">
+                    <div class="sh_inpbox inp_box">
+                        <input name="user_name_inp" type="text" class="search_inp default_inp" placeholder="이름을 입력해주세요.">
+                        <a class="search_icon" style="display: none;"></a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="table_notice_padding">
+            <table id="user_table" class="table_notice hover_table">
+                <colgroup>
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="10%">
+                </colgroup>
+                <tr>
+                    <thead>
+                        <tr>
+                            <th class="table_th">동</th>
+                            <th class="table_th">호</th>
+                            <th class="table_th">사용자</th>
+                            <th class="table_th">ID</th>
+                            <th class="table_th">가입날짜</th>
+                            <th class="table_th">유효기간</th>
+                            <th class="table_th">승인여부</th>
+                            <th class="table_th">얼굴인식</th>
+                            <th class="table_th">탈퇴여부</th>
+                            <th class="table_th">
+                                
+                            </th>
+                        </tr>
+                    </thead>
+                    <!-- <tbody>
+                        <tr>
+                            <td class="table_td">
+                                <p class="table_td_txt">user1</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">홍길동</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">101동</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">1001호</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">2022-01-17 14:15</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt table_td_use">사용</p>
+                            </td>
+                            <td class="table_td table_td_center">
+                                <div class="check_box_btn">
+                                    <input type="checkbox" class="ck" id="text2" checked>
+                                    <label class="dis_inblock ck_btn" for="text2"></label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table_td">
+                                <p class="table_td_txt">user2</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">홍길동</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">101동</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">1002호</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt">2022-01-17 14:15</p>
+                            </td>
+                            <td class="table_td">
+                                <p class="table_td_txt table_td_txt_none">미사용</p>
+                            </td>
+                            <td class="table_td table_td_center">
+                                <div class="check_box_btn">
+                                    <input type="checkbox" class="ck" id="text3" checked>
+                                    <label class="dis_inblock ck_btn" for="text3"></label>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody> -->
+                    <!-- 조회자료 없을때 -->
+                    <!-- <tr>
+                        <td colspan="7" class="empty_td">
+                            <p class="empty_td_txt">조회된 자료가 없습니다.</p>
+                        </td>
+                    </tr> -->
+                </tr>
+            </table>
+            <div id="totalCnt" style="font-size: 20px; font-weight: 400;margin-top: 7px; text-align: right; margin-right: 23px;">총 : 0명</div>
+        </div>
+    </div>
+    <div id="foot_page" class="numbtn_list_grp">
+        <ul class="numbtn_list_box">
+            <!-- <li class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr  pagebtn_hover_style">처음 페이지</button>
+            </li> -->
+            <li id="prev_page_btn" class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr pagebtn_hover_style">이전 페이지</button>
+            </li>
+            <li class="numbtn_list_li">
+                <button class="button_num_btn active pagebtn_hover_style">
+                    <p class="button_02_bold gray_darken_3_font">1</p>
+                </button>
+            </li>
+            
+            <li id="next_page_btn" class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr pagebtn_hover_style">다음 페이지</button>
+            </li>
+            </ul>
+        </div>
+    </div>
+    <!-- 팝업 -->
+<div class="popbox_back" style="display: none;">
+    <div class="pop_cont_box">
+        <div class="pop_header_box">
+            <div class="pop_tit_box">
+                <h2 class="pop_cont_tit" id="userTitle">회원 상세</h2>
+                <a class="pop_cancel_btn"></a>
+            </div>
+            <ul class="pop_tab_listbox">
+                <li data-tab="pop_user" class="pop_tab_list active">
+                    <a class="pop_tab_btn">회원 정보</a>
+                    <div class="tab_line"></div>
+                </li>
+                <li data-tab="pop_member" class="pop_tab_list">
+                    <a class="pop_tab_btn">구성원 관리</a>
+                    <div class="tab_line"></div>
+                </li>
+                <li data-tab="pop_addr" class="pop_tab_list">
+                    <a class="pop_tab_btn">출입구간 관리</a>
+                    <div class="tab_line"></div>
+                </li>
+                <li data-tab="pop_inout" class="pop_tab_list">
+                    <a class="pop_tab_btn">출입 기록</a>
+                    <div class="tab_line"></div>
+                </li>
+                <li data-tab="pop_chat" class="pop_tab_list">
+                    <a class="pop_tab_btn">채팅하기</a>
+                    <div class="tab_line"></div>
+                </li>
+            </ul>
+        </div>
+        <div class="pop_body_box">
+            <!-- 회원 정보-->
+            <div id="pop_user_div" class="block_cont" style="display: block;">
+                <div class="block_cont_tbox">
+                    <h2 class="block_cont_tit">회원 정보</h2>
+                    <div class="right_btn_box"style="right: 70px;">
+                        <button id="pwResetBtn"class="btn_small btn_blue" >비밀번호 초기화</button>
+                    </div>
+                    <div class="right_btn_box">
+                        <button id="userDelBtn"class="btn_small btn_red">회원 탈퇴</button>
+                    </div>
+                </div>
+                <div class="block_inp_box profile_img_widthbox dis_flex_row">
+                    <div class="profile_img_width profile_img_width01">
+                        <div class="profile_img_userbox">
+                            <div id="user_img" class="profile_img_user"></div>
+                        </div>
+                        <!-- <div class="profile_img_change_btn">
+                            <button class="btn_small btn_gray">프로필 변경</button>
+                        </div> -->
+                    </div>
+                    <div class="profile_img_width profile_img_width02">
+                        <div class="block_inp_box">
+                            <label class="setup_tit">이름</label>
+                            <div class="edit_inpbox">
+                                <input name="pop_user_name" type="text" class="edit_inp">
+                            </div>
+                        </div>
+                        <div class="block_inp_box">
+                            <label class="setup_tit">전화번호</label>
+                            <div class="edit_inpbox">
+                                <input name="pop_user_tel" type="text" class="edit_inp phone">
+                            </div>
+                        </div>
+                        <!-- <div class="block_inp_box">
+                            <label class="setup_tit">전화번호</label>
+                            <div class="block_btn_widthbox block_btn_widthbox02 dis_flex_row">
+                                <div class="block_btn_width block_btn_width01">
+                                    <input name="pop_user_tel" type="text" class="edit_inp">
+                                </div>
+                                <div class="block_btn_width block_btn_width02">
+                                    <button id="pop_phone_key" class="btn btn_blue">폰키 발급</button>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="block_inp_box">
+                    <label class="setup_tit">ID</label>
+                    <div class="edit_inpbox">
+                        <input name="pop_user_id" type="text" class="edit_inp">
+                    </div>
+                </div>
+                <div class="block_inp_box">
+                    <label class="setup_tit">동</label>
+                    <div class="edit_inpbox">
+                        <select name="pop_user_addr1" class="edit_inp">
+                        </select>
+                        <!-- <input name="pop_user_addr1" type="text" class="edit_inp"> -->
+                    </div>
+                </div>
+                <div class="block_inp_box">
+                    <label class="setup_tit">호수</label>
+                    <div class="edit_inpbox">
+                        <select name="pop_user_addr2" class="edit_inp"></select>
+                        <!-- <input name="pop_user_addr2" type="text" class="edit_inp"> -->
+                    </div>
+                </div>
+                <div class="block_inp_box">
+                    <label class="setup_tit">유효기간</label>
+                    <div class="edit_inpbox">
+                        <input name="pop_user_edate" value="" type="date" class="pop_user_edate date_inp edit_inp" placeholder="날짜를 선택해주세요.">
+                    </div>
+                </div>
+                <div class="block_inp_box">
+                    <label class="setup_tit">승인여부</label>
+                    <div class="edit_inpbox">
+                        <select name="pop_user_appo" class="edit_inp">
+                            <option value="0">미승인</option>
+                            <option value="1">승인</option>
+                        </select>
+                        <!-- <input name="pop_user_addr2" type="text" class="edit_inp"> -->
+                    </div>
+                </div>
+            </div>
+            <!-- 구성원관리 -->
+            <div id="pop_member_div" class="profile_list_grp" style="display: none;">
+                <ul class="profile_list_box profile_list_box01 dis_flex_row">
+                    <li class="profile_list profile_list01">
+                        <div class="block_cont padding0">
+                            <div class="block_cont_tbox dis_flex_row padding16">
+                                <div class="block_cont_tbox_grp dis_flex_row">
+                                    <h2 class="block_cont_tit">구성원 관리</h2>
+                                <div class="block_cont_btnbox">
+                                    <button id="pop_memb_add" class="btn_small btn_blue">구성원 추가</button>
+                                </div>
+                                </div>
+                            </div>
+                            <ul class="member_listbox">
+                                
+                            </ul>
+                            <!-- 자료없을때 -->
+                            <div class="no_member" style="display:none;">
+                                <p class="no_member_txt">구성원이 존재하지 않습니다.</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="profile_list profile_list02">
+                        <div class="block_cont">
+                            <div class="block_cont_none_list"  style="display: block;">
+                                <p class="block_cont_none_txt">구성원을 선택해주세요.</p>
+                            </div>
+                            <div class="block_cont_click" style="display: none;">
+                                <div class="block_cont_tbox">
+                                    <h2 class="block_cont_tit">상세 정보</h2>
+                                    <div class="right_btn_box">
+                                        <button id="member_pw_reset"class="btn_small btn_red">비밀번호 초기화</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="block_inp_box profile_img_widthbox dis_flex_row">
+                                    <div class="profile_img_width profile_img_width01">
+                                        <div class="profile_img_userbox">
+                                            <div id="sub_user_img" class="profile_img_user"></div>
+                                        </div>
+                                        <div class="profile_img_change_btn">
+                                            <button style="display:none;" class="btn_small btn_gray">프로필 변경</button>
+                                        </div>
+                                    </div>
+                                    <div class="profile_img_width profile_img_width02">
+                                        <div class="block_inp_box">
+                                            <label class="setup_tit">이름</label>
+                                            <div class="edit_inpbox">
+                                                <input name="pop_member_name" type="text" class="edit_inp">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- <div class="block_inp_box">
+                                            <label class="setup_tit">전화번호</label>
+                                            <div class="block_btn_widthbox block_btn_widthbox02 dis_flex_row">
+                                                <div class="block_btn_width block_btn_width01">
+                                                    <input name="pop_member_tel" type="text" class="edit_inp">
+                                                </div>
+                                                <div class="block_btn_width block_btn_width02">
+                                                    <button class="btn btn_blue">폰키 발급</button>
+                                                </div>
+                                            </div>
+                                        </div> -->
+                                        <div class="block_inp_box">
+                                            <label class="setup_tit">ID</label>
+                                            <div class="edit_inpbox">
+                                                <input name="pop_member_id" type="text" class="edit_inp">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="block_inp_box">
+                                    <label class="setup_tit">유효기간</label>
+                                    <div class="edit_inpbox">
+                                        <input name="pop_member_edate" value="" type="date" class="date_inp edit_inp pop_member_edate" placeholder="날짜를 선택해주세요.">
+                                    </div>
+                                </div>
+                                <div class="block_inp_box">
+                                    <label class="setup_tit">등급</label>
+                                    <div class="edit_inpbox">
+                                        <input name="pop_member_level"type="text" class="edit_inp" readonly>
+                                    </div>
+                                </div>
+                                <div class="block_inp_box">
+                                    <label class="setup_tit">관계</label>
+                                    <div class="edit_inpbox">
+                                        <input name="pop_member_rs"type="text" class="edit_inp">
+                                    </div>
+                                </div>
+                                <div class="block_inp_box">
+                                    <label class="setup_tit">사용 여부</label>
+                                    <div class="edit_inpbox">
+                                        <select name="pop_member_use" class="edit_inp">
+                                            <option value="0">미사용</option>
+                                            <option value="1">사용</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!--출입구간 관리-->
+            <div id="pop_addr_div" class="block_cont" style="display: none;">
+                <div class="block_cont_tbox">
+                    <h2 class="block_cont_tit">출입구간 관리</h2>
+                </div>
+                <div class="table_wrap">
+                    <div class="table_cont_box margin_top_20 table_division" style="width:20%">
+                        <div class="table_header_box">
+                            <table class="table_header_tb">
+                                <colgroup>
+                                    <col width="50%">
+                                    <!-- <col width="50%"> -->
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th class="key_list_th key_list_th02">동 선택</th>
+                                        <!-- <th class="key_list_th key_list_th02">
+                                            <input style='display:none;' type='checkbox' class='ck' id='all_click_btn2'>
+                                            <label class='dis_inblock ck_btn' for='all_click_btn2'></label>
+                                        </th>							 -->
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="table_body_box">
+                            <table class="table_body_tb key_list_tb key_list_tb_dcod">
+                                <colgroup>
+                                    <col width="50%">
+                                    <!-- <col width="50%"> -->
+                                </colgroup>
+                                <tbody>
+                                    <!-- 조회내역 없을때 -->
+                                    <tr>
+                                        <td colspan="2" class="key_list_td key_list_td_none">조회내역이 없습니다.</td>							
+                                    </tr>
+                                    <!-- //조회내역 없을때 -->
+                                    <tr>
+                                        <td class="key_list_td key_list_td02">1 LINE</td>
+                                        <td class="key_list_td key_list_td02">
+                                            <input style='display:none;' type='checkbox' class='ck' id='code_1'>
+                                            <label class='dis_inblock ck_btn' for='code_1'></label>
+                                        </td>							
+                                    </tr>
+                                    <tr>
+                                        <td class="key_list_td key_list_td02">2 LINE</td>
+                                        <td class="key_list_td key_list_td02">
+                                            <input style='display:none;' type='checkbox' class='ck' id='code_2'>
+                                            <label class='dis_inblock ck_btn' for='code_2'></label>
+                                        </td>							
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table_cont_box margin_top_20 table_division">
+                        <div class="table_header_box">
+                            <table class="table_header_tb">
+                                <colgroup>
+                                    <col width="50%">
+                                    <col width="50%">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th class="key_list_th key_list_th02">층</th>
+                                        <th class="key_list_th key_list_th02">
+                                            <input style='display:none;' type='checkbox' class='ck' id='all_click_btn3'>
+                                            <label class='dis_inblock ck_btn' for='all_click_btn3'></label>
+                                        </th>							
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="table_body_box">
+                            <table class="table_body_tb key_list_tb key_list_tb_floor">
+                                <colgroup>
+                                    <col width="50%">
+                                    <col width="50%">
+                                </colgroup>
+                                <tbody>
+                                    <!-- 조회내역 없을때 -->
+                                    <tr>
+                                        <td colspan="2" class="key_list_td key_list_td_none">조회내역이 없습니다.</td>							
+                                    </tr>
+                                    <!-- //조회내역 없을때 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table_cont_box margin_top_20 table_division" style="width:44%">
+                        <div class="table_header_box">
+                            <table class="table_header_tb">
+                                <colgroup>
+                                    <col width="50%">
+                                    <col width="50%">
+                                    <col width="50%">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th class="key_list_th key_list_th02">층</th>
+                                        <th class="key_list_th key_list_th02">출입문</th>
+                                        <th class="key_list_th key_list_th02">
+                                            <input style='display:none;' type='checkbox' class='ck' id='all_click_btn4'>
+                                            <label class='dis_inblock ck_btn' for='all_click_btn4'></label>
+                                        </th>							
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="table_body_box">
+                            <table class="table_body_tb key_list_tb key_list_tb_addr">
+                                <colgroup>
+                                    <col width="50%">
+                                    <col width="50%">
+                                    <col width="50%">
+                                </colgroup>
+                                <tbody>
+                                    <!-- 조회내역 없을때 -->
+                                    <tr>
+                                        <td colspan="2" class="key_list_td key_list_td_none">조회내역이 없습니다.</td>							
+                                    </tr>
+                                    <!-- //조회내역 없을때 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <!-- 출입 기록 -->
+            <div id="pop_inout_div" class="table_list_box" style="display: none;">
+                <div class="block_cont">
+                    <div class="search_inp_grp dis_flex_row">
+                        <div class="search_widthbox search_widthbox01">
+                            <label class="setup_tit">출입 날짜 선택</label>
+                            <div class="search_sub_widthbox dis_flex_row">
+                                <div class="search_width search_width01">
+                                    <div class=""><input name="inOutSdate"class="date_inp pop_inout_date key_list_inp key_list_inp01 key_list_date" type="text" placeholder="날짜를 선택해주세요."></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="search_widthbox search_widthbox02 dis_flex_row">
+                            <div class="search_width search_width01">
+                                <div class="key_list_cont_inp">
+                                    <label class="setup_tit">사용자</label>
+                                    <select name="sub_user_list" class="key_list_sel">
+                                        <option selected>전체</option>
+                                        <option>아빠</option>
+                                        <option>엄마</option>
+                                        <option>누나</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="search_width search_width02">
+                                <div class="key_list_cont_inp">
+                                    <label class="setup_tit">오픈 방식</label>
+                                    <select class="key_list_sel">
+                                        <option selected>전체</option>
+                                        <option>스마트키</option>
+                                        <!-- <option>비밀번호</option> -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="search_width search_width03">
+                                <button id="in_out_search_btn" class="btn btn_gray">검색</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table_cont_box margin_top_20">
+                    <div class="table_header_box">
+                        <table class="table_header_tb">
+                            <colgroup>
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="key_list_th key_list_th01">출입날짜</th>
+                                    <th class="key_list_th key_list_th02">동</th>
+                                    <th class="key_list_th key_list_th02">층</th>
+                                    <th class="key_list_th key_list_th02">출입문</th>
+                                    <th class="key_list_th key_list_th02">사용자 이름</th>
+                                    <th class="key_list_th key_list_th02">사용자 아이디</th>
+                                    <th class="key_list_th key_list_th03">출입방식</th>							
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div class="table_body_box">
+                        <table class="table_body_tb key_list_tb key_list_tb_open">
+                            <colgroup>
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                                <col width="16.6666%">
+                            </colgroup>
+                            <tbody>
+                                <!-- 조회내역 없을때 -->
+                                <tr>
+                                    <td colspan="6" class="key_list_td key_list_td_none">조회내역이 없습니다.</td>							
+                                </tr>
+                                <!-- //조회내역 없을때 -->
+                                <tr>
+                                    <td class="key_list_td key_list_td01">2021-12-31 PM 18:35:25</td>
+                                    <td class="key_list_td key_list_td02">LINE 1</td>
+                                    <td class="key_list_td key_list_td02">101</td>
+                                    <td class="key_list_td key_list_td02">아빠</td>
+                                    <td class="key_list_td key_list_td02">oasyss</td>
+                                    <td class="key_list_td key_list_td03">스마트키 사용</td>							
+                                </tr>
+                                <tr>
+                                    <td class="key_list_td key_list_td01">2021-12-31 PM 18:35:25</td>
+                                    <td class="key_list_td key_list_td02">LINE 1</td>
+                                    <td class="key_list_td key_list_td02">101</td>
+                                    <td class="key_list_td key_list_td02">아빠</td>
+                                    <td class="key_list_td key_list_td02">oasyss</td>
+                                    <td class="key_list_td key_list_td03">스마트키 사용</td>							
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+            </div>
+            <!--채팅하기-->
+            <div id="pop_chat_div" class="block_cont" style="display: none;">
+                <div class="block_cont_tbox">
+                    <h2 class="block_cont_tit">채팅하기</h2>
+                </div>
+                <div class="table_cont_box margin_top_20" style="height: 500px;">
+                    <div class="chat_body_box" id="chat_sub_box" style="height: 90%;">
+                        
+                    </div>
+                    <!-- 입력창 -->
+                    <div class="bottom_textbox">
+                        <div class="bottom_textgrp dis_flex_row">
+                            <div class="bottom_pic_cont bottom_text_cont">
+                                <ul class="bottom_pic_ul dis_flex_row">
+                                    <li class="bottom_pic_li">
+                                        <a id="imgPlusBtn" class="bottom_pic_btn bottom_image"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bottom_text_cont bottom_text_inpbox">
+                                <input type="text" name="msgInput" class="bottom_text_inp" placeholder="입력해주세요.">
+                            </div>
+                            <div id="msgBtn" class="bottom_text_cont bottom_text_btn">전송</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="pop_foot_box">
+            <ul class="pop_foot_btnbox">
+                <li class="pop_foot_btn_list">
+                    <button id="btn_pop_cancel" class="btn pop_btn_cancel">취소</button>
+                </li>
+                <li class="pop_foot_btn_list">
+                    <button id="pop_user_save_btn" class="btn btn_save">저장</button>
+                </li>
+                <li class="pop_foot_btn_list" >
+                    <button id="pop_user_save_btn2" class="btn btn_save"style="display: none;">저장</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <input style="display: none;" type="file" name="addFile" accept="*" multiple> 
+     <form id="frm" style="display:none;" method="POST" enctype="multipart/form-data" action="/upload/create">
+</body>
+</html>

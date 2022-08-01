@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+
+<script type="text/javascript">
+
+    $(window).ready(function() {
+        init();
+        $(document).on("keyup", "input[name='num']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+            
+        });
+        $(document).on("keyup", "input[name='name']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+            
+        });
+        $(document).on("change", "select[name='dcod']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+        });
+        $(document).on("change", "select[name='floor']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+        });
+        $(document).on("change", "input[name='use']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+        });
+        var addCount = 0;
+        $("#add_btn").on("click", function(){
+            var tr ="";
+            var check="";
+            var roomCode = Number($("#room_table tbody tr").last().attr("data-mqttKey"));
+            if(isNaN(roomCode)){
+                roomCode = 0;
+            }
+            
+            roomCode++;
+            check += "<td class='table_td table_td_center'>"
+                    + "<div class='check_box_btn'>"
+                    + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+addCount+"' checked>"
+                    + "<label class='dis_inblock ck_btn' for='user_"+addCount+"'></label>"
+                    + "</div>"
+                    + "</td>";
+            tr += "<tr class='rowData new' data-mqttKey='"+roomCode+"' >"
+                    + "<td class='table_td td_ck' dcod_td>"
+                    + localDcodSelect
+                    + "</td>"
+                    + "<td class='table_td td_ck' floor_td>"
+                    + localFloorSelect
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "<input name='num' class='edit_inp table_td_txt' type='text' value='' />"
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "<input name='name' class='edit_inp table_td_txt' type='text' value='' />"
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "</td>"
+                    
+                    + "<td class='table_td td_ck'>"
+                    + "<p class='table_td_txt table_td_use'></p>"
+                    + "</td>"
+                    + check
+                    + "</tr>";
+            addCount++;
+            $("#room_table tbody").append(tr);
+            var lastRow = $($(".rowData")[$(".rowData").length-2]);
+            var newRow = $($(".rowData")[$(".rowData").length-1]);
+            // newRow.find("input[name='dcod']").val(lastRow.find("input[name='dcod'] option:selected").val());
+            newRow.find("input[name='num']").val(Number(lastRow.find("input[name='num']").val())+1);
+            // newRow.find("input[name='name']").val(lastRow.find("input[name='name']").val());
+            // console.log($(".rowData"));
+        });
+        $("#save_btn").on("click", function(){
+            var updateData = [];
+            var newData = [];
+            $.each($(".update"), function(i, v){
+                var num = $(this).find("input[name='num']").val();
+                var name = $(this).find("input[name='name']").val();
+                var dcod = $(this).find("select[name='dcod']").val();
+                var floor = $(this).find("select[name='floor']").val();
+                var ck = "";
+                if($(this).find("input[type='checkbox']").is(":checked")){
+                    ck = "1";
+                }else{
+                    ck = "0";
+                }
+                if(num != "" ){
+                    updateData.push({
+                        num: num,
+                        name: name,
+                        dcod: dcod,
+                        floor: floor,
+                        ck: ck,
+                        code: $(this).attr("data-mqttKey")
+                    });
+                }
+            });
+            $.each($(".new"), function(i, v){
+                var num = $(this).find("input[name='num']").val();
+                var name = $(this).find("input[name='name']").val();
+                var dcod = $(this).find("select[name='dcod']").val();
+                var floor = $(this).find("select[name='floor']").val();
+                var ck = "";
+                if($(this).find("input[type='checkbox']").is(":checked")){
+                    ck = "1";
+                }else{
+                    ck = "0";
+                }
+                if(num != "" ){
+                    newData.push({
+                        num: num,
+                        name: name,
+                        dcod: dcod,
+                        floor: floor,
+                        ck: ck,
+                        code: $(this).attr("data-mqttKey")
+                    });
+                }
+            });
+            $.ajax({
+                url: "./mysql/mqtt_save",
+                data:{
+                    updateData: JSON.stringify(updateData),
+                    newData: JSON.stringify(newData),
+                    userId: "<%=session.userId%>",
+                    hotelCode: "<%=hotelCode%>"
+                }, success: function(re){
+                    
+                }
+            });
+            Alert("저장 되었습니다.", function(){
+                location.reload();
+            });
+        });
+        $("select[name='search_dcod']").on("change", function(){
+
+            init();
+        });
+        $("select[name='search_floor']").on("change", function(){
+
+            init();
+        });
+        $.ajax({
+            url: "/mysql/common",
+            data:{
+                xml : "codeList",
+                cod: "003"
+            }, success:function(res){
+                var item="";
+                if(res.length > 0){
+                    for(var i=0; i<res.length; i++){
+                        item+="<option value="+res[i].CODE_CODE+">"+res[i].CODE_CONTENT+"</option>"
+                    }
+                    $("select[name='search_dcod']").append(item);
+                }
+                
+            }
+        })
+        $.ajax({
+            url: "/mysql/common",
+            data:{
+                xml : "codeList",
+                cod: "012"
+            }, success:function(res){
+                var item="";
+                if(res.length > 0){
+                    for(var i=0; i<res.length; i++){
+                        item+="<option value="+res[i].CODE_CODE+">"+res[i].CODE_CONTENT+"</option>"
+                    }
+                    $("select[name='search_floor']").append(item);
+                }
+                
+            }
+        })
+    });
+    var localDcodSelect = "";
+    var localFloorSelect = "";
+    function init(){
+        $.ajax({
+			url:"/mysql/common",
+			data:{
+				xml : "codeList_two",
+				cod1: "003",
+				cod2: "012"
+			},
+			success: function(re){
+                
+                localDcodSelect = "<select name='dcod' class='dcod_select table_td_txt edit_inp'>";
+                localFloorSelect = "<select name='floor' class='floor_select table_td_txt edit_inp'>";
+                for(var j=0; j<re.length; j++){
+                    if(re[j].SUBCODE == "003"){
+                        localDcodSelect += "<option value='"+re[j].CODE_CODE+"'>"+re[j].CODE_CONTENT+"</option>";
+                    }else{
+                        localFloorSelect += "<option value='"+re[j].CODE_CODE+"'>"+re[j].CODE_CONTENT+"</option>";
+                    }
+                }
+                localDcodSelect += "</select>";
+                localFloorSelect += "</select>";
+                $.ajax({
+                    url: "/mysql/mqtt",
+                    data:{
+                        xml: "mqtt_list",
+                        hotelCode: "<%=hotelCode%>",
+                        dcod : $("select[name='search_dcod']").val(),
+                        floor : $("select[name='search_floor']").val()
+                    }, success: function(res){
+                        console.log(res);
+                        if(res.length > 0){
+                            var item = "";
+                            for(var i=0; i<res.length; i++){
+                                var appoUser = "";
+                                if(res[i].MQTT_LIST_USE == "1"){
+                                    appoUser += "<td class='table_td table_td_center'>"
+                                            + "<div class='check_box_btn'>"
+                                            + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+i+"' checked>"
+                                            + "<label class='dis_inblock ck_btn' for='user_"+i+"'></label>"
+                                            + "</div>"
+                                            + "</td>";
+                                }else{
+                                    appoUser += "<td class='table_td table_td_center'>"
+                                            + "<div class='check_box_btn'>"
+                                            + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+i+"'>"
+                                            + "<label class='dis_inblock ck_btn' for='user_"+i+"'></label>"
+                                            + "</div>"
+                                            + "</td>";
+                                }
+                                
+                                var selectItem = "<select name='dcod' class='dcod_select edit_inp table_td_txt '>";
+                                var selectItem2 = "<select name='floor' class='floor_select edit_inp table_td_txt '>";
+                                for(var j=0; j<re.length; j++){
+                                    console.log(re[j].CODE_CODE);
+                                    console.log(re[j].SUBCODE);
+                                    console.log(res[i].MQTT_LIST_DCOD);
+                                    console.log(res[i].MQTT_LIST_FLOOR);
+                                    if(re[j].SUBCODE == "003"){
+                                        if(re[j].CODE_CODE == res[i].MQTT_LIST_DCOD){
+                                                selectItem += "<option value='"+re[j].CODE_CODE+"' selected>"+re[j].CODE_CONTENT+"</option>";
+                                        }else{
+                                            selectItem += "<option value='"+re[j].CODE_CODE+"'>"+re[j].CODE_CONTENT+"</option>";
+                                        }
+                                    }else{
+                                        if(re[j].CODE_CODE == res[i].MQTT_LIST_FLOOR){
+                                            selectItem2 += "<option value='"+re[j].CODE_CODE+"' selected>"+re[j].CODE_CONTENT+"</option>";
+                                        }else{
+                                            selectItem2 += "<option value='"+re[j].CODE_CODE+"'>"+re[j].CODE_CONTENT+"</option>";
+                                        }
+                                    }
+                                }
+                                selectItem += "</select>";
+                                selectItem2 += "</select>";
+                                item += "<tr class='rowData' data-mqttKey='"+res[i].MQTT_LIST_KEY+"'>"
+                                    + "<td class='table_td td_ck' dcod_td>"
+                                    + selectItem
+                                    + "</td>"
+                                    + "<td class='table_td td_ck' floor_td>"
+                                    + selectItem2
+                                    + "</td>"
+                                    + "<td class='table_td td_ck'>"
+                                    + "<input name='num' class='table_td_txt edit_inp' type='text' value='"+res[i].MQTT_LIST_NUM+"' />"
+                                    + "</td>"
+                                    + "<td class='table_td td_ck'>"
+                                    + "<input name='name' class='table_td_txt edit_inp' type='text' value='"+res[i].MQTT_LIST_NAME+"' />"
+                                    + "</td>"
+                                    + "<td class='table_td td_ck'>"
+                                    + "<p class='table_td_txt table_td_use'>"+res[i].START_TIME+"</p>"
+                                    + "</td>"
+                                    + "<td class='table_td td_ck'>"
+                                    + "<p class='table_td_txt table_td_use'>"+res[i].CONNECT_TIME+"</p>"
+                                    + "</td>"
+                                    + appoUser
+                                    + "</tr>";
+                            }
+                            $("#room_table tbody").empty();
+                            $("#room_table tbody").append(item);
+                        }else{
+                            $("#room_table tbody").empty();
+                        }
+                    }
+                });
+			}
+		});
+        
+    }
+
+</script>
+</head>
+<style>
+
+</style>
+<body>
+	
+    <div class="cont_shadow_box cont_shadow_box_800px margin_top_20 padding0">
+        <div class="cont_tit_box cont_tit_box_padding20">
+            <h2 class="cont_tit">출입문 관리</h2>
+            <ul class="top_right_btnbox">
+                <li class="top_right_list">
+                    <button id="save_btn"class="btn btn_gray">저장</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="add_btn" class="btn btn_blue">추가</button>
+                </li>
+            </ul>
+        </div>
+        <ul class="table_shbox dis_flex_row">
+            <li class="table_sh_list table_sh_list01">
+                <div class="sh_inpbox_widthbox dis_flex_row">
+                    <div class="inp_box sh_inpbox01">
+                        <h2 class="sh_inpbox_tit">동</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="search_dcod" class="default_sel">
+                            <option value="" selected>전체</option>
+                        </select>
+                    </div>
+                    <div class="inp_box sh_inpbox01">
+                        <h2 class="sh_inpbox_tit">층</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="search_floor" class="default_sel">
+                            <option value="" selected>전체</option>
+                        </select>
+                    </div>
+                    <!-- <div class="inp_box sh_inpbox02" style="margin-left: 16px;">
+                        <div class="sh_inpbox_widthbox dis_flex_row">
+                            <div class="sh_inpbox inp_box">
+                                <input name="user_name_inp" type="text" class="default_inp" placeholder="검색어를 입력해주세요.">
+                                <a class="search_icon"></a>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+                
+            </li>
+            <li class="table_sh_list table_sh_list02">
+                
+            </li>
+        </ul>
+        <div class="table_hd_top table_notice_padding table_top_padding">
+            <table class="table_hdbox">
+                <colgroup>
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                </colgroup>
+                <tr>
+                    <thead>
+                        <tr>
+                            <th class="table_th">동</th>
+                            <th class="table_th">층</th>
+                            <th class="table_th">번호</th>
+                            <th class="table_th">명칭</th>
+                            <th class="table_th">연결날짜</th>
+                            <th class="table_th">최종연결</th>
+                            <th class="table_th" style="text-align: center;">사용여부</th>
+                        </tr>
+                    </thead>
+                </tr>
+            </table>
+        </div>
+        <div class="table_body_scroll">
+            <div class="table_notice_padding">
+                <table id="room_table" class="table_notice hover_table">
+                    <!-- <colgroup>
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                    </colgroup> -->
+                    <tr>
+                        <!-- <thead>
+                            <tr>
+                                <th class="table_th">동</th>
+                                <th class="table_th">번호</th>
+                                <th class="table_th">연결날짜</th>
+                                <th class="table_th">최종연결</th>
+                                <th class="table_th">사용여부</th>
+                            </tr>
+                        </thead> -->
+                        <!-- 자료 없을때 -->
+                       <!-- <tr style="display: none;">
+                            <td colspan="6" class="empty_td">
+                                <p class="empty_td_txt">조회된 자료가 없습니다.</p>
+                            </td>
+                        </tr> -->
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- 팝업 -->
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+<!-- <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script> -->
+<!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="/js/admin/main.js"></script>
+
+</head>
+<style>
+.spin{display: none;}
+</style>
+<script type="text/javascript">
+    var level = "<%=session.level%>"
+    $(window).ready(function() {
+        $.loading.start('Loading...');
+
+        $("input[name='div_input']").on("focusout", function(){
+            divChart(true);
+        });
+        $("select[name='div_select']").on("change", function(){
+            divChart(true);
+        });
+        $("input[name='as_input']").on("focusout", function(){
+            statusChart(true);
+        });
+        $("select[name='as_select']").on("change", function(){
+            statusChart(true);
+        });
+        $("input[name='dd_input']").on("focusout", function(){
+            ddChart(true);
+        });
+        $("select[name='dd_select']").on("change", function(){
+            ddChart(true);
+        });
+
+        $(document).on("click", ".notice_list_grp li", function(){
+            var noticeKey = $(this).attr("data-noticeKey");
+            location.href="./notice_edit?noticeKey="+noticeKey;
+        });
+        nowDate();
+        notice();
+        roomChart();
+        divChart(false);
+        statusChart(false);
+        ddChart(false);
+    });
+</script>
+<body>
+    <div class="main_wrap">
+        <div class="main_board_box">
+            <ul class="main_board_ul main_board_ul01">
+               <li class="main_board_li">
+                   <div class="cont_shadow_box02">
+                       <h2 class="main_board_tit">입주 현황</h2>
+                   <div id="chartContainer"style="height:300px" class="margin_top_20">
+                        <canvas id="roomChart"></canvas>
+                    </div>
+                   </div>
+               </li>
+               <li class="main_board_li">
+                    <div class="cont_shadow_box02">
+                        <div class="main_board_tit_grp dis_flex_row">
+                            <h2 class="main_board_tit">AS 접수 현황</h2>
+                            <div class="dis_flex_row">
+                                <div class="dis_flex_width dis_flex_width01">
+                                    <input name="div_input" class="key_list_inp key_list_inp01 key_list_date" type="number" placeholder="기간 선택">
+                                </div>
+                                <div class="dis_flex_width dis_flex_width02">
+                                    <select name="div_select" class="key_list_sel">
+                                        <option value="">전체</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="height:300px" class="margin_top_20">
+                            <canvas id="as_type_chart"></canvas>
+                        </div>
+                    </div>
+                </li> 
+                <li class="main_board_li">
+                    <div class="cont_shadow_box02">
+                        <div class="main_board_tit_grp dis_flex_row">
+                            <h2 class="main_board_tit">AS 처리 현황</h2>
+                            <div class="dis_flex_row">
+                                <div class="dis_flex_width dis_flex_width01">
+                                    <input name="as_input" class="key_list_inp key_list_inp01 key_list_date" type="number" placeholder="기간 선택">
+                                </div>
+                                <div class="dis_flex_width dis_flex_width02">
+                                    <select name="as_select" class="key_list_sel">
+                                        <option value="">전체</option>
+                                    </select>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div style="height:300px" class="margin_top_20">
+                            <canvas id="as_status_chart"></canvas>
+                        </div>
+                    </div>
+                </li> 
+            </ul>
+        </div>
+        <div class="main_board_box">
+            <ul class="main_board_ul main_board_ul02">
+               <li class="main_board_li">
+                   <div class="cont_shadow_box02">
+                    <div class="main_board_tit_grp dis_flex_row">
+                        <h2 class="main_board_tit">담당 처리 현황</h2>
+                            <div class="dis_flex_row">
+                                <div class="dis_flex_width dis_flex_width01">
+                                    <input name="dd_input" class="key_list_inp key_list_inp01 key_list_date" type="number" placeholder="기간 선택">
+                                </div>
+                                <div class="dis_flex_width dis_flex_width02">
+                                    <select name="dd_select" class="key_list_sel">
+                                        <option value="">전체</option>
+                                    </select>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div style="height:300px" class="margin_top_20">
+                            <canvas id="dd_chart"></canvas>
+                        </div>
+                   </div>
+               </li>
+                <li class="main_board_li">
+                    <div class="cont_shadow_box02">
+                        <h2 class="main_board_tit">공지사항</h2>
+                        <ul class="notice_list_grp" class="margin_top_20">
+                            
+                        </ul>
+                        <!-- <div style="height:300px"></div> -->
+                    </div>
+                </li> 
+            </ul>
+        </div>
+    </div>
+	
+</body>
+</html>

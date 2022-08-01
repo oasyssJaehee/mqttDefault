@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+<link href="/js/admin/summerNote/summernote-lite.css" rel="stylesheet" />
+<script type="text/javascript" src="/js/admin/summerNote/summernote-lite.js"></script>
+<script type="text/javascript" src="/js/admin/summerNote/summernote-ko-KR.js"></script>
+
+
+<script type="text/javascript" src="/js/admin/summerNote/load-image.all.min.js"></script>
+<script type="text/javascript" src="/js/admin/summerNote/img_upload.js"></script>
+</head>
+<style>
+.down_btn {
+background-color:#0ca8ff;
+border: none;
+cursor: pointer;
+font-size: 0.9em;
+border-radius:20px;
+}
+
+
+/* Darker background on mouse-over */
+.down_btn:hover {
+background-color: #32465a;
+}
+</style>
+<script type="text/javascript">
+    $(window).ready(function() {
+        $.ajax({
+            url:"/mysql/common",
+            data :{
+                xml: "codeList",
+                cod: "007"
+            }, success:function(res){
+                var item = "";
+                for(var i=0; i<res.length; i++){
+                    item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
+                }
+                $("select[name='div_select']").append(item);
+                
+                
+            }
+        });
+        $('#summernote').summernote({
+            height: 300,                 // 에디터 높이
+            minHeight: null,             // 최소 높이
+            maxHeight: null,             // 최대 높이
+            focus: false,                  // 에디터 로딩후 포커스를 맞출지 여부
+            lang: "ko-KR",					// 한글 설정
+            placeholder: '',	//placeholder 설정 
+            callbacks: {                                        
+                onImageUpload : function(files, editor, welEditable) {
+                    addFiles(files, $(this));
+                },onInit: function() {
+                    $(".note-editable").on('click', function (e) {
+                        if(!summerAble){
+                            Confirm("편집 하시겠습니까?",function(){
+                                $('#summernote').summernote('enable');
+                                summerAble = true;
+                            });
+                        }
+                    });
+                }
+            }
+        });
+        var summerAble = true;
+        if("<%=noticeKey%>" != ""){
+            noticeInit();
+            summerAble = false;
+        }else{
+            summerAble = true;
+        }
+        
+        $("#save_btn").on("click", function(){
+            var title = ""
+            var content = "";
+            var importDiv = $("select[name='div_select']").val();
+
+            
+            title = $("input[name='title']").val();
+            content = $("#summernote").summernote('code');
+            if(title == ""){Alert("제목을 입력해 주세요."); return;}
+            if(content == ""){Alert("내용을 입력해 주세요."); return;}
+            
+            var xml = "";
+            if("<%=noticeKey%>" != ""){
+                xml = "notice_update";
+            }else{
+                xml = "notice_insert";
+            }
+            $.ajax({
+                url:"/mysql/common",
+                data:{
+                    xml: xml,
+                    import: importDiv,
+                    type: "0080001",
+                    title: title,
+                    cont: content,
+                    userKey: "<%=session.key%>",
+                    realName: $("input[name='file_real_name']").val(),
+                    fileName: $("input[name='file_name']").val(),
+                    filePath: $("input[name='file_path']").val(),
+                    noticeKey : "<%=noticeKey%>"
+                },success: function(res){
+                    console.log(res);
+                    if(res != null){
+                        Alert("저장 되었습니다.", function(){
+                            location.href="./notice";
+                        });
+                    }
+                }
+            });
+        });
+        $("#cancel_btn").on("click", function(){
+            location.href="./notice";
+        });
+
+        $(".upload_btn").on("click", function(){
+			// $(".chat_pop_wrap").css("display", "block");
+			$("input[name='addFile']").click();
+		});
+		$("input[name='addFile']").on("change", function(e){
+            console.log(e.target.files);
+            addFiles(e.target.files, undefined);
+        });
+        $("input[name='file_inp']").on("click", function(){
+            $("#down_btn_a").trigger('click');
+        });
+        
+    });
+    function noticeInit(){
+        $.ajax({
+            url:"/mysql/common",
+            data:{
+                xml: "select_notice_select",
+                noticeKey: "<%=noticeKey%>"
+            }, success: function(res){
+                $("input[name='title']").val(res[0].NOTICE_TITLE);
+                $("select[name='div_select']").val(res[0].NOTICE_IMPORT);
+                $("input[name='file_inp']").val(res[0].NOTICE_REAL_FILENAME);
+                $("input[name='file_real_name']").val(res[0].NOTICE_REAL_FILENAME);
+                $("input[name='file_name']").val(res[0].NOTICE_FILENAME);
+                $("input[name='file_path']").val(res[0].NOTICE_FILEPATH);
+                
+                if(res[0].NOTICE_REAL_FILENAME != ""){
+                    $("#down_btn_a").attr("download", res[0].NOTICE_REAL_FILENAME);
+                    $("#down_btn_a").attr("href", "/file/"+res[0].NOTICE_FILENAME);
+                }
+                
+                
+
+                $('#summernote').summernote('code', res[0].NOTICE_CONTENT);
+                $('#summernote').summernote('disable');
+            }
+        });
+    }
+    $(function() {
+        $('#down_btn_a').click(function() {
+            // 'this' is not a jQuery object, so it will use
+            // the default click() function
+            this.click();
+        });
+    });
+</script>
+<body>
+	<div class="cont_shadow_box padding0">
+        <div class="cont_tit_box cont_tit_box_padding20">
+            <h2 class="cont_tit">글쓰기</h2>
+        </div>
+        <div class="edit_form">
+            <div class="edit_form_title_box dis_flex_row">
+                <div class="edit_form_width edit_form_width01">
+                    <label class="setup_tit">제목</label>
+                    <div class="edit_inpbox">
+                        <input name="title" type="text" class="edit_inp">
+                    </div>
+                </div>
+                <div class="edit_form_width edit_form_width02">
+                    <label class="setup_tit">구분</label>
+                    <div class="edit_selbox">
+                        <select class="edit_sel" name="div_select">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- 글쓰는 곳 -->
+            <div class="edit_body_box margin_top_20">
+                <label class="setup_tit">내용</label>
+                <div id="summernote" class="edit_body_form">
+
+                </div>
+            </div>
+            <div class="edit_file_box margin_top_20">
+                <label class="setup_tit">첨부파일</label>
+                <div class="edit_file_box dis_flex_row">
+                    <div class="edit_file_list edit_file_list01">
+                        <a class="upload_btn">
+                            <em class="upload_icon dis_inblock">
+                                <img src="/static/img/web/upload.png">
+                            </em>
+                            <em class="upload_txt dis_inblock">파일 업로드</em>
+                        </a>
+                    </div>
+                    <div id="file_div" class="edit_file_list edit_file_list02">
+                        <input name="file_inp" type="text" class="edit_inp" readonly/>
+                        <a style="display:none;" id="down_btn_a" ></a>
+                        <input name="file_real_name" type="hidden" class="edit_inp"/>
+                        <input name="file_name" type="hidden" class="edit_inp"/>
+                        <input name="file_path" type="hidden" class="edit_inp"/>
+                    </div>
+               
+                </div>
+            </div>
+            <div class="bottom_edit_btnbox margin_top_20">
+                <ul class="bottom_edit_ulbox">
+                    <li class="bottom_edit_list bottom_edit_list01">
+                        <a id="save_btn"  class="bottom_edit_btn">
+                            <% if(noticeKey){ %>
+                                수정
+                            <% }else{%>
+                                등록
+                            <% }%>
+                        </a>
+                    </li>
+                    <li class="bottom_edit_list bottom_edit_list02">
+                        <a id="cancel_btn" class="bottom_edit_btn">취소</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <input style="display: none;" type="file" name="addFile" accept="*" multiple> 
+    <form id="frm" style="display:none;" method="POST" enctype="multipart/form-data" action="/upload/create">
+</body>
+</html>

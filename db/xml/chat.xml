@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="chat">
+    <insert id="chat_main_user_insert">
+    INSERT INTO opener_chat_main (
+    CHAT_MAIN_AS
+    ,CHAT_MAIN_STATUS
+    ,CHAT_MAIN_FUSER
+    ,CHAT_MAIN_FDATE
+    ,CHAT_MAIN_LUSER
+    ,CHAT_MAIN_LDATE
+    ) VALUES (
+    #{code}
+    ,#{status}
+    ,#{userid}
+    ,SYSDATE()
+    ,#{userid}
+    ,SYSDATE()
+    )
+    </isnert>
+    <insert id="chat_room_insert">
+    INSERT INTO opener_chat_room (
+        CHAT_ROOM_MAIN
+    ,CHAT_ROOM_USER
+    ,CHAT_ROOM_DATE
+    ,CHAT_ROOM_ADMIN
+    ,CHAT_ROOM_SOCKET
+    ) VALUES (
+    #{mainKey},
+    #{user},
+    SYSDATE()
+    ,#{admin}
+    ,#{socket}
+    )
+    </isnert>
+    <insert id="chat_admin_room_insert">
+    INSERT INTO opener_chat_admin_room (
+    ADMIN_ROOM_SOCKET
+    ,ADMIN_ROOM_USER
+    ,ADMIN_ROOM_DATE
+    ) VALUES (
+    #{socket}
+    ,#{admin}
+    ,SYSDATE()
+    )
+    </insert>
+    <insert id="chat_sub_insert">
+    INSERT INTO opener_chat_sub (
+        CHAT_SUB_MAIN
+        ,CHAT_SUB_CONTENT
+        ,CHAT_SUB_VIEW
+        ,CHAT_SUB_IMG_NAME
+        ,CHAT_SUB_IMG_PATH
+        ,CHAT_SUB_USER
+        ,CHAT_SUB_DATE
+        ,CHAT_SUB_ADMIN
+        ) VALUES (
+        #{mainKey}
+        ,#{msg}
+        ,#{view}
+        ,#{imgName}
+        ,#{imgPath}
+        ,#{userId}
+        ,SYSDATE()
+        ,#{admin}
+    )
+    </isnert>
+    <select id="select_chat_server_time">
+    SELECT 
+        DATE_FORMAT(CHAT_SUB_DATE, '%H:%i') AS DATE
+        FROM opener_chat_sub
+    WHERE CHAT_SUB_KEY = #{insertId}
+    </select>
+    <select id="chat_list_admin">
+
+    SELECT 
+        ( 
+        select count(*) from opener_chat_main
+        <choose>
+            <when test="status == ''">
+            </when>
+            <otherwise>
+                WHERE CHAT_MAIN_STATUS = #{status}
+            </otherwise>
+        </choose>
+        )
+        AS TOTAL,
+        CHAT_MAIN_KEY,
+        CHAT_MAIN_AS,
+        CHAT_MAIN_STATUS,
+        CHAT_MAIN_ADMIN,
+        CHAT_MAIN_FUSER,
+        CHAT_MAIN_FDATE,
+        CHAT_MAIN_LUSER,
+        CHAT_MAIN_LDATE,
+        CODE.CODE_CONTENT,
+        DATE_FORMAT(SUB.CHAT_SUB_DATE, '%y.%m.%d %H:%i') AS CHAT_SUB_DATE,
+        SUB.CHAT_SUB_CONTENT,
+        SUB.CHAT_SUB_IMG_NAME,
+        SUB.CHAT_SUB_KEY,
+        IFNULL(USER.USER_NAME, SUBUSER.USER_SUB_NAME) AS USER_NAME,
+        IFNULL(IFNULL(USER.USER_IMGNAME, SUBUSER.USER_SUB_IMGNAME), '') AS USER_IMGNAME,
+        IFNULL(IFNULL(USER.USER_IMGPATH, SUBUSER.USER_SUB_IMGPATH), '') AS USER_IMGPATH,
+        IFNULL(USERADDR1.CODE_CONTENT, USERADDR2.CODE_CONTENT) AS ADDR1,
+        IFNULL(ROOM1.ROOM_CODE_NUM, ROOM2.ROOM_CODE_NUM) AS ADDR2,
+        MAXSUB.COUNT,
+        IFNULL(ADMIN.ADMIN_NAME, '') AS ADMIN_NAME
+    FROM opener_chat_main MAIN
+    LEFT JOIN OPENER_CODE CODE
+    ON CODE.CODE_CODE = CHAT_MAIN_STATUS
+    LEFT JOIN (
+    SELECT
+    MAX(CHAT_SUB_KEY) AS MAX_KEY,
+    COUNT(CASE WHEN CHAT_SUB_VIEW='0'  AND (CHAT_SUB_ADMIN = '0' OR CHAT_SUB_ADMIN = '2')   THEN 1 END) AS COUNT,
+    CHAT_SUB_MAIN
+    FROM opener_chat_sub 
+    GROUP BY CHAT_SUB_MAIN
+    ) MAXSUB
+    ON MAXSUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    LEFT JOIN opener_chat_sub SUB
+    ON SUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    AND SUB.CHAT_SUB_KEY = MAXSUB.MAX_KEY
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_sub SUBUSER
+    ON SUBUSER.USER_SUB_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user MAINUSER
+    ON MAINUSER.USER_KEY = SUBUSER.USER_KEY
+    LEFT JOIN opener_code USERADDR1
+    ON USERADDR1.CODE_CODE = USER.USER_ADDR1
+    LEFT JOIN fo_room_code ROOM1
+    ON ROOM1.ROOM_CODE_CODE = USER.USER_ADDR2
+    LEFT JOIN opener_code USERADDR2
+    ON USERADDR2.CODE_CODE = MAINUSER.USER_ADDR1
+    LEFT JOIN fo_room_code ROOM2
+    ON ROOM2.ROOM_CODE_CODE = MAINUSER.USER_ADDR2
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_ID = MAIN.CHAT_MAIN_ADMIN
+    WHERE SUB.CHAT_SUB_KEY IS NOT NULL
+    <!-- AND MAIN.CHAT_MAIN_AS != '0040000' -->
+    <choose>
+        <when test="status == ''">
+            <choose>
+                <when test="level == '0010004'">
+                    <!-- AND (MAIN.CHAT_MAIN_ADMIN = #{userId} OR MAIN.CHAT_MAIN_ADMIN IS NULL) -->
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+        </when>
+        <otherwise>
+            AND MAIN.CHAT_MAIN_STATUS = #{status}
+            <choose>
+                <when test="level == '0010004'">
+                    <!-- AND (MAIN.CHAT_MAIN_ADMIN = #{userId} OR MAIN.CHAT_MAIN_ADMIN IS NULL) -->
+                </when>
+                <otherwise>
+                </otherwise>
+            </choose>
+        </otherwise>
+    </choose>
+    <!-- ORDER BY FIELD(MAIN.CHAT_MAIN_STATUS, '0050001', '0050002', '0050003', '0050004'),SUB.CHAT_SUB_DATE DESC -->
+    ORDER BY SUB.CHAT_SUB_DATE DESC
+    LIMIT ${mainPage},${mainPageSize}
+    </select>
+    <select id="chat_select_common">
+    select CHAT_MAIN_KEY 
+    from opener_chat_main
+    left join opener_chat_sub
+    on chat_sub_main = chat_main_key
+    where chat_main_as = '0040000'
+    and chat_main_fuser = #{userId}
+    </select>
+    <select id="chat_select_admin">
+    SELECT CHAT_SUB_KEY,
+        CHAT_SUB_MAIN,
+        CHAT_SUB_CONTENT,
+        CHAT_SUB_VIEW,
+        CHAT_SUB_IMG_NAME,
+        CHAT_SUB_IMG_PATH,
+        CHAT_SUB_USER,
+        DATE_FORMAT(CHAT_SUB_DATE, '%H:%i') AS CHAT_SUB_DATE,
+        DATE_FORMAT(CHAT_SUB_DATE, '%Y.%m.%d') AS CHAT_DATE,
+        CHAT_SUB_VUSER,
+        CHAT_SUB_VDATE,
+        CHAT_MAIN_KEY,
+        CHAT_MAIN_FUSER,
+        CHAT_SUB_ADMIN,
+        CASE WHEN USER.USER_KEY IS NULL THEN SUBUSER.USER_SUB_NAME ELSE USER.USER_NAME END AS USER_NAME,
+        CASE WHEN USER.USER_KEY IS NULL THEN SUBUSER.USER_SUB_IMGNAME ELSE USER.USER_IMGNAME END AS USER_IMGNAME,
+        CASE WHEN USER.USER_KEY IS NULL THEN SUBUSER.USER_SUB_IMGPATH ELSE USER.USER_IMGPATH END AS USER_IMGPATH,
+        CASE WHEN USER.USER_KEY IS NULL THEN DCOD2.CODE_CONTENT ELSE DCOD.CODE_CONTENT END AS USER_ADDR1,
+        CASE WHEN USER.USER_KEY IS NULL THEN ROOM2.ROOM_CODE_NUM ELSE ROOM.ROOM_CODE_NUM END AS USER_ADDR2,
+        CASE WHEN USER.USER_KEY IS NULL THEN SUBCODE.CODE_CONTENT ELSE USERCODE.CODE_CONTENT END AS USER_APART
+    FROM opener_chat_sub
+    LEFT JOIN opener_chat_main MAIN
+    ON MAIN.CHAT_MAIN_KEY = CHAT_SUB_MAIN
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_sub SUBUSER
+    ON SUBUSER.USER_SUB_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user USERINFO
+    ON USERINFO.USER_KEY = SUBUSER.USER_KEY
+    LEFT JOIN opener_code USERCODE
+    ON USERCODE.CODE_CODE = USER.USER_APART
+    LEFT JOIN opener_code SUBCODE
+    ON SUBCODE.CODE_CODE = USERINFO.USER_APART
+    LEFT JOIN fo_room_code ROOM
+    ON ROOM.ROOM_CODE_CODE = USER.USER_ADDR2
+    LEFT JOIN fo_room_code ROOM2
+    ON ROOM2.ROOM_CODE_CODE = USERINFO.USER_ADDR2
+    LEFT JOIN OPENER_CODE DCOD
+    ON DCOD.CODE_CODE = USER.USER_ADDR1
+    LEFT JOIN OPENER_CODE DCOD2
+    ON DCOD2.CODE_CODE = USERINFO.USER_ADDR1
+    WHERE CHAT_SUB_MAIN = #{mainKey}
+    ORDER BY CHAT_SUB_KEY ASC
+    </select>
+    <select id="chat_select_user">
+        SELECT CHAT_SUB_KEY,
+            CHAT_SUB_MAIN,
+            CHAT_SUB_CONTENT,
+            CHAT_SUB_VIEW,
+            CHAT_SUB_IMG_NAME,
+            CHAT_SUB_IMG_PATH,
+            CHAT_SUB_USER,
+            DATE_FORMAT(CHAT_SUB_DATE, '%H:%i') AS CHAT_SUB_DATE,
+            DATE_FORMAT(CHAT_SUB_DATE, '%Y.%m.%d') AS CHAT_DATE,
+            CHAT_SUB_VUSER,
+            CHAT_SUB_VDATE,
+            CHAT_MAIN_KEY,
+            CHAT_MAIN_STATUS,
+            CHAT_MAIN_FUSER,
+            CHAT_SUB_ADMIN,
+            IFNULL(ADMIN_NAME, '챗봇') AS ADMIN_NAME,
+            ADMIN_IMGNAME,
+            ADMIN_IMGPATH,
+            ADMIN_ID
+        FROM opener_chat_sub
+        LEFT JOIN opener_chat_main MAIN
+        ON MAIN.CHAT_MAIN_KEY = CHAT_SUB_MAIN
+        LEFT JOIN opener_user_admin ADMINUSER
+        ON ADMINUSER.ADMIN_ID = CHAT_SUB_USER
+        WHERE CHAT_SUB_MAIN = #{mainKey}
+        AND CHAT_MAIN_FUSER = #{userId}
+        ORDER BY CHAT_SUB_KEY ASC
+    </select>
+    <update id="update_sub_view_admin">
+        UPDATE opener_chat_sub SET
+        CHAT_SUB_VIEW = '1'
+        ,CHAT_SUB_VUSER = #{userId}
+        ,CHAT_SUB_VDATE = SYSDATE()
+        WHERE CHAT_SUB_MAIN = #{mainKey}
+        AND (CHAT_SUB_ADMIN = '0' OR CHAT_SUB_ADMIN = '2')
+    </update>
+    <update id="update_sub_view_user">
+        UPDATE opener_chat_sub SET
+        CHAT_SUB_VIEW = '1'
+        ,CHAT_SUB_VUSER = #{userId}
+        ,CHAT_SUB_VDATE = SYSDATE()
+        WHERE CHAT_SUB_MAIN = #{mainKey}
+        AND CHAT_SUB_ADMIN = '1'
+    </update>
+    <update id="chat_main_status_update">
+    UPDATE opener_chat_main SET
+    CHAT_MAIN_STATUS = #{status}
+    ,CHAT_MAIN_ADMIN = #{userId}
+    ,CHAT_MAIN_LUSER = #{userId}
+    ,CHAT_MAIN_LDATE = SYSDATE()
+    WHERE CHAT_MAIN_KEY = #{mainKey}
+    </update>
+    <select id="chat_status_ing">
+        SELECT CODE_CODE,
+            CODE_INFO,
+            CODE_CONTENT,
+            CODE_LUSER,
+            CODE_LDATE,
+            CODE_USE,
+            IFNULL(CHAT_COUNT, 0) AS CHAT_COUNT
+        FROM opener_code
+        LEFT JOIN (
+        SELECT
+        COUNT(CHAT_MAIN_KEY) AS CHAT_COUNT,
+        CHAT_MAIN_STATUS
+        FROM opener_chat_main
+        GROUP BY CHAT_MAIN_STATUS
+        ) MAIN
+        ON MAIN.CHAT_MAIN_STATUS = CODE_CODE
+        WHERE CODE_CODE LIKE ('005%')
+    </select>
+    <select id="chat_not_read">
+    SELECT
+    COUNT(*) AS CHAT_NOT_COUNT
+    FROM opener_chat_sub
+    WHERE CHAT_SUB_VIEW = '0'
+    AND CHAT_SUB_ADMIN = '0'
+    </select>
+    <select id="chat_not_read_user">
+    SELECT
+    COUNT(*) AS CHAT_NOT_COUNT
+    FROM opener_chat_sub
+    LEFT JOIN opener_chat_main
+    on chat_main_key = chat_sub_main
+    WHERE CHAT_MAIN_FUSER = #{userId}
+    AND CHAT_SUB_VIEW = '0'
+    AND CHAT_SUB_ADMIN = '1'
+    </select>
+    <select id="chat_list">
+
+    SELECT 
+        ( 
+        select count(*) from opener_chat_main
+        WHERE 0=0
+        <choose>
+            <when test="status == ''">
+            </when>
+            <otherwise>
+                AND CHAT_MAIN_STATUS = #{status}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sdate == ''">
+            </when>
+            <otherwise>
+                AND DATE_FORMAT(SUB.CHAT_SUB_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+            </otherwise>
+        </choose>
+        )
+        AS TOTAL,
+        CHAT_MAIN_KEY,
+        CHAT_MAIN_AS,
+        CHAT_MAIN_STATUS,
+        CHAT_MAIN_ADMIN,
+        CHAT_MAIN_FUSER,
+        CHAT_MAIN_FDATE,
+        CHAT_MAIN_LUSER,
+        CHAT_MAIN_LDATE,
+        CODE.CODE_CONTENT,
+        DATE_FORMAT(SUB.CHAT_SUB_DATE, '%y.%m.%d %H:%i') AS CHAT_SUB_DATE,
+        SUB.CHAT_SUB_CONTENT,
+        SUB.CHAT_SUB_IMG_NAME,
+        SUB.CHAT_SUB_KEY,
+        IFNULL(USER.USER_NAME, SUBUSER.USER_SUB_NAME) AS USER_NAME,
+        IFNULL(IFNULL(USER.USER_IMGNAME, SUBUSER.USER_SUB_IMGNAME), '') AS USER_IMGNAME,
+        IFNULL(IFNULL(USER.USER_IMGPATH, SUBUSER.USER_SUB_IMGPATH), '') AS USER_IMGPATH,
+        MAXSUB.COUNT,
+        CASE
+            WHEN MAIN.CHAT_MAIN_AS = '0040000'
+            THEN '관리자'
+            ELSE IFNULL(ADMIN.ADMIN_NAME, '챗봇') 
+        END AS ADMIN_NAME
+        
+    FROM opener_chat_main MAIN
+    LEFT JOIN OPENER_CODE CODE
+    ON CODE.CODE_CODE = CHAT_MAIN_STATUS
+    LEFT JOIN (
+    SELECT
+    MAX(CHAT_SUB_KEY) AS MAX_KEY,
+    COUNT(CASE WHEN CHAT_SUB_VIEW='0'  AND (CHAT_SUB_ADMIN = '1' OR CHAT_SUB_ADMIN = '2')   THEN 1 END) AS COUNT,
+    CHAT_SUB_MAIN
+    FROM opener_chat_sub 
+    GROUP BY CHAT_SUB_MAIN
+    ) MAXSUB
+    ON MAXSUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    LEFT JOIN opener_chat_sub SUB
+    ON SUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    AND SUB.CHAT_SUB_KEY = MAXSUB.MAX_KEY
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_sub SUBUSER
+    ON SUBUSER.USER_SUB_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_ID = MAIN.CHAT_MAIN_ADMIN
+    WHERE SUB.CHAT_SUB_KEY IS NOT NULL
+    AND (USER.USER_ID = #{userId} OR SUBUSER.USER_SUB_ID = #{userId})
+    <choose>
+        <when test="status == ''">
+        </when>
+        <otherwise>
+            AND MAIN.CHAT_MAIN_STATUS = #{status}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(SUB.CHAT_SUB_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <!-- ORDER BY FIELD(MAIN.CHAT_MAIN_STATUS, '0050001', '0050002', '0050003', '0050004'),SUB.CHAT_SUB_DATE DESC -->
+    ORDER BY SUB.CHAT_SUB_DATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+
+    <select id="chat_list_user">
+
+    SELECT 
+        ( 
+        select count(*) from opener_chat_main
+        WHERE 0=0
+        <choose>
+            <when test="status == ''">
+            </when>
+            <otherwise>
+                AND CHAT_MAIN_STATUS = #{status}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sdate == ''">
+            </when>
+            <otherwise>
+                AND DATE_FORMAT(SUB.CHAT_SUB_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+            </otherwise>
+        </choose>
+        )
+        AS TOTAL,
+        CHAT_MAIN_KEY,
+        CHAT_MAIN_AS,
+        CHAT_MAIN_STATUS,
+        CHAT_MAIN_ADMIN,
+        CHAT_MAIN_FUSER,
+        CHAT_MAIN_FDATE,
+        CHAT_MAIN_LUSER,
+        CHAT_MAIN_LDATE,
+        CODE.CODE_CONTENT,
+        DATE_FORMAT(SUB.CHAT_SUB_DATE, '%y.%m.%d %H:%i') AS CHAT_SUB_DATE,
+        SUB.CHAT_SUB_CONTENT,
+        SUB.CHAT_SUB_IMG_NAME,
+        SUB.CHAT_SUB_KEY,
+        IFNULL(USER.USER_NAME, SUBUSER.USER_SUB_NAME) AS USER_NAME,
+        IFNULL(IFNULL(USER.USER_IMGNAME, SUBUSER.USER_SUB_IMGNAME), '') AS USER_IMGNAME,
+        IFNULL(IFNULL(USER.USER_IMGPATH, SUBUSER.USER_SUB_IMGPATH), '') AS USER_IMGPATH,
+        MAXSUB.COUNT,
+        IFNULL(ADMIN.ADMIN_NAME, '챗봇') AS ADMIN_NAME
+    FROM opener_chat_main MAIN
+    LEFT JOIN OPENER_CODE CODE
+    ON CODE.CODE_CODE = CHAT_MAIN_STATUS
+    LEFT JOIN (
+    SELECT
+    MAX(CHAT_SUB_KEY) AS MAX_KEY,
+    COUNT(CASE WHEN CHAT_SUB_VIEW='0'  AND (CHAT_SUB_ADMIN = '1' OR CHAT_SUB_ADMIN = '2')   THEN 1 END) AS COUNT,
+    CHAT_SUB_MAIN
+    FROM opener_chat_sub 
+    GROUP BY CHAT_SUB_MAIN
+    ) MAXSUB
+    ON MAXSUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    LEFT JOIN opener_chat_sub SUB
+    ON SUB.CHAT_SUB_MAIN = MAIN.CHAT_MAIN_KEY
+    AND SUB.CHAT_SUB_KEY = MAXSUB.MAX_KEY
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_sub SUBUSER
+    ON SUBUSER.USER_SUB_ID = MAIN.CHAT_MAIN_FUSER
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_ID = MAIN.CHAT_MAIN_ADMIN
+    WHERE SUB.CHAT_SUB_KEY IS NOT NULL
+    AND (USER.USER_ID = #{userId} OR SUBUSER.USER_SUB_ID = #{userId})
+    <choose>
+        <when test="status == ''">
+        </when>
+        <otherwise>
+            AND MAIN.CHAT_MAIN_STATUS = #{status}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(SUB.CHAT_SUB_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <!-- ORDER BY FIELD(MAIN.CHAT_MAIN_STATUS, '0050001', '0050002', '0050003', '0050004'),SUB.CHAT_SUB_DATE DESC -->
+    ORDER BY SUB.CHAT_SUB_DATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+</mapper>

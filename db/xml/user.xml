@@ -1,0 +1,1206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="user">
+    <select id="user_login" resultType="casemap">
+        (SELECT USER_KEY AS USER_KEY,
+                USER_NAME AS NAME,
+                USER_TEL AS TEL,
+                USER_ADDR1 AS ADDR1,
+                USER_ADDR2 AS ADDR2,
+                USER_ID AS ID,
+                USER_LEVEL AS LEVEL,
+                USER_APART AS APART,
+                USER_USE AS USER_USE,
+                USER_APPO AS APPO,
+                USER_IMGNAME AS IMGNAME,
+                USER_IMGPATH AS IMGPATH,
+                'main' AS TYPE
+        FROM opener_user
+        WHERE USER_ID = #{id}
+        AND USER_PASS = PASSWORD(#{pass})
+        AND USER_USE = '1'
+        AND USER_LEVEL = '0010002')
+        UNION ALL
+        (SELECT USER_SUB_KEY AS USER_KEY,
+                USER_SUB_NAME AS NAME,
+                USER_SUB_TEL AS TEL,
+                MAIN.USER_ADDR1 AS ADDR1,
+                MAIN.USER_ADDR2 AS ADDR2,
+                USER_SUB_ID AS ID,
+                USER_SUB_LEVEL AS LEVEL,
+                MAIN.USER_APART AS APART,
+                USER_SUB_USE AS USER_USE,
+                MAIN.USER_APPO AS APPO,
+                USER_SUB_IMGNAME AS IMGNAME,
+                USER_SUB_IMGPATH AS IMGPATH,
+                'sub' AS SUB
+        FROM opener_user_sub SUB
+        LEFT JOIN opener_user MAIN
+        ON MAIN.USER_KEY = SUB.USER_KEY
+        WHERE USER_SUB_ID = #{id}
+        AND USER_SUB_PASS = PASSWORD(#{pass})
+        AND MAIN.USER_USE = '1'
+        AND SUB.USER_SUB_USE = '1'
+        AND MAIN.USER_LEVEL = '0010002')
+    </select>
+
+    <select id="user_login_not_pw" resultType="casemap">
+        (SELECT USER_KEY AS USER_KEY,
+                USER_NAME AS NAME,
+                USER_TEL AS TEL,
+                USER_ADDR1 AS ADDR1,
+                USER_ADDR2 AS ADDR2,
+                USER_ID AS ID,
+                USER_LEVEL AS LEVEL,
+                USER_APART AS APART,
+                USER_USE AS USER_USE,
+                USER_APPO AS APPO,
+                USER_IMGNAME AS IMGNAME,
+                USER_IMGPATH AS IMGPATH,
+                'main' AS TYPE
+        FROM opener_user
+        WHERE USER_ID = #{id}
+        AND USER_USE = '1'
+        AND USER_LEVEL = '0010002')
+        UNION ALL
+        (SELECT USER_SUB_KEY AS USER_KEY,
+                USER_SUB_NAME AS NAME,
+                USER_SUB_TEL AS TEL,
+                MAIN.USER_ADDR1 AS ADDR1,
+                MAIN.USER_ADDR2 AS ADDR2,
+                USER_SUB_ID AS ID,
+                USER_SUB_LEVEL AS LEVEL,
+                MAIN.USER_APART AS APART,
+                USER_SUB_USE AS USER_USE,
+                MAIN.USER_APPO AS APPO,
+                USER_SUB_IMGNAME AS IMGNAME,
+                USER_SUB_IMGPATH AS IMGPATH,
+                'sub' AS SUB
+        FROM opener_user_sub SUB
+        LEFT JOIN opener_user MAIN
+        ON MAIN.USER_KEY = SUB.USER_KEY
+        WHERE USER_SUB_ID = #{id}
+        AND MAIN.USER_USE = '1'
+        AND SUB.USER_SUB_USE = '1'
+        AND MAIN.USER_LEVEL = '0010002')
+    </select>
+
+     <insert id="user_insert_sub">
+        INSERT INTO opener_user_sub (
+            USER_KEY
+            ,USER_SUB_ID
+            ,USER_SUB_PASS
+            ,USER_SUB_NAME
+            ,USER_SUB_TEL
+            ,USER_SUB_RS
+            ,USER_SUB_LEVEL
+            ,USER_SUB_FUSER
+            ,USER_SUB_FDATE
+            ,USER_SUB_LUSER
+            ,USER_SUB_LDATE
+            ,USER_SUB_USE
+            ,USER_SUB_EDATE
+            ) VALUES (
+            #{user_key}
+            ,#{sub_id}
+            ,PASSWORD(#{sub_pass})
+            ,#{sub_name}
+            ,#{sub_tel}
+            ,#{sub_rs}
+            ,#{sub_level}
+            ,#{userId}
+            ,SYSDATE()
+            ,#{userId}
+            ,SYSDATE()
+            ,'1'
+            ,#{edate}
+            )
+    </insert>
+    <insert id="user_insert_sub_admin">
+        INSERT INTO opener_user_sub (
+            USER_KEY
+            ,USER_SUB_ID
+            ,USER_SUB_PASS
+            ,USER_SUB_NAME
+            ,USER_SUB_TEL
+            ,USER_SUB_RS
+            ,USER_SUB_LEVEL
+            ,USER_SUB_FUSER
+            ,USER_SUB_FDATE
+            ,USER_SUB_LUSER
+            ,USER_SUB_LDATE
+            ,USER_SUB_USE
+            ,USER_SUB_EDATE
+            ) VALUES (
+            #{user_key}
+            ,#{sub_id}
+            ,PASSWORD(#{sub_pass})
+            ,#{sub_name}
+            ,#{sub_tel}
+            ,#{sub_rs}
+            ,'0010005'
+            ,#{adminKey}
+            ,SYSDATE()
+            ,#{adminKey}
+            ,SYSDATE()
+            ,#{use}
+            ,#{edate}
+            )
+    </insert>
+    <update id="update_user_sub_admin">
+        UPDATE opener_user_sub
+        SET USER_SUB_NAME = #{sub_name}
+            ,USER_SUB_RS = #{sub_rs}
+            ,USER_SUB_USE = #{use}
+            ,USER_SUB_EDATE = #{edate}
+            ,USER_SUB_LUSER = #{adminKey}
+            ,USER_SUB_LDATE = SYSDATE()
+        WHERE USER_KEY = #{user_key}
+              AND USER_SUB_KEY = #{sub_key} 
+    </update>
+
+    <select id="select_user_list" resultType="casemap">
+        SELECT USER_SUB_KEY,
+            USER_KEY,
+            USER_SUB_ID,
+            USER_SUB_PASS,
+            USER_SUB_NAME,
+            USER_SUB_TEL,
+            USER_SUB_RS,
+            USER_SUB_LEVEL,
+            USER_SUB_FUSER,
+            USER_SUB_FDATE,
+            USER_SUB_LUSER,
+            USER_SUB_LDATE,
+            USER_SUB_USE,
+            USER_SUB_EDATE,
+            IFNULL(USER_SUB_IMGNAME, '') AS USER_SUB_IMGNAME,
+            IFNULL(USER_SUB_IMGPATH, '') AS USER_SUB_IMGPATH
+        FROM opener_user_sub
+        WHERE USER_SUB_USE = '1'
+        AND USER_KEY = #{user_key}
+        <choose>
+            <when test="user_level == 'family'">
+                AND USER_SUB_LEVEL != '0010006'
+            </when>
+            <when test="user_level == 'guest'">
+                AND USER_SUB_LEVEL = '0010006'
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+        order by USER_SUB_LEVEL DESC, user_sub_key DESC
+    </select>
+
+    <delete id="remove_sub_user">
+        UPDATE opener_user_sub SET
+        USER_SUB_USE = '0',
+        USER_SUB_LDATE = SYSDATE(),
+        USER_SUB_LUSER = #{userId}
+        WHERE USER_SUB_KEY = #{sub_key}
+              AND USER_KEY = #{user_key}
+              AND USER_SUB_ID = #{sub_id}
+    </delete>
+
+    <select id="select_user_id" resultType="casemap">
+        SELECT 
+        USER_SUB_KEY,
+       USER_KEY,
+       USER_SUB_ID,
+       USER_SUB_PASS,
+       USER_SUB_NAME,
+       USER_SUB_TEL,
+       USER_SUB_RS,
+       USER_SUB_LEVEL,
+       USER_SUB_FUSER,
+       USER_SUB_FDATE,
+       USER_SUB_LUSER,
+       USER_SUB_LDATE,
+       USER_SUB_USE,
+       USER_SUB_EDATE,
+       IFNULL(USER_SUB_IMGNAME, '') AS USER_SUB_IMGNAME,
+        IFNULL(USER_SUB_IMGPATH, '') AS USER_SUB_IMGPATH
+        FROM opener_user_sub
+        WHERE USER_KEY = #{user_key}
+              AND USER_SUB_KEY = #{sub_key}
+    </select>
+
+    <update id="update_user_sub">
+        UPDATE opener_user_sub
+        SET USER_SUB_NAME = #{sub_name}
+            <choose>
+                <when test="sub_pass == ''">
+                </when>
+                <otherwise>
+                    ,USER_SUB_PASS = PASSWORD(#{sub_pass})
+                </otherwise>
+            </choose>
+            ,USER_SUB_TEL = #{sub_tel}
+            ,USER_SUB_RS = #{sub_rs}
+            ,USER_SUB_IMGNAME = #{imgName}
+            ,USER_SUB_IMGPATH = #{imgPath}
+            ,USER_SUB_LUSER = #{userId}
+            ,USER_SUB_LDATE = SYSDATE()
+            ,USER_SUB_EDATE = #{edate}
+
+        WHERE USER_KEY = #{user_key}
+              AND USER_SUB_ID = #{sub_id}
+              AND USER_SUB_KEY = #{sub_key} 
+    </update>
+    
+    <select id='select_find_id' resultType="int">
+        SELECT USER_ID AS ID
+        FROM opener_user
+        WHERE USER_ID = #{id}
+        UNION ALL
+        SELECT USER_SUB_ID AS ID
+        FROM opener_user_sub
+        WHERE USER_SUB_ID = #{id}
+        UNION ALL
+        SELECT ADMIN_ID AS ID
+        FROM opener_user_admin
+        WHERE ADMIN_ID = #{id}
+    </select>
+
+    <insert id='insert_user'>
+        INSERT INTO opener_user(
+                    USER_ID
+                    , USER_NAME
+                    , USER_TEL
+                    , USER_ADDR1
+                    , USER_ADDR2
+                    , USER_PASS
+                    , USER_LEVEL
+                    , USER_APART
+                    , USER_FUSER
+                    , USER_FDATE
+                    , USER_LUSER
+                    , USER_LDATE
+                    , USER_USE
+                    , USER_APPO 
+                    , USER_EDATE
+                )VALUES(
+                    #{id}
+                    , #{name}
+                    , #{tel}
+                    , #{addr1}
+                    , #{addr2}
+                    , PASSWORD(#{pass})
+                    , '0010002'
+                    , #{hotelCode}
+                    , #{id}
+                    , SYSDATE()
+                    , #{id}
+                    , SYSDATE()
+                    , '1'
+                    , '0'
+                    , #{edate}
+                );
+    </insert>
+    <insert id='insert_user_admin'>
+        INSERT INTO opener_user(
+                    USER_ID
+                    , USER_NAME
+                    , USER_TEL
+                    , USER_ADDR1
+                    , USER_ADDR2
+                    , USER_PASS
+                    , USER_LEVEL
+                    , USER_APART
+                    , USER_FUSER
+                    , USER_FDATE
+                    , USER_LUSER
+                    , USER_LDATE
+                    , USER_USE
+                    , USER_APPO 
+                    , USER_EDATE
+                )VALUES(
+                    #{id}
+                    , #{name}
+                    , #{tel}
+                    , #{addr1}
+                    , #{addr2}
+                    , PASSWORD(#{pass})
+                    , '0010002'
+                    , #{hotelCode}
+                    , #{userId}
+                    , SYSDATE()
+                    , #{userId}
+                    , SYSDATE()
+                    , '1'
+                    , #{appo}
+                    , #{edate}
+                );
+    </insert>
+    <select id="user_select_admin">
+        SELECT USER_KEY,
+            USER_NAME,
+            USER_TEL,
+            CODE.CODE_CODE AS USER_ADDR1,
+            CODE.CODE_CONTENT,
+            ROOM.ROOM_CODE_CODE AS USER_ADDR2,
+            ROOM.ROOM_CODE_NUM,
+            USER_ID,
+            USER_PASS,
+            USER_LEVEL,
+            USER_APART,
+            USER_FUSER,
+            USER_FDATE,
+            USER_LUSER,
+            USER_LDATE,
+            USER_USE,
+            USER_APPO,
+            USER_IMGNAME,
+            USER_IMGPATH,
+            IFNULL(USER_EDATE,'') AS USER_EDATE
+        FROM opener_user
+        LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = USER_ADDR1
+        WHERE USER_KEY = #{userKey}
+    </select>
+    <select id="user_select_sett">
+        SELECT USER_KEY,
+            USER_NAME,
+            USER_TEL,
+            CODE.CODE_CONTENT AS USER_ADDR1,
+            ROOM.ROOM_CODE_CODE AS USER_ADDR2,
+            ROOM.ROOM_CODE_NUM,
+            USER_ID,
+            USER_PASS,
+            USER_LEVEL,
+            USER_APART,
+            USER_FUSER,
+            USER_FDATE,
+            USER_LUSER,
+            USER_LDATE,
+            USER_USE,
+            USER_APPO,
+            USER_IMGNAME,
+            USER_IMGPATH,
+            IFNULL(USER_EDATE,'') AS USER_EDATE
+        FROM opener_user
+        LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = USER_ADDR1
+        WHERE USER_KEY = #{userKey}
+    </select>
+    <select id="user_sub_select_sett">
+        SELECT USER_SUB_KEY AS USER_KEY,
+            USER_SUB_NAME AS USER_NAME,
+            USER_SUB_TEL AS USER_TEL,
+            CODE.CODE_CONTENT AS USER_ADDR1,
+            ROOM.ROOM_CODE_CODE AS USER_ADDR2,
+            ROOM.ROOM_CODE_NUM,
+            USER_SUB_ID AS USER_ID,
+            USER_SUB_PASS AS USER_PASS,
+            USER_SUB_LEVEL AS USER_LEVEL,
+            MAIN.USER_APART AS USER_APART,
+            USER_SUB_FUSER AS USER_FUSER,
+            USER_SUB_FDATE AS USER_FDATE,
+            USER_SUB_LUSER AS USER_LUSER,
+            USER_SUB_LDATE AS USER_LDATE,
+            USER_SUB_USE AS USER_USE,
+            MAIN.USER_APPO AS USER_APPO,
+            USER_SUB_IMGNAME AS USER_IMGNAME,
+            USER_SUB_IMGPATH AS USER_IMGPATH,
+            IFNULL(USER_SUB_EDATE,'') AS USER_EDATE
+        FROM OPENER_USER_SUB
+        LEFT JOIN OPENER_USER MAIN
+        ON OPENER_USER_SUB.USER_KEY = MAIN.USER_KEY
+        LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = MAIN.USER_ADDR2
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MAIN.USER_ADDR1
+        WHERE USER_SUB_KEY = #{userKey}
+    </select>
+    <select id="user_list_admin">
+        SELECT 
+            (SELECT COUNT(*) 
+            FROM OPENER_USER
+            LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = USER_ADDR1
+        LEFT JOIN opener_face FACE
+        ON FACE.FACE_USER_ID = USER_ID
+            WHERE 0=0
+            <choose>
+                <when test="use == ''">
+                </when>
+                <otherwise>
+                    AND USER_USE = #{use}
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="appo == ''">
+                </when>
+                <otherwise>
+                    AND USER_APPO = #{appo}
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="name == ''">
+                </when>
+                <otherwise>
+                    AND USER_NAME LIKE(CONCAT('%', #{name}, '%'))
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="sdate == ''">
+                </when>
+                <otherwise>
+                    AND DATE_FORMAT(USER_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="addr1 == ''">
+                </when>
+                <otherwise>
+                    AND CODE.CODE_CODE = #{addr1}
+                </otherwise>
+            </choose>
+            ) AS TOTAL,
+            USER_KEY,
+            USER_NAME,
+            USER_TEL,
+            IFNULL(CODE.CODE_CONTENT, '') AS USER_ADDR1,
+            IFNULL(ROOM.ROOM_CODE_NUM, '') AS USER_ADDR2,
+            USER_ID,
+            USER_PASS,
+            USER_LEVEL,
+            USER_APART,
+            USER_FUSER,
+            DATE_FORMAT(USER_FDATE, '%Y-%m-%d %H:%i') AS USER_FDATE,
+            USER_LUSER,
+            USER_LDATE,
+            USER_USE,
+            USER_APPO,
+            FACE.FACE_USE AS FACE_USE,
+            USER_IMGNAME,
+            USER_IMGPATH,
+            IFNULL(NULLIF(USER_EDATE, ''), '없음') AS USER_EDATE
+        FROM opener_user
+        LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = USER_ADDR1
+        LEFT JOIN opener_face FACE
+        ON FACE.FACE_USER_ID = USER_ID
+        WHERE 0 = 0
+        <choose>
+            <when test="use == ''">
+            </when>
+            <otherwise>
+                AND USER_USE = #{use}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="appo == ''">
+            </when>
+            <otherwise>
+                AND USER_APPO = #{appo}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="name == ''">
+            </when>
+            <otherwise>
+                AND USER_NAME LIKE(CONCAT('%', #{name}, '%'))
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sdate == ''">
+            </when>
+            <otherwise>
+                AND DATE_FORMAT(USER_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="addr1 == ''">
+            </when>
+            <otherwise>
+                AND CODE.CODE_CODE = #{addr1}
+            </otherwise>
+        </choose>
+        order by user_key desc
+        LIMIT ${page}, ${pageSize}
+    </select>
+    <update id="user_update_info">
+    UPDATE opener_user SET
+    USER_NAME = #{name}
+    ,USER_TEL = #{tel}
+    ,USER_ADDR1 = #{addr1}
+    ,USER_ADDR2 = #{addr2}
+    ,USER_LUSER = #{userId}
+    ,USER_LDATE = SYSDATE()
+    ,USER_APPO = #{appo}
+    ,USER_EDATE = #{edate}
+    WHERE USER_KEY = #{userKey}
+    </update>
+
+    <update id="user_update_user">
+    UPDATE opener_user SET
+    USER_TEL = #{tel}
+    <choose>
+        <when test="pass == ''">
+        </when>
+        <otherwise>
+           ,USER_PASS = PASSWORD(#{pass})
+        </otherwise>
+    </choose>
+    
+    ,USER_LUSER = #{userId}
+    ,USER_LDATE = SYSDATE()
+    ,USER_IMGNAME = #{imgName}
+    ,USER_IMGPATH = #{imgPath} 
+    ,USER_EDATE = #{edate}
+    WHERE USER_KEY = #{userKey}
+    </update>
+
+    <update id="user_update_user_sub">
+    UPDATE opener_user_sub SET
+    USER_SUB_TEL = #{tel}
+    <choose>
+        <when test="pass == ''">
+        </when>
+        <otherwise>
+           ,USER_SUB_PASS = PASSWORD(#{pass})
+        </otherwise>
+    </choose>
+    
+    ,USER_SUB_LUSER = #{userId}
+    ,USER_SUB_LDATE = SYSDATE()
+    ,USER_SUB_IMGNAME = #{imgName}
+    ,USER_SUB_IMGPATH = #{imgPath} 
+    ,USER_SUB_EDATE = #{edate}
+    WHERE USER_SUB_KEY = #{userKey}
+    </update>
+
+    <update id="user_update_appo">
+    UPDATE opener_user SET
+    USER_APPO = #{ck}
+    ,USER_LUSER = #{userId}
+    ,USER_LDATE = SYSDATE()
+    WHERE USER_KEY IN(${inText})
+    </update>
+    <update id="sub_user_pw_reset">
+    UPDATE opener_user_sub SET
+    USER_SUB_PASS = PASSWORD(#{pass})
+    ,USER_SUB_LUSER = #{userId}
+    ,USER_SUB_LDATE = SYSDATE()
+    WHERE USER_SUB_KEY = #{subKey}
+    </update>
+    <update id="user_pw_reset">
+    UPDATE opener_user SET
+    USER_PASS = PASSWORD(#{pass})
+    ,USER_LUSER = #{userId}
+    ,USER_LDATE = SYSDATE()
+    WHERE USER_KEY = #{userKey}
+    </update>
+    <update id="user_not_use">
+    UPDATE opener_user
+    SET
+    USER_ADDR2 = ''
+    ,USER_LUSER = #{userId}
+    ,USER_LDATE = SYSDATE()
+    ,USER_USE = '0'
+    WHERE USER_KEY = #{userKey}
+    </update>
+    <update id="user_not_use_member">
+    UPDATE opener_user_sub
+    SET
+    USER_SUB_LUSER = #{userId}
+    ,USER_SUB_LDATE = SYSDATE()
+    ,USER_SUB_USE = '0'
+    WHERE USER_KEY = #{userKey}
+    </update>
+    <update id="admin_pw_reset">
+    UPDATE opener_user_admin SET
+    ADMIN_PASS = PASSWORD(#{pass})
+    ,ADMIN_LUSER = #{userId}
+    ,ADMIN_LDATE = SYSDATE()
+    WHERE ADMIN_KEY = #{adminKey}
+    </update>
+    <select id="select_user_admin" resultType="casemap">
+    SELECT ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_APART,
+        ADMIN_FUSER,
+        ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        ADMIN_EDATE
+    FROM opener_user_admin
+    WHERE ADMIN_ID = #{id}
+    AND ADMIN_PASS = PASSWORD(#{pw})
+    AND ADMIN_USE = '1'
+    </select>
+    <select id="select_user_admin_id" resultType="casemap">
+    SELECT ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_APART,
+        ADMIN_FUSER,
+        ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        ADMIN_EDATE
+    FROM opener_user_admin
+    WHERE ADMIN_ID = #{userID}
+    </select>
+    <select id="select_user_addr1" resultType="casemap">
+      SELECT
+        USER_KEY,
+        USER_NAME,
+        USER_ADDR1 AS USER_DCOD,
+        USER_APART,
+        CODE2.CODE_CONTENT AS USER_ADDR1,
+        ROOM.ROOM_CODE_NUM AS USER_ADDR2,
+        USER_ID,
+        CODE.CODE_CONTENT,
+        IFNULL(USER_EDATE, "") AS USER_EDATE
+        FROM opener_user
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = USER_APART
+        LEFT JOIN FO_ROOM_CODE ROOM
+        ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = USER_ADDR1
+        WHERE USER_ID = #{id}
+    </select>
+    <select id="select_sub_addr1" resultType="casemap">
+    SELECT USER_SUB_KEY,
+        MAIN.USER_KEY,
+        USER_SUB_ID,
+        USER_SUB_NAME AS USER_NAME,
+        MAIN.USER_ADDR1 AS USER_DCOD,
+        MAIN.USER_APART AS USER_APART,
+        CODE.CODE_CONTENT,
+        CODE2.CODE_CONTENT AS USER_ADDR1,
+        ROOM.ROOM_CODE_NUM AS USER_ADDR2,
+        IFNULL(SUB.USER_SUB_EDATE, "") AS USER_EDATE
+    FROM opener_user_sub SUB
+    LEFT JOIN opener_user MAIN
+    ON MAIN.USER_KEY = SUB.USER_KEY
+    LEFT JOIN opener_code CODE
+    ON CODE.CODE_CODE = MAIN.USER_APART
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = MAIN.USER_ADDR2
+    LEFT JOIN opener_code CODE2
+    ON CODE2.CODE_CODE = MAIN.USER_ADDR1
+    WHERE USER_SUB_ID = #{id}
+    </select>
+    <select id="select_admin_list">
+    SELECT 
+        (SELECT COUNT(*) FROM opener_user_admin
+            WHERE 0=0
+        ) AS TOTAL,
+        ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_APART,
+        ADMIN_FUSER,
+        DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d %H:%i') AS ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        CODE.CODE_CONTENT,
+        IFNULL(NULLIF(ADMIN_EDATE, ''), '없음') AS ADMIN_EDATE
+    FROM opener_user_admin
+    LEFT JOIN opener_code CODE
+    ON CODE.CODE_CODE = ADMIN_LEVEL
+    WHERE ADMIN_ID != 'admin'
+    <choose>
+        <when test="level == ''">
+        </when>
+        <otherwise>
+            AND ADMIN_LEVEL = #{level}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="appo == ''">
+        </when>
+        <otherwise>
+            AND ADMIN_USE = #{appo}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="name == ''">
+        </when>
+        <otherwise>
+            AND ADMIN_NAME LIKE(CONCAT('%', #{name}, '%'))
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    ORDER BY ADMIN_FDATE desc
+    
+    </select>
+    <select id="admin_select">
+    SELECT 
+        ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_APART,
+        ADMIN_FUSER,
+        ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        IFNULL(ADMIN_EDATE,'') AS ADMIN_EDATE,
+        CODE.CODE_CONTENT
+    FROM opener_user_admin
+    LEFT JOIN opener_code CODE
+    ON CODE.CODE_CODE = ADMIN_LEVEL
+    WHERE ADMIN_KEY = #{adminKey}
+    </select>
+    <select id="user_mqtt_select">
+    SELECT
+    USER_ADDR2,
+    ROOM.ROOM_CODE_APART,
+    ROOM.ROOM_CODE_NUM,
+    MQTT.MQTT_LIST_NUM
+    FROM opener_user
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+    LEFT JOIN mqtt_list MQTT
+    ON MQTT.MQTT_LIST_DCOD = ROOM.ROOM_CODE_DCOD
+    WHERE USER_ID = #{userId}
+    </select>
+    <select id="sub_user_mqtt_select">
+    SELECT
+    MAIN.USER_ADDR2,
+    ROOM.ROOM_CODE_APART,
+    ROOM.ROOM_CODE_NUM,
+    MQTT.MQTT_LIST_NUM
+    FROM opener_user_sub SUB
+    LEFT JOIN OPENER_USER MAIN
+    ON MAIN.USER_KEY = SUB.USER_KEY
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = MAIN.USER_ADDR2
+    LEFT JOIN mqtt_list MQTT
+    ON MQTT.MQTT_LIST_DCOD = ROOM.ROOM_CODE_DCOD
+    WHERE USER_SUB_ID = #{userId}
+    </select>
+    <select id="user_room_check">
+    SELECT
+    USER_NAME,
+    ROOM.ROOM_CODE_NUM
+    FROM opener_user
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+    WHERE USER_ADDR2 = #{addr2}
+    </select>
+    <insert id="admin_user_insert">
+    INSERT INTO opener_user_admin (
+   ADMIN_NAME
+    ,ADMIN_TEL
+    ,ADMIN_ADDR1
+    ,ADMIN_ADDR2
+    ,ADMIN_ID
+    ,ADMIN_PASS
+    ,ADMIN_LEVEL
+    ,ADMIN_APART
+    ,ADMIN_FUSER
+    ,ADMIN_FDATE
+    ,ADMIN_LUSER
+    ,ADMIN_LDATE
+    ,ADMIN_USE
+    ,ADMIN_IMGNAME
+    ,ADMIN_IMGPATH
+    ,ADMIN_EDATE
+    ) VALUES (
+    #{name}
+    ,#{tel}
+    ,#{addr1}
+    ,#{addr2}
+    ,#{id}
+    ,PASSWORD(#{pass})
+    ,#{level}
+    ,#{hotelCode}
+    ,#{userId}
+    ,SYSDATE()
+    ,#{userId}
+    ,SYSDATE()
+    ,'1'
+    ,#{imgname}
+    ,#{imgpath}
+    ,#{edate}
+    )
+    </insert>
+    <update id="admin_user_update">
+    UPDATE opener_user_admin SET
+    ADMIN_NAME = #{name}
+    ,ADMIN_TEL = #{tel}
+    ,ADMIN_ADDR1 = #{addr1}
+    ,ADMIN_ADDR2 = #{addr2}
+    ,ADMIN_LEVEL = #{level}
+    ,ADMIN_APART = #{hotelCode}
+    ,ADMIN_LUSER = #{userId}
+    ,ADMIN_LDATE = SYSDATE()
+    ,ADMIN_USE = #{use}
+    ,ADMIN_IMGNAME = #{imgname}
+    ,ADMIN_IMGPATH = #{imgpath}
+    ,ADMIN_EDATE = #{edate}
+    WHERE ADMIN_KEY = #{adminKey}
+    </update>
+    <update id="admin_user_sett">
+    UPDATE opener_user_admin SET
+    ADMIN_NAME = #{name}
+    ,ADMIN_TEL = #{tel}
+    <choose>
+        <when test="pass == ''">
+        </when>
+        <otherwise>
+           ,ADMIN_PASS = PASSWORD(#{pass})
+        </otherwise>
+    </choose>
+    ,ADMIN_ADDR1 = #{addr1}
+    ,ADMIN_ADDR2 = #{addr2}
+    ,ADMIN_LDATE = SYSDATE()
+    ,ADMIN_IMGNAME = #{imgname}
+    ,ADMIN_IMGPATH = #{imgpath}
+    WHERE ADMIN_KEY = #{adminKey}
+    </update>
+    <insert id="user_uuid_insert">
+        INSERT INTO opener_user_uuid(
+        USER_ID
+        ,USER_UUID
+        ,USER_UUID_FUSER
+        ,USER_UUID_FDATE
+        ) VALUES (
+        #{subId} 
+        ,#{uuid} 
+        ,#{userId}  
+        ,SYSDATE()
+        )
+    </insert>
+    <select  id="user_uuid_select">
+        SELECT USER_ID, USER_UUID
+        FROM opener_user_uuid
+        where USER_UUID = #{uuid}
+    </select>
+    <select id="face_user_list">
+    SELECT FACE_KEY,
+        FACE_USER_ID AS userId,
+        FACE_DCOD,
+        FACE_FUSER,
+        FACE_FDATE,
+        FACE_LUSER,
+        FACE_LDATE,
+        FACE_USE,
+        IFNULL(FACE_IMGNAME, '') AS FACE_IMGNAME,
+        FACE_IMGPATH,
+        FACE_URL as userImg,
+         IF(FACE_USER_TYPE = 'main', USER.USER_ADDR1, MAIN.USER_ADDR1)  AS USER_ADDR1,
+        IF(FACE_USER_TYPE = 'main', USER.USER_NAME, SUB.USER_SUB_NAME)  AS userName,
+        IF(FACE_USER_TYPE = 'main', USER.USER_EDATE, SUB.USER_SUB_EDATE)  AS USER_EDATE,
+         IF(FACE_USER_TYPE = 'main', MQTT.MQTT_LIST_NUM, MQTT_SUB.MQTT_LIST_NUM) AS mqttNum,
+        IF(FACE_USER_TYPE = 'main', ROOM.ROOM_CODE_NUM, ROOM_SUB.ROOM_CODE_NUM)  AS room
+    FROM opener_face
+    LEFT JOIN OPENER_USER 
+    USER ON USER.USER_ID = FACE_USER_ID
+    LEFT JOIN OPENER_USER_SUB
+    SUB ON SUB.USER_SUB_ID = FACE_USER_ID
+    LEFT JOIN OPENER_USER
+    MAIN ON MAIN.USER_KEY = SUB.USER_KEY
+    LEFT JOIN FO_ROOM_CODE
+    ROOM ON ROOM.ROOM_CODE_CODE = USER.USER_ADDR2
+    LEFT JOIN FO_ROOM_CODE
+    ROOM_SUB ON ROOM_SUB.ROOM_CODE_CODE = MAIN.USER_ADDR2
+    LEFT JOIN (
+    SELECT
+    MQTT_LIST_NUM,
+    MQTT_LIST_DCOD
+    FROM MQTT_LIST
+    WHERE MQTT_LIST_USE = '1'
+    GROUP BY MQTT_LIST_DCOD
+    ) MQTT ON MQTT.MQTT_LIST_DCOD = USER.USER_ADDR1
+    LEFT JOIN (
+    SELECT
+    MQTT_LIST_NUM,
+    MQTT_LIST_DCOD
+    FROM MQTT_LIST
+    WHERE MQTT_LIST_USE = '1'
+    GROUP BY MQTT_LIST_DCOD
+    ) MQTT_SUB ON MQTT_SUB.MQTT_LIST_DCOD = MAIN.USER_ADDR1
+    WHERE FACE_USE = '1'
+    AND FACE_APART = #{hotelCode}
+    AND (FACE_IMGNAME IS NOT NULL OR FACE_URL IS NOT NULL)
+    <choose>
+        <when test="dcod == ''">
+        </when>
+        <otherwise>
+           AND FACE_DCOD = #{dcod}
+        </otherwise>
+    </choose>
+    ORDER BY FACE_KEY
+    </select>
+    <select id ="user_pw_check">
+    SELECT
+    USER_KEY
+    FROM OPENER_USER
+    WHERE USER_ID = #{userId}
+    AND USER_PASS = PASSWORD(#{pass})
+    </select>
+    <select id ="user_pw_check_sub">
+    SELECT
+    USER_KEY
+    FROM OPENER_USER_SUB
+    WHERE USER_SUB_ID = #{userId}
+    AND USER_SUB_PASS = PASSWORD(#{pass})
+    </select>
+    <select id="user_door_sett_select">
+    SELECT
+    USER_KEY,
+    USER_NAME,
+    USER_ADDR2,
+    ROOM.ROOM_CODE_CODE,
+    ROOM.ROOM_CODE_DCOD,
+    ROOM.ROOM_CODE_NUM,
+    ROOM.ROOM_CODE_PASS,
+    FACE.FACE_KEY,
+    FACE.FACE_USER_ID,
+    IFNULL(FACE.FACE_IMGNAME, '') AS FACE_IMGNAME,
+    IFNULL(FACE.FACE_IMGPATH, '') AS FACE_IMGPATH
+    FROM opener_user
+    LEFT JOIN fo_room_code
+    ROOM ON ROOM.ROOM_CODE_CODE = USER_ADDR2
+    LEFT JOIN opener_face
+    FACE ON FACE.FACE_USER_ID = USER_ID
+    AND FACE.FACE_USER_TYPE = 'main'
+    WHERE USER_ID = #{userId}
+    AND USER_KEY = #{userKey}
+    AND USER_APART = #{hotelCode}
+    </select>
+    <select id="user_door_sett_select_sub">
+    SELECT
+    SUB.USER_KEY,
+    SUB.USER_SUB_KEY,
+    SUB.USER_SUB_NAME,
+    MAIN.USER_ADDR2,
+    ROOM.ROOM_CODE_CODE,
+    ROOM.ROOM_CODE_DCOD,
+    ROOM.ROOM_CODE_NUM,
+    ROOM.ROOM_CODE_PASS,
+    IFNULL(FACE.FACE_KEY, '') AS FACE_KEY,
+    FACE.FACE_USER_ID,
+    IFNULL(FACE.FACE_IMGNAME, '') AS FACE_IMGNAME,
+    IFNULL(FACE.FACE_IMGPATH, '') AS FACE_IMGPATH
+    FROM opener_user_sub SUB
+    LEFT JOIN opener_user
+    MAIN ON MAIN.USER_KEY = SUB.USER_KEY
+    LEFT JOIN fo_room_code
+    ROOM ON ROOM.ROOM_CODE_CODE = MAIN.USER_ADDR2
+    LEFT JOIN opener_face
+    FACE ON FACE.FACE_USER_ID = SUB.USER_SUB_ID
+    AND FACE.FACE_USER_TYPE = 'sub'
+    WHERE SUB.USER_SUB_ID = #{userId}
+    AND SUB.USER_SUB_KEY = #{userKey}
+    AND MAIN.USER_APART = #{hotelCode}
+    </select>
+    <insert id= "user_face_insert">
+    INSERT INTO opener_face (
+    FACE_USER_ID
+    ,FACE_USER_TYPE
+    ,FACE_APART
+    ,FACE_FUSER
+    ,FACE_FDATE
+    ,FACE_LUSER
+    ,FACE_LDATE
+    ,FACE_USE
+    ,FACE_IMGNAME
+    ,FACE_IMGPATH
+    ,FACE_DCOD
+    ) VALUES (
+    #{userId}
+    ,#{type}
+    ,#{hotelCode}
+    ,#{userId}
+    ,SYSDATE()
+    ,#{userId}
+    ,SYSDATE()
+    ,'1'
+    ,#{imgName}
+    ,#{imgPath}
+    ,#{dcod}
+    )
+    </insert>
+    <update id="user_face_update">
+    UPDATE opener_face SET
+    FACE_LUSER = #{userId}
+    ,FACE_LDATE = SYSDATE()
+    ,FACE_IMGNAME = #{imgName}
+    ,FACE_IMGPATH = #{imgPath}
+    ,FACE_DCOD = #{dcod}
+    WHERE FACE_KEY = #{faceKey}
+    AND FACE_APART = #{hotelCode}
+    </update>
+    <select id="user_login_app">
+    (SELECT USER_KEY AS USER_KEY,
+                USER_NAME AS NAME,
+                USER_TEL AS TEL,
+                USER_ADDR1 AS ADDR1,
+                USER_ADDR2 AS ADDR2,
+                USER_ID AS ID,
+                USER_LEVEL AS LEVEL,
+                USER_APART AS APART,
+                USER_USE AS USER_USE,
+                USER_APPO AS APPO,
+                USER_IMGNAME AS IMGNAME,
+                USER_IMGPATH AS IMGPATH,
+                'main' AS TYPE,
+                MQTT_LIST_NUM AS MQTTNUM,
+                USER_EDATE AS EDATE
+        FROM opener_user
+        LEFT JOIN (
+        SELECT
+        MQTT_LIST_NUM,
+        MQTT_LIST_DCOD
+        FROM MQTT_LIST
+        WHERE MQTT_LIST_USE = '1'
+        GROUP BY MQTT_LIST_DCOD
+        ) MQTT ON MQTT.MQTT_LIST_DCOD = USER_ADDR1
+        WHERE USER_ID = #{id}
+        AND USER_PASS = PASSWORD(#{pass})
+        AND USER_USE = '1'
+        AND USER_LEVEL = '0010002')
+        UNION ALL
+        (SELECT USER_SUB_KEY AS USER_KEY,
+                USER_SUB_NAME AS NAME,
+                USER_SUB_TEL AS TEL,
+                MAIN.USER_ADDR1 AS ADDR1,
+                MAIN.USER_ADDR2 AS ADDR2,
+                USER_SUB_ID AS ID,
+                USER_SUB_LEVEL AS LEVEL,
+                MAIN.USER_APART AS APART,
+                USER_SUB_USE AS USER_USE,
+                MAIN.USER_APPO AS APPO,
+                USER_SUB_IMGNAME AS IMGNAME,
+                USER_SUB_IMGPATH AS IMGPATH,
+                'sub' AS SUB,
+                MQTT_LIST_NUM AS MQTTNUM,
+                USER_SUB_EDATE AS EDATE
+        FROM opener_user_sub SUB
+        LEFT JOIN opener_user MAIN
+        ON MAIN.USER_KEY = SUB.USER_KEY
+        LEFT JOIN (
+        SELECT
+        MQTT_LIST_NUM,
+        MQTT_LIST_DCOD
+        FROM MQTT_LIST
+        WHERE MQTT_LIST_USE = '1'
+        GROUP BY MQTT_LIST_DCOD
+        ) MQTT ON MQTT.MQTT_LIST_DCOD = MAIN.USER_ADDR1
+        WHERE USER_SUB_ID = #{id}
+        AND USER_SUB_PASS = PASSWORD(#{pass})
+        AND MAIN.USER_USE = '1'
+        AND SUB.USER_SUB_USE = '1'
+        AND MAIN.USER_LEVEL = '0010002')
+    </select>
+    <!-- 앱 자동로그인 ID, KEY로만 로그인 갱신 -->
+    <select id="user_login_app_auto">
+    (SELECT USER_KEY AS USER_KEY,
+                USER_NAME AS NAME,
+                USER_TEL AS TEL,
+                USER_ADDR1 AS ADDR1,
+                USER_ADDR2 AS ADDR2,
+                USER_ID AS ID,
+                USER_LEVEL AS LEVEL,
+                USER_APART AS APART,
+                USER_USE AS USER_USE,
+                USER_APPO AS APPO,
+                USER_IMGNAME AS IMGNAME,
+                USER_IMGPATH AS IMGPATH,
+                'main' AS TYPE,
+                MQTT_LIST_NUM AS MQTTNUM,
+                USER_EDATE AS EDATE
+        FROM opener_user
+        LEFT JOIN (
+        SELECT
+        MQTT_LIST_NUM,
+        MQTT_LIST_DCOD
+        FROM MQTT_LIST
+        WHERE MQTT_LIST_USE = '1'
+        GROUP BY MQTT_LIST_DCOD
+        ) MQTT ON MQTT.MQTT_LIST_DCOD = USER_ADDR1
+        WHERE USER_ID = #{id}
+        AND USER_KEY = #{key}
+        AND USER_USE = '1'
+        AND USER_LEVEL = '0010002')
+        UNION ALL
+        (SELECT USER_SUB_KEY AS USER_KEY,
+                USER_SUB_NAME AS NAME,
+                USER_SUB_TEL AS TEL,
+                MAIN.USER_ADDR1 AS ADDR1,
+                MAIN.USER_ADDR2 AS ADDR2,
+                USER_SUB_ID AS ID,
+                USER_SUB_LEVEL AS LEVEL,
+                MAIN.USER_APART AS APART,
+                USER_SUB_USE AS USER_USE,
+                MAIN.USER_APPO AS APPO,
+                USER_SUB_IMGNAME AS IMGNAME,
+                USER_SUB_IMGPATH AS IMGPATH,
+                'sub' AS SUB,
+                MQTT_LIST_NUM AS MQTTNUM,
+                USER_SUB_EDATE AS EDATE
+        FROM opener_user_sub SUB
+        LEFT JOIN opener_user MAIN
+        ON MAIN.USER_KEY = SUB.USER_KEY
+        LEFT JOIN (
+        SELECT
+        MQTT_LIST_NUM,
+        MQTT_LIST_DCOD
+        FROM MQTT_LIST
+        WHERE MQTT_LIST_USE = '1'
+        GROUP BY MQTT_LIST_DCOD
+        ) MQTT ON MQTT.MQTT_LIST_DCOD = MAIN.USER_ADDR1
+        WHERE USER_SUB_ID = #{id}
+        AND USER_SUB_KEY = #{key}
+        AND MAIN.USER_USE = '1'
+        AND SUB.USER_SUB_USE = '1'
+        AND MAIN.USER_LEVEL = '0010002')
+    </select>
+</mapper>
+
+

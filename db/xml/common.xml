@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+    <select id="codeList">
+    SELECT CODE_CODE,
+        CODE_INFO,
+        CODE_CONTENT,
+        CODE_LUSER,
+        CODE_LDATE,
+        CODE_USE
+    FROM opener_code
+    WHERE CODE_CODE LIKE CONCAT(#{cod}, '%') 
+    </select>
+    <select id="codeList_two">
+    SELECT CODE_CODE,
+        CODE_INFO,
+        CODE_CONTENT,
+        CODE_LUSER,
+        CODE_LDATE,
+        CODE_USE,
+        SUBSTRING(CODE_CODE, 1,3) AS SUBCODE
+    FROM opener_code
+    WHERE CODE_CODE LIKE CONCAT(#{cod1}, '%') OR CODE_CODE LIKE CONCAT(#{cod2}, '%') 
+    </select>
+    <select id="codeList_type">
+    SELECT CODE_CODE,
+        CODE_INFO,
+        CODE_CONTENT,
+        CODE_LUSER,
+        CODE_LDATE,
+        CODE_USE,
+        SUBSTRING(CODE_CODE, 1,3) AS SUBCODE
+    FROM opener_code
+    group by SUBCODE
+    </select>
+    <select id="selectCodeList">
+    SELECT CODE_CODE,
+        CODE_INFO,
+        CODE_CONTENT,
+        CODE_LUSER,
+        DATE_FORMAT(CODE_LDATE, '%Y-%m-%d %H:%i') AS CODE_LDATE,
+        CODE_USE
+    FROM opener_code
+    WHERE 1=1
+    <if test="cod != ''">
+     AND CODE_CODE LIKE CONCAT(#{cod}, '%') 
+    </if>
+    order by code_code
+    </select>
+    <insert id="insert_code">
+    INSERT INTO opener_code(
+    CODE_CODE
+    ,CODE_INFO
+    ,CODE_CONTENT
+    ,CODE_LUSER
+    ,CODE_LDATE
+    ,CODE_USE
+    ) VALUES (
+    #{code}       
+    ,#{info}      
+    ,#{content}      
+    ,#{userId}        
+    ,SYSDATE()       
+    ,#{ck}   
+    )
+    </insert>
+    <update id="update_code">
+    UPDATE opener_code
+    SET
+    CODE_CODE = #{code}
+    ,CODE_INFO = #{info}
+    ,CODE_CONTENT = #{content}
+    ,CODE_LUSER = #{userId}
+    ,CODE_LDATE = SYSDATE()
+    ,CODE_USE = #{ck}
+    WHERE CODE_CODE = #{prev}
+    </update>
+    <insert id="notice_insert">
+    INSERT INTO opener_notice (
+    NOTICE_IMPORT
+    ,NOTICE_TYPE
+    ,NOTICE_TITLE
+    ,NOTICE_CONTENT
+    ,NOTICE_FUSER
+    ,NOTICE_FDATE
+    ,NOTICE_LUSER
+    ,NOTICE_LDATE
+    ,NOTICE_REAL_FILENAME
+    ,NOTICE_FILENAME
+    ,NOTICE_FILEPATH
+    ) VALUES (
+    #{import}
+    ,#{type}
+    ,#{title}
+    ,#{cont}
+    ,#{userKey}
+    ,SYSDATE()
+    ,#{userKey}
+    ,SYSDATE()
+    ,#{realName}
+    ,#{fileName}
+    ,#{filePath}
+    )
+    </insert>
+    <select id="select_notice_list">
+        SELECT 
+        (SELECT COUNT(*) FROM opener_notice
+        LEFT JOIN opener_code CODE1
+        ON CODE1.CODE_CODE = NOTICE_IMPORT
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = NOTICE_TYPE
+            WHERE NOTICE_TYPE = #{type}
+            <choose>
+                <when test="import == ''">
+                </when>
+                <otherwise>
+                    AND NOTICE_IMPORT = #{import}
+                </otherwise>
+            </choose>
+            
+            <choose>
+                <when test="keyWord == ''">
+                </when>
+                <otherwise>
+                    AND NOTICE_TITLE LIKE(CONCAT('%', #{keyWord}, '%'))
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="sdate == ''">
+                </when>
+                <otherwise>
+                    AND DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+                </otherwise>
+            </choose>
+            ) AS TOTAL,
+        NOTICE_KEY,
+        NOTICE_IMPORT,
+        NOTICE_TYPE,
+        NOTICE_TITLE,
+        NOTICE_CONTENT,
+        NOTICE_FUSER,
+        DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d %H:%i') AS NOTICE_FDATE,
+        NOTICE_LUSER,
+        NOTICE_LDATE,
+        NOTICE_REAL_FILENAME,
+        NOTICE_FILENAME,
+        NOTICE_FILEPATH,
+        NOTICE_VIEWS,
+        CODE1.CODE_CONTENT AS IMPORT,
+        CODE2.CODE_CONTENT AS TYPE,
+        ADMIN.ADMIN_NAME
+    FROM opener_notice
+    LEFT JOIN opener_code CODE1
+    ON CODE1.CODE_CODE = NOTICE_IMPORT
+    LEFT JOIN opener_code CODE2
+    ON CODE2.CODE_CODE = NOTICE_TYPE
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_KEY = NOTICE_FUSER
+    WHERE NOTICE_TYPE = #{type}
+    <choose>
+        <when test="import == ''">
+        </when>
+        <otherwise>
+            AND NOTICE_IMPORT = #{import}
+        </otherwise>
+    </choose>
+    
+    <choose>
+        <when test="keyWord == ''">
+        </when>
+        <otherwise>
+            AND NOTICE_TITLE LIKE(CONCAT('%', #{keyWord}, '%'))
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    order by notice_fdate desc
+    LIMIT ${page}, ${pageSize}
+    </select>
+    <select id="select_notice_select">
+        SELECT 
+        NOTICE_KEY,
+        NOTICE_IMPORT,
+        NOTICE_TYPE,
+        NOTICE_TITLE,
+        NOTICE_CONTENT,
+        NOTICE_FUSER,
+        DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d %H:%i') AS NOTICE_FDATE,
+        NOTICE_LUSER,
+        NOTICE_LDATE,
+        NOTICE_REAL_FILENAME,
+        NOTICE_FILENAME,
+        NOTICE_FILEPATH,
+        CODE1.CODE_CONTENT AS IMPORT,
+        CODE2.CODE_CONTENT AS TYPE,
+        ADMIN.ADMIN_NAME,
+        NOTICE_VIEWS
+    FROM opener_notice
+    LEFT JOIN opener_code CODE1
+    ON CODE1.CODE_CODE = NOTICE_IMPORT
+    LEFT JOIN opener_code CODE2
+    ON CODE2.CODE_CODE = NOTICE_TYPE
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_KEY = NOTICE_FUSER
+    WHERE NOTICE_KEY = #{noticeKey}
+    order by notice_fdate desc
+    </select>
+    <update id="notice_update">
+    UPDATE opener_notice SET
+    NOTICE_IMPORT = #{import}
+    ,NOTICE_TYPE = #{type}
+    ,NOTICE_TITLE = #{title}
+    ,NOTICE_CONTENT = #{cont}
+    ,NOTICE_LUSER = #{userKey}
+    ,NOTICE_LDATE = SYSDATE()
+    ,NOTICE_REAL_FILENAME = #{realName}
+    ,NOTICE_FILENAME = #{fileName}
+    ,NOTICE_FILEPATH = #{filePath}
+    WHERE NOTICE_KEY = #{noticeKey}
+    
+    </update>
+    <update id="notice_view_update">
+    UPDATE opener_notice SET
+    NOTICE_VIEWS = #{view}
+    WHERE NOTICE_KEY = #{key}
+    
+    </update>
+    <select id="select_notice_list_user">
+        SELECT 
+        (SELECT COUNT(*) FROM opener_notice
+        LEFT JOIN opener_code CODE1
+        ON CODE1.CODE_CODE = NOTICE_IMPORT
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = NOTICE_TYPE
+            WHERE NOTICE_TYPE = #{type}
+            AND NOTICE_USE = '1'
+            <choose>
+                <when test="import == ''">
+                </when>
+                <otherwise>
+                    AND NOTICE_IMPORT = #{import}
+                </otherwise>
+            </choose>
+            
+            <choose>
+                <when test="keyWord == ''">
+                </when>
+                <otherwise>
+                    AND NOTICE_TITLE LIKE(CONCAT('%', #{keyWord}, '%'))
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="sdate == ''">
+                </when>
+                <otherwise>
+                    AND DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+                </otherwise>
+            </choose>
+            ) AS TOTAL,
+        NOTICE_KEY,
+        NOTICE_IMPORT,
+        NOTICE_TYPE,
+        NOTICE_TITLE,
+        NOTICE_CONTENT,
+        NOTICE_FUSER,
+        DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d %H:%i') AS NOTICE_FDATE,
+        NOTICE_LUSER,
+        NOTICE_LDATE,
+        NOTICE_REAL_FILENAME,
+        NOTICE_FILENAME,
+        NOTICE_FILEPATH,
+        CODE1.CODE_CONTENT AS IMPORT,
+        CODE2.CODE_CONTENT AS TYPE,
+        ADMIN.ADMIN_NAME,
+        NOTICE_VIEWS
+    FROM opener_notice
+    LEFT JOIN opener_code CODE1
+    ON CODE1.CODE_CODE = NOTICE_IMPORT
+    LEFT JOIN opener_code CODE2
+    ON CODE2.CODE_CODE = NOTICE_TYPE
+    LEFT JOIN opener_user_admin ADMIN
+    ON ADMIN.ADMIN_KEY = NOTICE_FUSER
+    WHERE NOTICE_TYPE = #{type}
+    AND NOTICE_USE = '1'
+    <choose>
+        <when test="import == ''">
+        </when>
+        <otherwise>
+            AND NOTICE_IMPORT = #{import}
+        </otherwise>
+    </choose>
+    
+    <choose>
+        <when test="keyWord == ''">
+        </when>
+        <otherwise>
+            AND NOTICE_TITLE LIKE(CONCAT('%', #{keyWord}, '%'))
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(NOTICE_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    order by notice_fdate desc
+    LIMIT ${page}, ${pageSize}
+    </select>
+</mapper>

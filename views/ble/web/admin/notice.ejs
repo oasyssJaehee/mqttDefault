@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+</head>
+<style>
+
+</style>
+<script type="text/javascript">
+    var sdate = "";
+	var edate = "";
+
+    var pageTotal = 0;
+    var page = 0;
+    var pageSize = 12;
+    var selectPage = 1;
+
+    $(window).ready(function() {
+        init();
+        noticeLsit();
+
+        var myCal = bulmaCalendar.attach('.date_default_inp', {
+            isRange: true,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd'
+        });
+        $(".search_icon").on("click" ,function(){
+            var dateInput = $("input[name='user_date']").val();
+			dateInput = dateInput.split(" ~ ");
+			sdate = dateInput[0];
+			edate = dateInput[1];
+            noticeLsit();
+        });
+        $("#write_btn").on("click", function(){
+            location.href="./notice_edit";
+        });
+    });
+
+    function init(){
+        $.ajax({
+            url:"/mysql/common",
+            data :{
+                xml: "codeList",
+                cod: "007"
+            }, success:function(res){
+                var item = "";
+                item += "<option value=''>전체</option>";
+                for(var i=0; i<res.length; i++){
+                    item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
+                }
+                $("select[name='div_select']").append(item);
+            }
+        });
+    }
+    function noticeLsit(){
+        $.ajax({
+            url: "/mysql/common",
+            data:{
+                xml: "select_notice_list",
+                sdate: sdate,
+                edate: edate,
+                type: "0080001",
+                import: $("select[name='div_select']").val(),
+                keyWord: $("input[name='keyword']").val(),
+                page: page,
+                pageSize: pageSize
+            },success: function(res){
+                if(res.length > 0){
+                    pageTotal = Number(res[0].TOTAL);
+                    var item = "";
+                    for(var i=0; i<res.length; i++){
+                        item += "<tr data-noticeKey='"+res[i].NOTICE_KEY+"'>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>No."+(i+1)+"</p>"
+                          + "</td>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>"+res[i].NOTICE_TITLE+"</p>"
+                          + "</td>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>"+res[i].IMPORT+"</p>"
+                          + "</td>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>"+res[i].ADMIN_NAME+"</p>"
+                          + "</td>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>"+res[i].NOTICE_VIEWS+"</p>"
+                          + "</td>"
+                          + "<td class='table_td td_ck'>"
+                          + "<p class='table_td_txt'>"+res[i].NOTICE_FDATE+"</p>"
+                          + "</td>"
+                          + "</tr>";
+                    }
+                    paging(pageTotal, pageSize, selectPage);
+                    $("#notice_table tbody").empty();
+                    $("#notice_table tbody").append(item);
+                }else{
+                    $("#notice_table tbody").empty();
+                }
+            }
+        });
+    }
+    $(document).on("click", "#notice_table tbody tr", function(){
+		var noticeKey = $(this).attr("data-noticeKey");
+        location.href="./notice_edit?noticeKey="+noticeKey;
+	});
+    $(document).on("click", "#foot_page ul li", function(){
+		var page = $(this).attr("data-page");
+		var currentpage = page - 1;
+		currentpage = currentpage == 0 ? currentpage : currentpage*userPageSize;
+		userSelectPage = page;
+		userPage = currentpage;
+	
+		noticeLsit();
+	});
+</script>
+<body>
+	<div class="cont_shadow_box cont_shadow_box_800px padding0">
+        <div class="cont_tit_box cont_tit_box_padding20">
+            <h2 class="cont_tit">커뮤니티</h2>
+            <ul class="top_right_btnbox">
+                <li class="top_right_list">
+                    <button id="write_btn" class="btn btn_gray">작성하기</button>
+                </li>
+            </ul>
+        </div>
+        <ul class="table_shbox dis_flex_row">
+            <li class="table_sh_list table_sh_list01">
+                <!-- <ul class="table_sh_tabbox dis_flex_row">
+                    <li class="table_sh_listbox active">
+                        <a class="table_sh_tabbtn">1개월</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">2개월</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">3개월</a>
+                    </li>
+                </ul> -->
+                <div class="sh_inpbox_widthbox dis_flex_row margin_top_8">
+                    <div class="inp_box sh_inpbox01">
+                        <h2 class="sh_inpbox_tit">기간</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <input name="user_date" type="text" class="date_default_inp date_inp" placeholder="날짜를 선택해주세요.">
+                    </div>
+                    <div class="inp_box sh_inpbox04">
+                        <h2 class="sh_inpbox_tit">구분</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="div_select" class="default_sel">
+                            
+                        </select>
+                    </div>
+                </div>
+                
+            </li>
+            <li class="table_sh_list table_sh_list02">
+                <!-- <ul class="table_sh_tabbox dis_flex_row">
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">#상수도</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">#필독</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">#홍길동</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">#필독</a>
+                    </li>
+                    <li class="table_sh_listbox">
+                        <a class="table_sh_tabbtn">#홍길동</a>
+                    </li>
+                </ul> -->
+                <div class="sh_inpbox_widthbox dis_flex_row margin_top_8">
+                    <div class="sh_inpbox inp_box">
+                        <input name="keyword" type="text" class="default_inp" placeholder="검색어를 입력해주세요.">
+                        <a class="search_icon"></a>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="table_notice_padding">
+            <table id="notice_table" class="table_notice hover_table">
+                <colgroup>
+                    <col width="120px">
+                    <col width="calc(100% - 510px)">
+                    <col width="120px">
+                    <col width="120px">
+                    <col width="120px">
+                    <col width="150px">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th class="table_th">순번</th>
+                        <th class="table_th">제목</th>
+                        <th class="table_th">구분</th>
+                        <th class="table_th">작성자</th>
+                        <th class="table_th">조회수</th>
+                        <th class="table_th">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 리스트 노출갯수 8개 -->
+                    <!-- 읽기 전 -->
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="foot_page" class="numbtn_list_grp">
+        <ul class="numbtn_list_box">
+            <!-- <li class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr  pagebtn_hover_style">처음 페이지</button>
+            </li> -->
+            <li id="prev_page_btn" class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr pagebtn_hover_style">이전 페이지</button>
+            </li>
+            <li class="numbtn_list_li">
+                <button class="button_num_btn active pagebtn_hover_style">
+                    <p class="button_02_bold gray_darken_3_font">1</p>
+                </button>
+            </li>
+            
+            <li id="next_page_btn" class="numbtn_list_li">
+                <button class="button_num_btn button_num_btn_arr pagebtn_hover_style">다음 페이지</button>
+            </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

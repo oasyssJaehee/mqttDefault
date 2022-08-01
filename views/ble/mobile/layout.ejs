@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+<title><%=title%></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+<script src="/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+
+
+
+<link href="/css/mobile/iot_layout.css" rel="stylesheet"/>
+
+<link href="/js/alert/jquery.alerts.phonekey.css" rel="stylesheet"/>
+<link href="/js/loading/loading-mobile.css" rel="stylesheet"/>
+
+<script type="text/javascript" src="/js/alert/jquery.alerts.js"></script>
+<!-- <script type="text/javascript" src="/js/loading/loading.js"></script> -->
+
+<script type="text/javascript" src="/js/extention.js"></script>
+
+<!-- 데이트피커 -->
+<link href="/js/datePicker/bulma-calendar.css" rel="stylesheet"/>
+<script type="text/javascript" src="/js/datePicker/bulma-calendar.js"></script>
+<!-- 구글폰트 -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+<!-- 로딩 스피너 -->
+<link href="/js/spinner/loading.css" rel="stylesheet"/>
+<script type="text/javascript" src="/js/spinner/loading.js"></script>
+<!-- 폰트 -->
+<link href="/css/font/pretendard.css" rel="stylesheet"/>
+<!-- 구글번역 -->
+<script type="text/javascript"> 
+function googleTranslateElementInit() { 
+  new google.translate.TranslateElement({pageLanguage: 'ko',
+	  layout: google.translate.TranslateElement.FloatPosition.TOP_LEFT,
+	  includedLanguages:'ko,en,ja,zh-CN'
+	 }, 'google_translate_element'); 
+} 
+</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<script type="text/javascript">
+  $(window).ready(function() {
+    layout_init_user()
+    $(".back_btn").on("click", function(){
+      if("<%=page%>" == "chatAdmin"){
+        window.location.href='./chatAdminList';
+      // }else if("<%=page%>" == "notice"){
+        // window.location.href='./noticeList';
+      }else if("<%=page%>" == "member" && $("#enroll_pop").css("display")!="none"){
+        clickCancel();
+      }else{
+        history.go(-1);
+        // window.location.href='./main';
+      }
+    });
+    $(".logo").on("click", function(){
+      // window.location.href='./main';
+    });
+    function bottomMenuInit(){
+      $(".bottom_tab_btn").removeClass("active");
+      var blist = $(".bottom_tab_btn");
+      for (let i = 0; i < blist.length; i++) {
+        const b = blist[i];
+        if(($(b).attr("href"))){
+          var urll = ($(b).attr("href")).split("/");
+          url = urll[urll.length-1];
+          if(url=="<%=page%>"){
+            $(b).addClass('active');
+          }
+        }
+      }
+    }
+    bottomMenuInit();
+    
+  });
+  function layout_init_user(){
+        $.ajax({
+            url : "/mysql/chat",
+            data:{
+                xml: "chat_not_read_user",
+                userId : '<%=session.id%>',
+            }, success: function(res){
+                if(res.length>0){
+                    var chatNotCount = res[0].CHAT_NOT_COUNT;
+                    console.log(chatNotCount);
+                    $(".bottom_talk_num").css("display", "block");
+                    if(Number(chatNotCount) == 0){
+                        $(".bottom_talk_num").css("display", "none");
+                    }else{
+                        $(".bottom_talk_num").text(moneyComma(chatNotCount));
+                    }
+                }
+            }
+        });
+    }
+    
+</script>
+
+</head>
+<style>
+.background_bg{height:250px;}
+.key_top_tit{padding:30px 0; margin:0;}
+
+.pie_progress_wrap{
+        display: block;
+        position: fixed;
+        top: 0%;
+        left: 0%;
+        width: 100%;
+        height: 100%;
+        background-color:rgba(0,0,0,0.45);
+        z-index: 9;
+    }
+
+	.pie_progress {
+      width: 160px;
+      margin: 10px auto;
+	  position: fixed;
+	   top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+	.pie_progress__number{color:#fff;}
+	.pie_progress__label{color:#fff;}
+    @media all and (max-width: 768px) {
+      .pie_progress {
+        max-width: 150px;
+      }
+    }
+
+</style>
+<body>
+	<!-- header -->
+    <header class="hd">
+        <% if(page == 'main'){ %>
+          <a id="logOutBtn" class="menu_btn"><span class="logout_icon"></span>LOGOUT</a>
+        <% }else if(page == 'login'){ %>
+          
+        <% }else { %>
+            <a class="back_btn"></a>
+        <% } %>
+        <!-- <a class="top_search_btn">
+            <em class="top_search_btn_icon"></em>  
+            <em class="top_search_btn_txt">빠른검색</em>
+        </a> -->
+        <a class="logo" href="/opener/mobile/main"><img src="/static/img/web/<%=logoName%>" alt="logo"></a>
+        <a class="lang_btn1"><span class="stem03"></span>Language</a>
+        <div id="google_translate_element"></div> 
+        </header>
+        <!-- //header -->
+        <section> <%- body %> </section>
+        <div class="bottom_tabbox">
+          <ul class="bottom_tab_ul">
+              <li class="bottom_tab_li">
+                  <a class="bottom_tab_btn bottom_tab_btn01 active" href="./main">
+                    <span class="bottom_tab_icon bottom_tab_icon01"></span>
+                    <em class="bottom_tab_txt">홈</em>
+                  </a>
+              </li>
+              <li class="bottom_tab_li">
+                  <a class="bottom_tab_btn bottom_tab_btn01" href="./door">
+                    <span class="bottom_tab_icon bottom_tab_icon02"></span>
+                    <em class="bottom_tab_txt">출입</em>
+                  </a>
+              </li>
+              <% if(session.type == 'main'){ %>
+              <li class="bottom_tab_li">
+                  <a class="bottom_tab_btn bottom_tab_btn01" href="./member">
+                    <span class="bottom_tab_icon bottom_tab_icon03"></span>
+                    <em class="bottom_tab_txt">구성원</em>
+                  </a>
+              </li>
+              <% }%>
+              <li class="bottom_tab_li">
+                  <a class="bottom_tab_btn bottom_tab_btn01" href="./chatAdminList">
+                    <span class="bottom_tab_icon bottom_tab_icon04">
+                      <span class="bottom_talk_num">N</span>
+                    </span>
+                   
+                    <em class="bottom_tab_txt">채팅</em>
+                  </a>
+              </li>
+              <li class="bottom_tab_li">
+                  <a class="bottom_tab_btn bottom_tab_btn01 not_fun">
+                    <span class="bottom_tab_icon bottom_tab_icon05"></span>
+                    <em class="bottom_tab_txt">기타</em>
+                  </a>
+              </li>
+          </ul>
+        </div>
+
+        <!-- 팝업 -->
+	<div class="date_pop_box">
+		<div class="date_pop_grp">
+			<a class="top_close_btn"></a>
+			<!-- 상황에 따라 텍스트 바뀌게 -->
+			<div class="date_pop_top_tbox">
+				<h2 class="date_pop_tit">시작날짜</h2>
+				<div id="datesss" class="date_pop_date_txtbox">
+					<div class="date_pop_date_icon"></div>
+					<h2 id="datesss1" class="date_pop_date_tit"></h2>
+					<p class="date_pop_date_txt">~</p>
+					<h2 id="datesss2" class="date_pop_date_tit"></h2>
+				</div>
+			</div>
+			<div class="date_pop_dateinp">
+				<div class="date_pop_date_cont date_pop_date_cont01">
+          <% if(page == "member" || page == "join"){ %>
+            <select class="key_list_sel select_year select_year_future">
+          <% }else{%>
+            <select class="key_list_sel select_year select_year_search">
+          <% }%>
+					</select>
+					<p class="date_pop_date_cont_txt">년</p>
+				</div>
+				<div class="date_pop_date_cont date_pop_date_cont02">
+					<select class="key_list_sel select_month">
+					</select>
+					<p class="date_pop_date_cont_txt">월</p>
+				</div>
+				<div class="date_pop_date_cont date_pop_date_cont03">
+					<select class="key_list_sel select_day">
+					</select>
+					<p class="date_pop_date_cont_txt">일</p>
+				</div>
+			</div>
+			<div class="date_pop_date_ulbox">
+				<div class="date_pop_date_ul_tbox">
+					<div class="date_pop_date_ul_txt date_pop_date_ul_txt01">
+						<h2>년</h2>
+					</div>
+					<div class="date_pop_date_ul_txt date_pop_date_ul_txt02">
+						<h2>월</h2>
+					</div>
+					<div class="date_pop_date_ul_txt date_pop_date_ul_txt03">
+						<h2>일</h2>
+					</div>
+				</div>
+				<div class="date_pop_date_numul">
+          <% if(page == "member" || page == "join"){ %>
+            <ul class="date_pop_date_numbox select_year_div select_year_div_future">
+          <% }else{%>
+            <ul class="date_pop_date_numbox select_year_div select_year_div_search">
+          <% }%>
+					</ul>
+					<ul class="date_pop_date_numbox select_month_div">
+					</ul>
+					<ul class="date_pop_date_numbox select_day_div">
+					</ul>
+				</div>
+			</div>
+			<input id="dateValue" type="hidden" value=""/>
+			<a id="dateEmpty"class="key_list_search_btn" style="margin-top: 16px;background: #f3f5f6;color: #747474;">날짜 초기화</a>
+			<a id="dateEdate" class="key_list_search_btn" style="margin-top: 16px;">다음(종료날짜선택)</a>
+			<a id="dateCorrect" class="key_list_search_btn" style="margin-top: 16px;display:none;">확인</a>
+		</div>
+	</div>
+</body>
+</html>

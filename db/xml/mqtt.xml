@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mqtt">
+    <select id="mqtt_list" >
+        SELECT MQTT_LIST_KEY,
+            MQTT_LIST_APART,
+            MQTT_LIST_DCOD,
+            IFNULL(MQTT_LIST_FLOOR,'') AS MQTT_LIST_FLOOR,
+            IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+            MQTT_LIST_NAME,
+            MQTT_LIST_NUM,
+            MQTT_LIST_USE,
+            CODE.CODE_CONTENT,
+            IFNULL(DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), '')  AS START_TIME,
+            <!-- IFNULL(DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), '')  AS CONNECT_TIME -->
+            <![CDATA[IFNULL(IF(CONNECT.LOG_CMD_TIME < CTIME.LOG_CMD_TIME, DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i')), '') AS CONNECT_TIME]]>
+        FROM mqtt_list
+        <if test="level == '0010004'">
+            RIGHT JOIN OPENER_USER_ADDR
+            ON MQTT_LIST_DCOD = USER_ADDR
+            AND USER_ID = #{userID}
+        </if>
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+        LEFT JOIN (
+            SELECT
+            LOG_CMD_NUM,
+            LOG_CMD_TIME,
+            LOG_CMD_CMD
+            FROM mqtt_cmd_log
+            WHERE (LOG_CMD_NUM, LOG_CMD_TIME, LOG_CMD_CMD) in(
+            select LOG_CMD_NUM, max(LOG_CMD_TIME) as LOG_CMD_TIME, LOG_CMD_CMD
+            from mqtt_cmd_log
+
+            where LOG_CMD_CMD = '255'
+            group by LOG_CMD_NUM
+            )
+            group by LOG_CMD_TIME
+            ORDER BY LOG_CMD_KEY DESC
+        ) CTIME ON CTIME.LOG_CMD_NUM = MQTT_LIST_NUM
+        LEFT JOIN (
+            SELECT
+            LOG_CMD_NUM,
+            LOG_CMD_TIME,
+            LOG_CMD_CMD
+            FROM mqtt_cmd_log
+            WHERE (LOG_CMD_NUM, LOG_CMD_TIME, LOG_CMD_CMD) in(
+            select LOG_CMD_NUM, max(LOG_CMD_TIME) as LOG_CMD_TIME, LOG_CMD_CMD
+            from mqtt_cmd_log
+            where LOG_CMD_CMD = '1'
+            group by LOG_CMD_NUM
+            )
+            group by LOG_CMD_TIME
+            ORDER BY LOG_CMD_KEY DESC
+        ) CONNECT ON CONNECT.LOG_CMD_NUM = MQTT_LIST_NUM
+        WHERE 1=1
+        AND MQTT_LIST_APART = #{hotelCode}
+        
+        <choose>
+            <when test="dcod == ''">
+            </when>
+            <otherwise>
+                AND MQTT_LIST_DCOD = #{dcod}
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="floor == ''">
+            </when>
+            <otherwise>
+                AND MQTT_LIST_FLOOR = #{floor}
+            </otherwise>
+        </choose>
+        <!-- <if test="isControl == 'T'"> -->
+            order by MQTT_LIST_DCOD,MQTT_LIST_FLOOR,MQTT_LIST_KEY
+        <!-- </if> -->
+    </select>
+    <select id="select_mqtt_list_floor" >
+    SELECT MQTT_LIST_KEY,
+            MQTT_LIST_APART,
+            MQTT_LIST_DCOD,
+            IFNULL(MQTT_LIST_FLOOR,'') AS MQTT_LIST_FLOOR,
+            CODE.CODE_CONTENT,
+            MQTT_LIST_NAME,
+            MQTT_LIST_NUM,
+            MQTT_LIST_USE
+        FROM mqtt_list
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_FLOOR
+        where mqtt_list_dcod = #{dcod}
+        group by mqtt_list_floor
+    </select>
+    <select id="select_mqtt_list_addr">
+        SELECT USER_ID, 
+        USER_ADDR,
+        MQTT_LIST_KEY, 
+        MQTT_LIST_APART, 
+        MQTT_LIST_DCOD, 
+        IFNULL(CODE.CODE_CONTENT,'') AS DCOD_NAME,
+        MQTT_LIST_FLOOR,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME, 
+        MQTT_LIST_NUM,
+        IFNULL(LIKE_LIKE,"2") as LIKE_LIKE
+        FROM OPENER_USER_ADDR
+        LEFT JOIN MQTT_LIST
+        ON MQTT_LIST_KEY = USER_ADDR
+        LEFT JOIN opener_user_addr_like
+        ON LIKE_ADDR = MQTT_LIST_KEY
+        AND LIKE_USER_ID = #{userId}
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+        WHERE USER_ID = #{userId}
+        and MQTT_LIST_USE=1
+        ORDER BY MQTT_LIST_DCOD, MQTT_LIST_FLOOR, MQTT_LIST_KEY
+    </select>
+    <select id="select_mqtt_list_dcod">
+        SELECT MQTT_LIST_KEY, 
+        MQTT_LIST_APART, 
+        MQTT_LIST_DCOD, 
+        IFNULL(CODE.CODE_CONTENT,'') AS DCOD_NAME,
+        MQTT_LIST_FLOOR,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME, 
+        MQTT_LIST_NUM,
+        IFNULL(LIKE_LIKE,"2") as LIKE_LIKE
+        FROM mqtt_list
+        <choose>
+            <when test="like == '1'">
+                RIGHT JOIN opener_user_addr_like
+                ON LIKE_ADDR = MQTT_LIST_KEY
+                AND LIKE_USER_ID = #{userId}
+                AND LIKE_LIKE = '1'
+            </when>
+            <otherwise>
+                LEFT JOIN opener_user_addr_like
+                ON LIKE_ADDR = MQTT_LIST_KEY
+                AND LIKE_USER_ID = #{userId}
+            </otherwise>
+        </choose>
+        LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+        WHERE 
+        MQTT_LIST_APART = #{apart}
+        <choose>
+            <when test="dcod == ''">
+            </when>
+            <otherwise>
+        and MQTT_LIST_DCOD = #{dcod}
+            </otherwise>
+        </choose>
+        and MQTT_LIST_USE=1
+        ORDER BY MQTT_LIST_DCOD, MQTT_LIST_FLOOR, MQTT_LIST_KEY
+    </select>
+    <select id="addr_list_user">
+        SELECT USER_ID, USER_ADDR
+        FROM OPENER_USER_ADDR
+        WHERE USER_ID = #{userID}
+    </select>
+    <select id="addr_list">
+        SELECT USER_ID, USER_ADDR
+        FROM OPENER_USER_ADDR
+        WHERE USER_ID = #{userID}
+    </select>
+    <delete id="addr_delete">
+        DELETE addr FROM 
+        opener_user_addr as addr
+        join mqtt_list as mqtt
+        on addr.user_addr = mqtt.mqtt_list_key
+        WHERE addr.USER_ID = #{userID}
+        and mqtt.mqtt_list_dcod = #{dcod}
+    </delete>
+    <insert id="addr_like_insert">
+        INSERT INTO opener_user_addr_like(
+        LIKE_USER_ID
+        ,LIKE_ADDR
+        ,LIKE_LIKE
+        ,LIKE_FUSER
+        ,LIKE_FDATE
+        ) VALUES (
+        #{userId}
+        ,#{addr}
+        ,'1' 
+        ,#{userId} 
+        ,SYSDATE()
+        )
+    </insert>
+    <delete id="addr_like_delete">
+        DELETE FROM opener_user_addr_like 
+        WHERE LIKE_USER_ID = #{userId} 
+        AND LIKE_ADDR = #{addr} 
+
+    </delete>
+    <insert id="addr_insert">
+        INSERT INTO opener_user_addr(
+        USER_ID
+        ,USER_ADDR
+        ,USER_ADDR_FUSER
+        ,USER_ADDR_FDATE
+        ) VALUES (
+        #{userID} 
+        ,#{addr}
+        ,SYSDATE()
+        ,SYSDATE()
+        )
+    </insert>
+    <insert id="mqtt_action_insert">
+    INSERT INTO mqtt_action (
+    MQTT_ACTION_NUM
+    ,MQTT_ACTION_HOTEL
+    ,MQTT_ACTION_REQDATE
+    ,MQTT_ACTION_CMD
+    ,MQTT_ACTION_USER
+    ,MQTT_ACTION_LOG
+    ,MQTT_ACTION_OPEN
+    ) VALUES (
+    #{num}
+    ,#{hotel}
+    ,SYSDATE()
+    ,#{cmd}
+    ,#{userId}
+    ,#{insertId}
+    ,#{open}
+    )
+    </insert>
+    <update id="mqtt_action_update">
+    UPDATE mqtt_action SET
+        MQTT_ACTION_ANSDATE = SYSDATE()
+    WHERE MQTT_ACTION_KEY = #{insertId}
+    </update>
+    <insert id="mqtt_log_insert">
+    INSERT INTO mqtt_cmd_log (
+    LOG_CMD_NUM
+    ,LOG_CMD_HOTEL
+    ,LOG_CMD_TIME
+    ,LOG_CMD_STATE
+    ,LOG_CMD_SERIAL
+    ,LOG_CMD_VER
+    ,LOG_CMD_IP
+    ,LOG_CMD_PORT
+    ,LOG_CMD_CMD
+    ,LOG_CMD_TYPE
+    ,LOG_CMD_USER
+    ,LOG_CMD_HD
+    ,LOG_CMD_REC_IP
+    ,LOG_CMD_OPEN
+    ) VALUES (
+    #{num}
+    ,#{hotel}
+    ,SYSDATE()
+    ,#{state}
+    ,#{serial}
+    ,#{ver}
+    ,#{serverip}
+    ,#{port}
+    ,#{cmd}
+    ,#{type}
+    ,#{userId}
+    ,#{hd}
+    ,#{recIp}
+    ,#{open}
+    );
+    </insert>
+    <select id="select_mqtt_log_key" resultType="casemap">
+        SELECT
+        IFNULL(MAX(LOG_CMD_KEY), 0) + 1 AS LOG_CMD_KEY
+        FROM mqtt_cmd_log;
+    </select> 
+    
+    <select id="mqtt_open_list">
+    SELECT MQTT_ACTION_KEY,
+        MQTT_ACTION_NUM,
+        DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %T') AS MQTT_ACTION_REQDATE,
+        MQTT_ACTION_ANSDATE,
+        MQTT_ACTION_CMD,
+        MQTT_ACTION_USER,
+        MQTT_ACTION_LOG,
+        IFNULL(CODE.CODE_CONTENT,'') AS DCOD_NAME,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME,
+        IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE
+    FROM mqtt_action
+    LEFT JOIN opener_code OPEN
+    ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
+    LEFT JOIN MQTT_LIST 
+    ON MQTT_LIST_NUM = MQTT_ACTION_NUM
+    LEFT JOIN opener_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+    WHERE MQTT_ACTION_USER = #{userId}
+    AND MQTT_ACTION_CMD = '2'
+    ORDER BY MQTT_ACTION_REQDATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="mqtt_open_list_host">
+    (SELECT MQTT_ACTION_KEY,
+        MQTT_ACTION_NUM,
+        DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %T') AS MQTT_ACTION_REQDATE,
+        MQTT_ACTION_ANSDATE,
+        MQTT_ACTION_CMD,
+        MQTT_ACTION_USER,
+        MQTT_ACTION_LOG,
+        IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+        IFNULL(CODE1.CODE_CONTENT,'') AS DCOD_NAME,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME,
+        USER.USER_NAME AS USER_NAME,
+        ROOM.ROOM_CODE_NUM AS ROOM_NUM,
+        CODE.CODE_CONTENT AS CODE_CONTENT,
+        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE
+    FROM mqtt_action
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MQTT_ACTION_USER
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = USER.USER_ADDR2
+    LEFT JOIN opener_code CODE
+    ON CODE.CODE_CODE = USER.USER_ADDR1
+    LEFT JOIN opener_code OPEN
+    ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
+    LEFT JOIN MQTT_LIST 
+    ON MQTT_LIST_NUM = MQTT_ACTION_NUM
+    LEFT JOIN opener_code CODE1
+        ON CODE1.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+    WHERE MQTT_ACTION_CMD = '2'
+    AND USER.USER_KEY = #{userKey}
+    <choose>
+        <when test="subUser == ''">
+        </when>
+        <otherwise>
+            AND USER.USER_ID = #{subUser}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    )
+    UNION ALL
+    (SELECT MQTT_ACTION_KEY,
+        MQTT_ACTION_NUM,
+        DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %T') AS MQTT_ACTION_REQDATE,
+        MQTT_ACTION_ANSDATE,
+        MQTT_ACTION_CMD,
+        MQTT_ACTION_USER,
+        MQTT_ACTION_LOG,
+        IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+        IFNULL(CODE1.CODE_CONTENT,'') AS DCOD_NAME,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME,
+        USER.USER_SUB_NAME AS USER_NAME,
+        ROOM.ROOM_CODE_NUM AS ROOM_NUM,
+        CODE.CODE_CONTENT AS CODE_CONTENT,
+        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE
+    FROM mqtt_action
+    LEFT JOIN opener_user_sub USER
+    ON USER.USER_SUB_ID = MQTT_ACTION_USER
+    LEFT JOIN opener_user USER2
+    ON USER.USER_KEY = USER2.USER_KEY
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_CODE = USER2.USER_ADDR2
+    LEFT JOIN opener_code CODE
+    ON CODE.CODE_CODE = USER2.USER_ADDR1
+    LEFT JOIN opener_code OPEN
+    ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
+    LEFT JOIN MQTT_LIST 
+    ON MQTT_LIST_NUM = MQTT_ACTION_NUM
+LEFT JOIN opener_code CODE1
+        ON CODE1.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN opener_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+    WHERE MQTT_ACTION_CMD = '2'
+    AND USER.USER_KEY = #{userKey}
+    <choose>
+        <when test="subUser == ''">
+        </when>
+        <otherwise>
+            AND USER.USER_SUB_ID = #{subUser}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    )
+    ORDER BY MQTT_ACTION_REQDATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="mqtt_open_list_host_total">
+    SELECT SUM(CNT) AS COUNT FROM (
+    SELECT
+        COUNT(*) AS CNT
+    FROM mqtt_action
+    LEFT JOIN opener_user USER
+    ON USER.USER_ID = MQTT_ACTION_USER
+    WHERE MQTT_ACTION_CMD = '2'
+    AND USER.USER_KEY = #{userKey}
+    <choose>
+        <when test="subUser == ''">
+        </when>
+        <otherwise>
+            AND USER.USER_ID = #{subUser}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    UNION ALL
+    SELECT COUNT(*) AS CNT
+    FROM mqtt_action
+    LEFT JOIN opener_user_sub USER
+    ON USER.USER_SUB_ID = MQTT_ACTION_USER
+    WHERE MQTT_ACTION_CMD = '2'
+    AND USER.USER_KEY = #{userKey}
+    <choose>
+        <when test="subUser == ''">
+        </when>
+        <otherwise>
+            AND USER.USER_SUB_ID = #{subUser}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    ) AS COUNT
+    </select>
+    <select id="mqtt_open_list_total">
+    SELECT COUNT(*) AS COUNT
+    FROM mqtt_action
+    WHERE MQTT_ACTION_USER = #{userId}
+    AND MQTT_ACTION_CMD = '2'
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    </select>
+    <update id="mqtt_update">
+    UPDATE mqtt_list SET
+    MQTT_LIST_DCOD = #{dcod}
+    ,MQTT_LIST_FLOOR = #{floor}
+    ,MQTT_LIST_NUM = #{num}
+    ,MQTT_LIST_NAME = #{name}
+    ,MQTT_LIST_LUSER = #{userId}
+    ,MQTT_LIST_LDATE =SYSDATE()
+    ,MQTT_LIST_USE = #{ck}
+    WHERE MQTT_LIST_KEY = #{code}
+    AND MQTT_LIST_APART = #{hotelCode}
+    </update>
+    <insert id="mqtt_insert">
+    INSERT INTO mqtt_list (
+    MQTT_LIST_KEY
+    ,MQTT_LIST_APART
+    ,MQTT_LIST_DCOD
+    ,MQTT_LIST_FLOOR
+    ,MQTT_LIST_NAME
+    ,MQTT_LIST_NUM
+    ,MQTT_LIST_FUSER
+    ,MQTT_LIST_FDATE
+    ,MQTT_LIST_LUSER
+    ,MQTT_LIST_LDATE
+    ,MQTT_LIST_USE
+    ) VALUES (
+    #{code}
+    ,#{hotelCode}
+    ,#{dcod}
+    ,#{floor}
+    ,#{name}
+    ,#{num}
+    ,#{userId}
+    ,SYSDATE()
+    ,#{userId}
+    ,SYSDATE()
+    ,#{ck}
+    )
+    </insert>
+</mapper>
+
+

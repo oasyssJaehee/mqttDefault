@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title><%=title%></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+<script src="/js/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+<script type="text/javascript" src="/js/extention.js"></script>
+<link href="/js/alert/jquery.alerts.phonekey.css" rel="stylesheet"/>
+<script type="text/javascript" src="/js/alert/jquery.alerts.js"></script>
+
+<link href="/css/web/layout.css" rel="stylesheet"/>
+<link href="/css/web/common.css" rel="stylesheet"/>
+
+<!-- 폰트 -->
+<link href="/css/font/pretendard.css" rel="stylesheet"/>
+
+
+<link href="/js/alert/jquery.alerts.phonekey.css" rel="stylesheet"/>
+<link href="/js/loading/loading-mobile.css" rel="stylesheet"/>
+
+<script type="text/javascript" src="/js/alert/jquery.alerts.js"></script>
+<!-- <script type="text/javascript" src="/js/loading/loading.js"></script> -->
+
+<script type="text/javascript" src="/js/extention.js"></script>
+
+<!-- 데이트피커 -->
+<link href="/js/datePicker/bulma-calendar.css" rel="stylesheet"/>
+<script type="text/javascript" src="/js/datePicker/bulma-calendar.js"></script>
+
+<!-- 로딩 스피너 -->
+<link href="/js/spinner/loading.css" rel="stylesheet"/>
+<script type="text/javascript" src="/js/spinner/loading.js"></script>
+
+<script src="/socket.io/socket.io.js"></script>
+
+
+<!-- 구글번역 -->
+<script type="text/javascript"> 
+function googleTranslateElementInit() { 
+  new google.translate.TranslateElement({pageLanguage: 'ko',
+	  layout: google.translate.TranslateElement.FloatPosition.TOP_LEFT,
+	  includedLanguages:'ko,en,ja,zh-CN'
+	 }, 'google_translate_element'); 
+} 
+</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+    var socket = io();
+    socket.on("refresh", function(data){
+        layout_init();
+    });
+    $(window).ready(function() {
+        socket.emit("joinAdmin", 'admin');
+        layout_init();
+        var urlPath = $(location).attr('pathname').split("/");
+        $(".left_menu_li").removeClass("active");
+        $.each($(".left_menu_li"), function(i,v){
+            if($(this).attr("data-url") == urlPath[3]){
+                $(this).addClass("active");
+            }
+        });
+        $.each($(".left_menu_sub_list"), function(i,v){
+            if($(this).attr("data-url") == urlPath[3]){
+                $(this).find("a").addClass("active");
+            }
+        });
+
+        $(".chat_count_icon").on("click", function(){
+            location.href="./chatList";
+        });
+        $(".logout_btn").on("click", function(){
+            $.ajax({
+				url:"./user_log_out",
+				success: function(re){
+					location.href = "./login";
+				}
+			});
+        });
+    });
+    function layout_init(){
+        $.ajax({
+            url : "/mysql/chat",
+            data:{
+                xml: "chat_not_read"
+            }, success: function(res){
+                if(res.length>0){
+                    var chatNotCount = res[0].CHAT_NOT_COUNT;
+                    $(".chat_count_icon").css("display", "flex");
+                    if(Number(chatNotCount) == 0){
+                        $(".chat_count_icon").css("display", "none");
+                    }else{
+                        $("#chat_count").text(moneyComma(chatNotCount));
+                    }
+                }
+            }
+        });
+    }
+</script>
+</head>
+<style>
+
+</style>
+<body>
+	<div class="web_wrap">
+        <div class="contents">
+            <!-- 메뉴 -->
+            <div class="left_menu_acco">
+                <div class="home_logo_box dis_flex_row">
+                    <div class="menu_icon">
+                        <a class="menu_logo_btn dis_inblock">
+                            <img src="/static/img/web/icon_menu.png">
+                        </a>
+                    </div>
+                    <div class="home_logo">
+                        <a class="home_logo_btn dis_inblock" href="/opener/admin/main">
+                            <img src="/static/img/web/<%=logoName%>">
+                            <h2 class="jj_title"><%=hotelName%></h2>
+                            <h2 class="jj_title" style="color: #000; margin-top: 8px;background: #dfdfdf;font-size: 15px;   display: table;"><%=session.name%></h2>
+                        </a>
+                    </div>
+                </div>
+                <ul class="left_menu_ul">
+                    <li class="left_menu_li" data-url="main">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon01" href="./main">메인화면</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <li class="left_menu_li" data-url="chatList">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon02" href="./chatList">AS문의</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <!-- 서브메뉴가 있을경우 -->
+                    <% if(session.level == '0010000' || session.level == '0010001' || session.level == '0010003'){%>
+                    <li class="left_menu_li active" data-url="userSett">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon03" href="./userSett">사용자<span class="right_arrow"></span></a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                        <ul class="left_menu_subbox">
+                            <li class="left_menu_sub_list" data-url="userSett">
+                                <a class="left_menu_sub_btn" href="./userSett"><span class="pointer_left"></span>회원 관리</a>
+                            </li>
+                            
+                            <!-- <li class="left_menu_sub_list" data-url="userAdmin">
+                                <a class="left_menu_sub_btn"  href="./userAdmin"><span class="pointer_left"></span>담당 관리</a>
+                            </li> -->
+                            
+                            <!-- <li class="left_menu_sub_list">
+                                <a class="left_menu_sub_btn" data-url=""><span class="pointer_left"></span>AS 업체</a>
+                            </li> -->
+                        </ul>
+                    </li>
+                    <%}%>
+                    <li class="left_menu_li">
+                        <a data-url="notice" href="./notice" class="left_menu_btn left_menu_icon left_menu_icon04">커뮤니티</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <li class="left_menu_li">
+                        <a data-url="notice" href="./mqtt" class="left_menu_btn left_menu_icon left_menu_icon05">출입문</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                        <ul class="left_menu_subbox">
+                            <li class="left_menu_sub_list" data-url="mqtt">
+                                <a class="left_menu_sub_btn" href="./mqtt"><span class="pointer_left"></span>출입문 제어</a>
+                            </li>
+                            <li class="left_menu_sub_list" data-url="mqttList">
+                                <a class="left_menu_sub_btn not_fun"><span class="pointer_left"></span>출입 기록</a>
+                            </li>
+                            <% if(session.level == '0010000' || session.level == '0010001'){%>
+                            <li class="left_menu_sub_list" data-url="mqttSett">
+                                <a class="left_menu_sub_btn"  href="./mqttSett"><span class="pointer_left"></span>출입문 관리</a>
+                            </li>
+                            <%}%>
+                            <!-- <li class="left_menu_sub_list" data-url="sett">
+                                <a class="left_menu_sub_btn" href="./sett"><span class="pointer_left"></span>계정 변경</a>
+                            </li> -->
+                        </ul>
+                    </li>
+                    
+                    <li class="left_menu_li" data-url="roomSett">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon05" href="./sett">환경설정</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                        <ul class="left_menu_subbox">
+                                <% if(session.level == '0010000' || session.level == '0010001'){%>
+                                <li class="left_menu_sub_list" data-url="roomSett">
+                                    <a class="left_menu_sub_btn" href="./roomSett"><span class="pointer_left"></span>동/호 관리</a>
+                                </li>
+                                <li class="left_menu_sub_list" data-url="">
+                                    <a class="left_menu_sub_btn" href="./codeSett"><span class="pointer_left"></span>코드 관리</a>
+                                </li>
+                                <%}%>
+                                <li class="left_menu_sub_list" data-url="sett">
+                                    <a class="left_menu_sub_btn" href="./sett"><span class="pointer_left"></span>계정 변경</a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                    
+                </ul>
+                <!-- <a class="admin_logout_btn" href="./sett" style="bottom: 65px;background-image: url(/static/img/web/people.png);">계정변경</a> -->
+                <a class="admin_logout_btn logout_btn">로그아웃</a>
+            </div>
+            <a class="chat_count_icon" style="display:none;">
+                <em id="chat_count" class="notice_color">0건</em>
+                <span class="chat_count_talk_icon">
+                    <img src="/static/img/web/foot_chat_icon.png">
+                </span>
+                <!-- <h2 class="chat_count_txt">읽지 않은 메세지 <em id="chat_count" class="notice_color">0건</em></h2> -->
+            </a>
+            <div class="content_box">
+                <!-- 알림 팁 -->
+                <div class="top_notice_grp cont_shadow_box" style="display:none">
+                    <div class="notice_top_box">
+                        <p class="notice_txt">읽지 않은 메세지 <em id="chat_count" class="notice_color">0건</em>이 있습니다.</p>
+                    </div>
+                    <div class="notice_bottom_box">
+                        <p class="notice_txt">안녕하세요. <%=brandName%>을 사용해주셔서 감사합니다. 제비처럼 빠른 일처리, <%=brandName%>에서 만나보세요.</p>
+                    </div>
+                </div>
+                <!-- //알림 팁 -->
+                <section> <%- body %> </section>
+            </div>
+            <!-- //메뉴 --> 
+            
+        </div>
+    </div>
+</body>
+</html>

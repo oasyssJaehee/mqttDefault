@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+
+
+<link href="/css/web/layout.css" rel="stylesheet"/>
+<link href="/css/web/common.css" rel="stylesheet"/>
+
+<!-- 폰트 -->
+<link href="/css/font/pretendard.css" rel="stylesheet"/>
+
+<!-- 구글번역 -->
+<script type="text/javascript"> 
+function googleTranslateElementInit() { 
+  new google.translate.TranslateElement({pageLanguage: 'ko',
+	  layout: google.translate.TranslateElement.FloatPosition.TOP_LEFT,
+	  includedLanguages:'ko,en,ja,zh-CN'
+	 }, 'google_translate_element'); 
+} 
+</script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+</head>
+<style>
+
+</style>
+<body>
+	<div class="web_wrap">
+        <div class="contents">
+            <!-- 메뉴 -->
+            <div class="left_menu_acco">
+                <div class="home_logo_box dis_flex_row">
+                    <div class="menu_icon">
+                        <a class="menu_logo_btn dis_inblock">
+                            <img src="/static/img/web/menu.png">
+                        </a>
+                    </div>
+                    <div class="home_logo">
+                        <a class="home_logo_btn dis_inblock"><img src="/static/img/web/<%=logoName%>"></a>
+                    </div>
+                </div>
+                <ul class="left_menu_ul">
+                    <li class="left_menu_li">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon01">메인화면</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <li class="left_menu_li">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon02">AS문의</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <!-- 서브메뉴가 있을경우 -->
+                    <li class="left_menu_li active">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon03">사용자<span class="right_arrow"></span></a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                        <ul class="left_menu_subbox">
+                            <li class="left_menu_sub_list">
+                                <a class="left_menu_sub_btn"><span class="pointer_left"></span>담당 관리자</a>
+                            </li>
+                            <li class="left_menu_sub_list">
+                                <a class="left_menu_sub_btn"><span class="pointer_left"></span>회원 관리</a>
+                            </li>
+                            <li class="left_menu_sub_list">
+                                <a class="left_menu_sub_btn"><span class="pointer_left"></span>AS 업체</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="left_menu_li">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon04">공지사항</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                    <li class="left_menu_li">
+                        <a class="left_menu_btn left_menu_icon left_menu_icon05">환경설정</a>
+                        <span class="left_menu_line"></span>
+                        <div class="menu_active_bg"></div>
+                    </li>
+                </ul>
+            </div>
+            <!-- //메뉴 --> 
+            <div class="content_box">
+                <!-- 알림 팁 -->
+                <div class="top_notice_grp cont_shadow_box">
+                    <div class="notice_top_box">
+                        <p class="notice_txt">읽지 않은 메세지 <em class="notice_color">1건</em>이 있습니다.</p>
+                    </div>
+                    <div class="notice_bottom_box">
+                        <p class="notice_txt">안녕하세요. <%=brandName%>을 사용해주셔서 감사합니다. 제비처럼 빠른 일처리, <%=brandName%>에서 만나보세요.</p>
+                    </div>
+                </div>
+                <!-- //알림 팁 -->
+                <div class="cont_shadow_box margin_top_20 padding0">
+                    <div class="cont_tit_box cont_tit_box_padding20">
+                        <h2 class="cont_tit"><%=brandName%> 사용 가이드</h2>
+                    </div>
+                    <div class="notice_borad_box">
+                        <div class="notice_cont_top_tbox">
+                            <div class="notice_profile_box_right dis_inblock">
+                                <span class="profile_img"></span>
+                            </div>
+                            <div class="notice_profile_text_right dis_inblock">
+                                <h2 class="notice_cont_right_tit">관리자</h2>
+                                <p class="notice_cont_right_txt">2022-01-25 16:22:41</p>
+                            </div>
+                            <p class="people_cont_num">128명 읽음</p>
+                        </div>
+                        <div class="margin_top_20">
+                           <!--이미지 업로드 할시-->
+                            <div class="image_upload_imgbox">
+                                <!--이미지는 무조건 .image_upload_imgbox 안에다가 넣여함 img-->
+                                <img src="">
+                            </div>
+                             <!--text 업로드 할시-->
+                            <div class="text_upload_tbox">
+                                <p class="text_upload_txt">안녕하세요 <%=brandName%>에 온것을 환영합니다.</p>
+                            </div>
+                        </div>
+                        <div class="bottom_edit_btnbox margin_top_20">
+                            <ul class="bottom_edit_ulbox">
+                                
+                                <li class="bottom_edit_list bottom_edit_list01">
+                                    <a class="bottom_edit_btn">수정</a>
+                                </li>
+                                <li class="bottom_edit_list bottom_edit_list02">
+                                    <a class="bottom_edit_btn">목록</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!--댓글기능-->
+                    </div>
+                </div>
+                <div class="cont_shadow_box margin_top_20">
+                    <div class="comment_box">
+                        <ul class="comment_ulbox">
+                            <li class="comment_listbox dis_flex_row">
+                                <div class="comment_tbox comment_tbox01">
+                                    <div class="comment_cont_top_tbox">
+                                        <div class="comment_profile_box_right dis_inblock">
+                                            <span class="profile_img"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="comment_tbox comment_tbox02">
+                                    <div class="comment_profile_text_right">
+                                        <h2 class="comment_cont_right_tit dis_inblock">관리자</h2>
+                                        <p class="comment_cont_right_txt dis_inblock">2022-01-25 16:22:41</p>
+                                    </div>
+                                    <div class="text_area_box">
+                                        <textarea class="textarea_style"></textarea>
+                                    </div>
+                                    <div class="comment_btnbox">
+                                        <ul class="comment_ulbox">
+                                            <li class="comment_libtn">
+                                                <a class="comment_btn">등록</a>
+                                            </li>
+                                            <li class="comment_libtn">
+                                                <a class="comment_btn">수정</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="comment_listbox dis_flex_row">
+                                <div class="comment_tbox comment_tbox01">
+                                    <div class="comment_cont_top_tbox">
+                                        <div class="comment_profile_box_right dis_inblock">
+                                            <span class="profile_img"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="comment_tbox comment_tbox02">
+                                    <div class="comment_profile_text_right">
+                                        <h2 class="comment_cont_right_tit dis_inblock">관리자</h2>
+                                        <p class="comment_cont_right_txt dis_inblock">2022-01-25 16:22:41</p>
+                                    </div>
+                                    <div class="text_area_box">
+                                        <textarea class="textarea_style"></textarea>
+                                    </div>
+                                    <div class="comment_btnbox">
+                                        <ul class="comment_ulbox">
+                                            <li class="comment_libtn">
+                                                <a class="comment_btn comment_btn01">등록</a>
+                                            </li>
+                                            <li class="comment_libtn ">
+                                                <a class="comment_btn comment_btn02">수정</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

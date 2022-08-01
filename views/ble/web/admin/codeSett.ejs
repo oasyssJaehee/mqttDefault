@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
+<link href="/js/pieProgress/asPieProgress.css" rel="stylesheet" />
+<script type="text/javascript" src="/js/pieProgress/jquery-asPieProgress.min.js"></script>
+
+<script type="text/javascript">
+
+    $(window).ready(function() {
+        init();
+        $('#room_table').on("keyup", "input", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+            
+        });
+        $('#room_table').on("change", "select", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+        });
+        $('#room_table').on("click", "input[type='checkbox']", function(){
+            if(!$(this).parents("tr").hasClass("new")){
+                $(this).parents("tr").addClass("update");
+            }
+        });
+        var addCount = 0;
+        $("#add_btn").on("click", function(){
+            var tr ="";
+            var check="";
+
+            check += "<td class='table_td table_td_center'>"
+                    + "<div class='check_box_btn'>"
+                    + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+addCount+"' checked>"
+                    + "<label class='dis_inblock ck_btn' for='user_"+addCount+"'></label>"
+                    + "</div>"
+                    + "</td>";
+            tr += "<tr class='new'>"
+                    + "<td class='table_td td_ck'>"
+                    + "<input name='code' class='table_td_txt edit_inp' type='text' value='' />"
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "<input name='info' class='table_td_txt edit_inp' type='text' value='' />"
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "<input name='content' class='table_td_txt edit_inp' type='text' value='' />"
+                    + "</td>"
+                    + "<td class='table_td td_ck'>"
+                    + "</td>"
+                    + check
+                    + "</tr>";
+                    addCount++;
+                    $("#room_table tbody").prepend(tr);
+        });
+        $("#save_btn").on("click", function(){
+            var success = true;
+            $.each($(".update"), function(i, v){
+                var prev = $(this).data("code");
+                var code = $(this).find("input[name='code']").val();
+                var info = $(this).find("input[name='info']").val();
+                var content = $(this).find("input[name='content']").val();
+                var ck = "";
+
+                if($(this).find("input[type='checkbox']").is(":checked")){
+                    ck = "1";
+                }else{
+                    ck = "0";
+                }
+                if(code != "" && content != ""){
+                    $.ajax({
+                        url: "/mysql/common",
+                        data:{
+                            xml : "update_code",
+                            prev: prev,
+                            code: code,
+                            info: info,
+                            content: content,
+                            userId: '<%=session.id %>',
+                            ck: ck,
+                        }, success:function(res){
+                            success = false;
+                            
+                        }
+                    })
+                }
+
+
+            });
+            $.each($(".new"), function(i, v){
+                var code = $(this).find("input[name='code']").val();
+                var info = $(this).find("input[name='info']").val();
+                var content = $(this).find("input[name='content']").val();
+                var ck = "";
+                if($(this).find("input[type='checkbox']").is(":checked")){
+                    ck = "1";
+                }else{
+                    ck = "0";
+                }
+                if(code != "" && content != ""){
+                    $.ajax({
+                        url: "/mysql/common",
+                        data:{
+                            xml : "insert_code",
+                            code: code,
+                            info: info,
+                            content: content,
+                            userId: '<%=session.id %>',
+                            ck: ck,
+                        }, success:function(res){
+                            success = false;
+                            
+                        }
+                    })
+                }
+            });
+            if(success){
+                Alert("저장 되었습니다.",function(){
+                    location.reload();
+                });
+            }else{
+                Alert("저장 실패했습니다.",function(){
+                    location.reload();
+                });
+            }
+
+        });
+        $("select[name='search_dcod']").on("change", function(){
+            init();
+        });
+        $.ajax({
+			url:"/mysql/common",
+			data:{
+				xml : "codeList_type",
+			},
+			success: function(re){
+                
+                // localDcodSelect = "<select name='dcod' class='dcod_select table_td_txt edit_inp'>";
+                // localStauSelect = "<select name='stau' class='status_select table_td_txt edit_inp'>";
+                for(var j=0; j<re.length; j++){
+                    $("select[name='search_dcod']").append("<option value='"+re[j].SUBCODE+"'>"+re[j].CODE_INFO+"</option>");
+
+                    // if(re[j].SUBCODE == "003"){
+                        // localDcodSelect += "<option value='"+re[j].SUBCODE+"'>"+re[j].CODE_INFO+"</option>";
+
+                    // }else{
+                        // localStauSelect += "<option value='"+re[j].SUBCODE+"'>"+re[j].CODE_INFO+"</option>";
+                    // }
+                }
+                // localDcodSelect += "</select>";
+                // localStauSelect += "</select>";
+            }
+		});
+    });
+    function init(){
+        
+        $.ajax({
+            url: "/mysql/common",
+            data:{
+                xml: "selectCodeList",
+                cod : $("select[name='search_dcod']").val()
+            },
+                success: function(res){
+                if(res.length > 0){
+                    var item = "";
+                    for(var i=0; i<res.length; i++){
+                        var appoUser = "";
+                        if(res[i].CODE_USE == "1"){
+                            appoUser += "<td class='table_td table_td_center'>"
+                                    + "<div class='check_box_btn'>"
+                                    + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+i+"' checked>"
+                                    + "<label class='dis_inblock ck_btn' for='user_"+i+"'></label>"
+                                    + "</div>"
+                                    + "</td>";
+                        }else{
+                            appoUser += "<td class='table_td table_td_center'>"
+                                    + "<div class='check_box_btn'>"
+                                    + "<input name='use' style='display:none;' type='checkbox' class='ck' id='user_"+i+"'>"
+                                    + "<label class='dis_inblock ck_btn' for='user_"+i+"'></label>"
+                                    + "</div>"
+                                    + "</td>";
+                        }
+                        item += "<tr data-code='"+res[i].CODE_CODE+"'>"
+                            + "<td class='table_td td_ck'>"
+                            + "<input name='code' class='table_td_txt edit_inp' type='text' value='"+res[i].CODE_CODE+"' />"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<input name='info' class='table_td_txt edit_inp' type='text' value='"+res[i].CODE_INFO+"' />"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<input name='content' class='table_td_txt edit_inp' type='text' value='"+res[i].CODE_CONTENT+"' />"
+                            + "</td>"
+                            + "<td class='table_td td_ck'>"
+                            + "<p class='table_td_txt'>"+res[i].CODE_LDATE+"</p>"
+                            + "</td>"
+                            + appoUser
+                            + "</tr>";
+                    }
+                    $("#room_table tbody").empty();
+                    $("#room_table tbody").append(item);
+                }else{
+                    $("#room_table tbody").empty();
+                }
+            }
+        });
+			
+        
+    }
+
+</script>
+</head>
+<style>
+.pie_progress_wrap{
+    display: block;
+    position: fixed;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color:rgba(0,0,0,0.45);
+    z-index: 9;
+}
+.pie_progress {
+    width: 160px;
+    margin: 10px auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.pie_progress__number{color:#fff;}
+.pie_progress__label{color:#fff;}
+@media all and (max-width: 768px) {
+    .pie_progress {
+    width: 80%;
+    max-width: 300px;
+    }
+}
+</style>
+<body>
+	
+    <div class="cont_shadow_box cont_shadow_box_800px margin_top_20 padding0">
+        <div class="cont_tit_box cont_tit_box_padding20">
+            <h2 class="cont_tit">코드 설정</h2>
+            <ul class="top_right_btnbox">
+                <li class="top_right_list">
+                    <button id="save_btn"class="btn btn_gray">저장</button>
+                </li>
+                <li class="top_right_list">
+                    <button id="add_btn" class="btn btn_blue">코드 추가</button>
+                </li>
+            </ul>
+        </div>
+        <ul class="table_shbox dis_flex_row">
+            <li class="table_sh_list table_sh_list01">
+                <div class="sh_inpbox_widthbox dis_flex_row">
+                    <div class="inp_box sh_inpbox01">
+                        <h2 class="sh_inpbox_tit">분류</h2>
+                    </div>
+                    <div class="inp_box sh_inpbox02">
+                        <select name="search_dcod" class="default_sel">
+                            <option value="" selected>전체</option>
+                        </select>
+                    </div>
+                </div>
+                
+            </li>
+            <li class="table_sh_list table_sh_list02">
+                
+            </li>
+        </ul>
+        <div class="table_hd_top table_notice_padding table_top_padding">
+            <table class="table_hdbox">
+                <colgroup>
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                </colgroup>
+                <tr>
+                    <thead>
+                        <tr>
+                            <th class="table_th">코드</th>
+                            <th class="table_th">분류</th>
+                            <th class="table_th">내용</th>
+                            <th class="table_th">변경날짜</th>
+                            <th class="table_th" style="text-align: center;">사용여부</th>
+                        </tr>
+                    </thead>
+                </tr>
+            </table>
+        </div>
+        <div class="table_body_scroll">
+            <div class="table_notice_padding">
+                <table id="room_table" class="table_notice hover_table">
+                    <colgroup>
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                        <col width="15%">
+                    </colgroup>
+                    <tr>
+                        <!-- <thead>
+                            <tr>
+                                <th class="table_th">동</th>
+                                <th class="table_th">호</th>
+                                <th class="table_th">층</th>
+                                <th class="table_th">상태</th>
+                                <th class="table_th">변경날짜</th>
+                                <th class="table_th" style="text-align: center;">사용여부</th>
+                            </tr>
+                        </thead>  -->
+                        <!-- 자료 없을때 -->
+                       <!-- <tr style="display: none;">
+                            <td colspan="6" class="empty_td">
+                                <p class="empty_td_txt">조회된 자료가 없습니다.</p>
+                            </td>
+                        </tr> -->
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- 팝업 -->
+
+</body>
+</html>
