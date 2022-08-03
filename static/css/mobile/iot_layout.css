@@ -2,7 +2,7 @@
 
 *{font-family: 'Pretendard', sans-serif;}
  html, body {margin:0;padding:0;width: 100%; position: relative; box-sizing: border-box; }
- body{background:#f1fbff;}
+ body{background:#f7f7f7;}
  body, h1, h2, h3, h4, h5, h6, fieldset, legend, form {font-size:13px; line-height:normal; margin: 0px; padding: 0px;}
  dl, dt, dd, p {margin: 0px;padding: 0px;line-height: normal;}
  ul, li, ol { margin: 0px; padding: 0px; list-style: none; }
@@ -1181,3 +1181,84 @@ font-size: 14px; font-weight: 500;}
     .search_video_top_sel_lab{color:#000; font-size: 13px; font-weight: 700; margin-bottom: 6px; display: block;}
 
     .camera_menu_btn_wrap{position: absolute; top:0; right: 0;z-index: 9;}
+
+
+
+
+
+
+
+
+
+
+
+    /* ble 폰키 디자인 */
+
+    /* 공통적용 */
+    .dis_flex_row{display: flex; flex-direction: row;}
+    .dis_flex_row_center{align-items: center;}
+    .dis_flex_row_end{justify-content: space-between;}
+    .mb20{margin-bottom: 20px;}
+    .mb30{margin-bottom: 30px;}
+    .mb40{margin-bottom: 40px;}
+    .mb50{margin-bottom: 50px;}
+    .contents{padding:00px; box-sizing: border-box; width: 100%; padding-top:60px;}
+
+    
+    /* 폰키 */
+    .key_wrap{width:100%; padding:40px; box-sizing: border-box; background-color:#fff;box-shadow: 2px 4px 8px 0px #2934390a; position:relative;
+        background:linear-gradient(45deg,
+        #ff9a9e 0%,
+        #fad0c4 99%,
+        #fad0c4 100%);text-shadow: 1.5px 1.5px 1.5px rgb(0 0 0 / 20%); } 
+
+    .cont_box{width:100%;}
+    .room_num{padding-left: 8px;}
+    .ck_txt{padding-left: 8px;}
+    .room_link_btn{width:60px; height:60px; border:0; border-radius: 50%; background-color:#fff; box-shadow: 2px 4px 8px 0px #2934390a;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; transition: 0.3s; color:#111;}
+    .room_link_btn .room_link_icon{display:block; width:18px; height: 18px; background-repeat: no-repeat; background-position: center; background-size: 100%;
+    background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom: 4px;}
+    .room_link_btn.on{background-color:#ff6066; color:#fff;}
+    .room_link_btn.on .room_link_icon{background-image: url('/static/img/mobile/door/bluetooth_on.png');}
+    .room_link_btn:disabled{background-color:#ddd; }
+
+    .room_tit{font-size: 28px; font-weight: 300; color:#fff; margin-bottom:8px;}
+    .room_num{font-size: 58px; font-weight: bold; color:#fff;;}
+   
+    .ck_data_box{ width:100%; }
+    .ck_state{display: inline-block; margin-right:8px;min-width: 91px;; max-width:91px}
+    .room_txt{font-size: 16px; font-weight: 400; margin-bottom: 8px;  font-weight:400; color:#fff;}
+    .ck_txt{color:#fff; font-weight: bold;}
+    .room_txt:last-child{margin-bottom: 0;}
+
+    .key_body{width:100%; padding:20px; box-sizing: border-box; }
+    .bg_cont_box{width: 100%; height:100%; border-radius: 12px; background-color:#fff; box-shadow: 2px 4px 8px 0px #2934390a; padding:16px; box-sizing: border-box;}
+
+    .body_key_btn_grp{width:100%; display: flex; flex-direction: row; margin-bottom:20px;}
+    .body_key_btn_grp:last-child{margin-bottom: 0;;}
+    .body_key_box{margin-right: 20px; width: 100%;  position:relative;}
+    .body_key_box::after{content: ""; display: block; padding-bottom: 100%;}
+    .body_key_box .bg_cont_box{position: absolute; top:0; left: 0;}
+    .body_key_box:last-child{margin-right: 0;}
+    
+.key_top_tbox{width:100%; text-align: center; margin-bottom:30px;}
+.key_top_tbox .eng_tit{font-weight: 400; font-size: 16px; color:#fff;}
+.key_top_tbox .kor_tit{font-weight: 600; font-size: 20px; margin-top:8px;color:#fff;}
+
+
+    /* .body_open_key_box{width:215px; height:215px; padding: 15px;box-sizing: border-box; margin:0 auto; margin-bottom: 30px;
+         background:linear-gradient(190deg, #ABDCFF, #0396FF);border-radius: 50%;} */
+         .body_open_key_box{ margin-bottom: 30px;}
+    .door_open_btn{display:block;justify-content: center; box-shadow: 2px 4px 8px 0px #2934391c; width:220px;height: 220px; border: 0; background-color:#fff;
+         box-sizing: border-box;  font-size:26px; font-weight: bold; color:#fe9c9f;border-radius: 50%; text-align: center; margin:0 auto}
+    .body_key_tit{font-size:16px;}
+
+    .open_icon{width:100px;  display: block; margin: 0 auto; margin-bottom: 4px;;}
+    .open_icon img{width:100%;}
+
+    .door_open_tit{display:block;line-height:30px;}
+    .door_open_tit01{font-size: 24px;}
+
+
+

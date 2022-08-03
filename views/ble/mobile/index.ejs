@@ -51,9 +51,75 @@
 </script>
 </head>
 <body>
-	<div style="margin-top: 300px;">
-		<button id="connect">연결</button>
-		<button id="openBtn">문열기</button>
+	<div class="contents">
+        <div class="key_wrap">
+            <div class="key_grp_cont key_grp_cont01">
+                <div class="key_top_tbox">
+                    <h2 class="eng_tit">Click the button to open the door</h2>
+                    <h2 class="kor_tit">버튼을 클릭하여 문을 열어주세요.</h2>
+                </div>
+            </div>
+            <div class="key_grp_cont key_grp_cont02">
+                <div class="body_open_key_box mb20">
+                    <button class="door_open_btn dis_flex_row dis_flex_row_center" id="openBtn">
+                        <span class="open_icon">
+                            <img src="/static/img/mobile/door/open_lock04.png">
+                        </span>
+                        <em class="door_open_tit door_open_tit3">OPEN</em>
+                    </button>
+                </div>
+            </div>
+            <div class="key_grp_cont key_grp_cont03">
+                <div class="mb20 cont_box dis_flex_row dis_flex_row_center dis_flex_row_end">
+                    <div class="room_tbox">
+                        <h2 class="room_tit">Room<em class="room_num">101</em></h2>
+                    </div>
+                    <div class="room_link_box">
+                        <!-- 연결중일때 .on -->
+                        <button class="room_link_btn on" id="connect">
+                            <span class="room_link_icon"></span>
+                            연결
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="key_grp_cont key_grp_cont04">
+                <div class="ck_data_box">
+                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-IN</em><em class="ck_txt">2022-08-03 PM 15:00</em></p>
+                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-OUT</em><em class="ck_txt">2022-08-04 AM 11:00</em></p>
+                </div>
+            </div> 
+        </div>
+        <div class="key_body">
+            <div class="body_key_btn_grp">
+                <div class="body_key_box body_key_box01">
+                    <div class="bg_cont_box">
+                        <h2 class="body_key_tit">홈 제어</h2>
+                        <span class="body_key_sub_icon body_key_sub_icon01"></span>
+                    </div>
+                </div>
+                <div class="body_key_box body_key_box02">
+                    <div class="bg_cont_box">
+                        <h2 class="body_key_tit">스마트 오더</h2>
+                        <span class="body_key_sub_icon body_key_sub_icon01"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="body_key_btn_grp">
+                <div class="body_key_box body_key_box01">
+                    <div class="bg_cont_box">
+                        <h2 class="body_key_tit">호텔 소식</h2>
+                        <span class="body_key_sub_icon body_key_sub_icon01"></span>
+                    </div>
+                </div>
+                <div class="body_key_box body_key_box02">
+                    <div class="bg_cont_box">
+                        <h2 class="body_key_tit">출입 내역</h2>
+                        <span class="body_key_sub_icon body_key_sub_icon01"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 	</div>
 </body>
 </html>
