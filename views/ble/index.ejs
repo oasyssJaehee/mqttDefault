@@ -8,38 +8,51 @@
 
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
         <script src="/js/mqttData.js"></script>
+
+        <script>
+        
+            $(document).ready(function() {
+                $(window).on("beforeunload", function(){
+                    setTimeout(test,0);
+                });
+                alert();
+                //릴레이 On
+                $("#on").on("click", function(){
+                    $.ajax({
+                        url:"/doorOn",
+                        data:{
+                            topic: "oasyss/102"
+                        },
+                        success : function(result){
+                            console.log(result);
+                        }
+                    });
+                });
+                //릴레이 Off
+                $("#off").on("click", function(){
+                    $.ajax({
+                        url:"/doorTime",
+                        data:{
+                            topic: "oasyss/102"
+                        },
+                        success : function(result){
+                            console.log(result);
+                        }
+                    });
+                });
+            });
+            
+            // window.onbeforeunload = function (event) {
+            //     // 표준에 따라 기본 동작 방지
+            //     event.preventDefault();
+            //     // ajax 호출
+            //     alert("종료");
+            // }
+        </script>
     </head>
     <body>
         <button id="on">on</button>
         <button id="off">off</button>
     </body>
-    <script>
-        
-        $(document).ready(function() {
-            //릴레이 On
-            $("#on").on("click", function(){
-                $.ajax({
-                    url:"/doorOn",
-                    data:{
-                        topic: "oasyss/102"
-                    },
-                    success : function(result){
-                        console.log(result);
-                    }
-                });
-            });
-            //릴레이 Off
-            $("#off").on("click", function(){
-                $.ajax({
-                    url:"/doorTime",
-                    data:{
-                        topic: "oasyss/102"
-                    },
-                    success : function(result){
-                        console.log(result);
-                    }
-                });
-            });
-        });
-    </script>
+    
 </html>

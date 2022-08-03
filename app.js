@@ -184,65 +184,7 @@ app.get('/', function(req, res) {
     }
     
 })
-app.get('/doorTime', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    client.publish(query.topic, JSON.stringify(mqttModule.doorTime()), {qos:2})
 
-    response.send(query);
-
-})
-app.get('/doorOn', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.doorOpen()), {qos:2})
-
-    response.send(query);
-
-})
-app.get('/bleConnect', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleConnect()), {qos:2})
-
-    response.send(query);
-
-})
-app.get('/bleDisConnect', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleDisConnect()), {qos:2})
-
-    response.send(query);
-
-})
-app.get('/bleOpen', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleOpen()), {qos:2})
-
-    response.send(query);
-
-})
-app.get('/bleTest', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleDisConnect()), {qos:2})
-
-    response.send(query);
-
-})
 const connection = mysql.connection()
 
 app.get('/mysql/user', function (req, res) {
@@ -494,31 +436,56 @@ app.get('/mysql/insertChat', function (req, res) {
         }
     });
 });
+//ble command
+app.get('/doorTime', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    client.publish(query.topic, JSON.stringify(mqttModule.doorTime()), {qos:2})
 
+    response.send(query);
 
-//appReceive
-function appRelayOn(data){
-    console.log(data);
+})
+app.get('/doorOn', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    console.log("open ====>" + query.topic);
+    client.publish(query.topic, JSON.stringify(mqttModule.doorOpen()), {qos:2})
 
-    var stTime=new Date();
-    console.log("send ====>");
-    client.publish(data.topic, JSON.stringify(mqttModule.relayContact()), {qos:2})
-    
+    response.send(query);
 
-    let ms = JSON.parse(JSON.stringify(mqttModule.relayContact()));
-    var num = data.topic.toString().replace("oasyss/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.relayContact()[1];
-    ms.type = "send";
-    ms.userId = data.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = data.open;
-    queryModule.insertMqttLog(ms)
-}
-module.exports.appRelayOn = appRelayOn;
+})
+app.get('/bleConnect', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    console.log("open ====>" + query.topic);
+    client.publish(query.topic, JSON.stringify(mqttModule.bleConnect()), {qos:2})
+
+    response.send(query);
+
+})
+app.get('/bleDisConnect', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    console.log("open ====>" + query.topic);
+    client.publish(query.topic, JSON.stringify(mqttModule.bleDisConnect()), {qos:2})
+
+    response.send(query);
+
+})
+app.get('/bleOpen', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    console.log("open ====>" + query.topic);
+    client.publish(query.topic, JSON.stringify(mqttModule.bleOpen()), {qos:2})
+
+    response.send(query);
+
+})
 
 
 

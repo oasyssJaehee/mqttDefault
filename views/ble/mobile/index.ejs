@@ -24,7 +24,7 @@
 <script type="text/javascript">
 	
 	$(window).ready(function() {
-		// $.loading.start('Loading...');
+
 		$("#connect").on("click", function(){
 			$.ajax({
                 url:"/bleConnect",
@@ -47,13 +47,28 @@
                 }
             });
 		});
+        $("#test").on("click", function(){
+            $.ajax({
+                url:"/ble/mobile/mysql/co",
+                data:{
+                    xml:"bs_code_insert_key"
+                },success:function(res){
+                    console.log(res);
+                }
+            });
+        });
 	});
+    function test(){
+        alert("a");
+    }
 </script>
 </head>
 <body>
 	<div style="margin-top: 300px;">
 		<button id="connect">연결</button>
+        
 		<button id="openBtn">문열기</button>
+        <button id="test">테스트</button>
 	</div>
 </body>
 </html>

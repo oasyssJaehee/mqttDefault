@@ -8,6 +8,7 @@ const mysql = require("./MySQL.js")
 
 const multer = require('multer');
 const path = require('path');
+const { Console } = require('console');
 
 // multer setting
 const upload = multer({
@@ -67,4 +68,48 @@ router.get('/index', function (req, res) {
   })
 });
   
+//mysql
+const connection = mysql.connection()
+
+//업체코드 입력
+router.get('/mysql/co', function (req, res) {
+  var uri = req.url;
+var data = url.parse(uri, true).query;
+var format = {language: 'sql', indent: '  '};
+var xml_name = data.xml;
+var query = mysql.coMapper().getStatement("co", xml_name, data, format);
+
+  connection.query(query, function (err, rows, fields) {
+    if(err){
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(err));
+        res.end();
+    }else{
+        res.setHeader('Content-Type', 'application/json');
+        if(rows.length > 0){
+          console.log(rows[0].BS_CODE);
+          data.code = rows[0].BS_CODE;
+          query = mysql.coMapper().getStatement("co", "bs_code_insert", data, format);
+          connection.query(query, function (err, rows, fields) {
+            if(err){
+                res.setHeader('Content-Type', 'application/json');
+                res.send(JSON.stringify(err));
+                res.end();
+            }else{
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                  console.log(rows);
+        
+                  
+                }
+                var result = JSON.stringify(rows)
+                
+                res.send(result);
+                res.end();
+            }
+          });
+        }
+    }
+  });
+});
 module.exports = router;

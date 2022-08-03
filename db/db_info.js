@@ -2,7 +2,7 @@ var db_host = "210.114.18.107";
 var db_port = "3306";
 var db_user = "user_dev";
 var db_pw = "user_dev";
-var db_name = "smart_opener";
+var db_name = "smart_bridge";
 // var db_name = "smart_stage9";
 // var db_name = "smart_buildone";
 

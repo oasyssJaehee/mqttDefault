@@ -1,0 +1,31 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="co">
+    <select id="bs_code_insert_key">
+    SELECT IFNULL(MAX(BS_CODE), 0) + 1 AS BS_CODE
+    FROM CO_BS_CODE
+    </select>
+    <insert id="bs_code_insert">
+    INSERT INTO co_bs_code (
+    BS_CODE
+    ,BS_NAME
+    ,BS_TEL
+    ,BS_NUM
+    ,BS_ADDR
+    ,BS_LUSER
+    ,BS_LDATE
+    ,BS_USE
+    ) VALUES (
+    #{code}
+    ,'asdf'
+    ,'asdf'
+    ,'asdf'
+    ,'asdf'
+    ,'asdf'
+    ,SYSDATE()
+    ,'1'
+    )
+    </insert>
+</mapper>
