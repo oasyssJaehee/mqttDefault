@@ -107,10 +107,21 @@
                 }
             });  
         },1000);
-        
+        $("#connect").on("click", function(){
+            $.loading.start('도어락 연결 중입니다.');
+            $.ajax({
+                url:"/mqttCheck",
+                data:{
+                    topic: "oasyss32/20001/501"
+                },
+                success : function(result){
+                    mqttCheck();
+                }
+            });  
+        });
 		
 		$("#openBtn").on("click", function(){
-            if(!bleConnect){Alert("도어락을 연결해 주세요.");}
+            if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
             Confirm("문을 여시겠습니까?", function(){
                 $.loading.start('문을 여는 중입니다.');
                 $.ajax({

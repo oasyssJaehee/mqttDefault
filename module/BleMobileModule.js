@@ -67,7 +67,38 @@ router.get('/index', function (req, res) {
     title: req.app.locals.hotelName
   })
 });
-  
+router.get('/index1', function (req, res) {
+  var uri = req.url;
+
+  res.render("ble/mobile/index1",{
+    page:"login",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index2', function (req, res) {
+  var uri = req.url;
+
+  res.render("ble/mobile/index2",{
+    page:"login",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index3', function (req, res) {
+  var uri = req.url;
+
+  res.render("ble/mobile/index3",{
+    page:"login",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index4', function (req, res) {
+  var uri = req.url;
+
+  res.render("ble/mobile/index4",{
+    page:"login",
+    title: req.app.locals.hotelName
+  })
+});
 //mysql
 const connection = mysql.connection()
 
