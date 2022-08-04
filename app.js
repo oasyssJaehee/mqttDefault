@@ -154,6 +154,36 @@ client.on("message", function(topic, message){
 
     if(ms.cmd == "255"){
         console.log("와이파이 연결");
+    }else if(ms.cmd == "210"){
+        console.log("BLE 연결");
+        var msg = "";
+        if(ms.state == "1"){
+            msg = "connect"
+        }else if(ms.state == "2"){
+            msg = "disconnect"
+        }else if(ms.state == "3"){
+            msg = "scanstop"
+        }
+        io.to("rm_1").emit("ble", {
+            msg : msg
+        });
+    }else if(ms.cmd == "211"){
+        console.log("MQTT 연결");
+        var msg = "";
+        msg = "mqttConnect",
+        state = ms.state
+        io.to("rm_1").emit("ble", {
+            msg : msg,
+            state:state
+        });
+    }else if(ms.cmd == "81"){
+        console.log("BLE 동작");
+        var msg = "open";
+        state = ms.state
+        io.to("rm_1").emit("ble", {
+            msg : msg,
+            state:state
+        });
     }
     
 })
@@ -367,19 +397,14 @@ io.sockets.on("connection", function(socket){
             admin: admin,
             socket: socket.id
         }
-        var format = {language: 'sql', indent: '  '};
-        var query = mysql.chatMapper().getStatement("chat", "chat_room_insert", data, format);
-        connection.query(query, function (err, rows, fields) {
-            if(err){
-                console.log(err)
-            }else{
-            }
-        });
-        io.to(data.rm).emit("recvChat", {
-            message : "",
-            userId: user,
-            admin: data.admin
-        });
+        // var format = {language: 'sql', indent: '  '};
+        // var query = mysql.chatMapper().getStatement("chat", "chat_room_insert", data, format);
+        // connection.query(query, function (err, rows, fields) {
+        //     if(err){
+        //         console.log(err)
+        //     }else{
+        //     }
+        // });
     })
     //채팅 메세지
     socket.on("msg", function(data){
@@ -452,6 +477,17 @@ app.get('/doorOn', function(request, response) {
     var query = url.parse(uri, true).query;
     console.log("open ====>" + query.topic);
     client.publish(query.topic, JSON.stringify(mqttModule.doorOpen()), {qos:2})
+
+    response.send(query);
+
+    
+})
+app.get('/mqttCheck', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    console.log("open ====>" + query.topic);
+    client.publish(query.topic, JSON.stringify(mqttModule.mqttCheck()), {qos:2})
 
     response.send(query);
 

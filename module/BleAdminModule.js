@@ -12,11 +12,32 @@ router.use((req, res, next) => {
 });
 
 
-router.get('/login', function (req, res) {
-  res.render("ble/web/admin/login",{
-      session: req.session.admin,
-      title:req.app.locals.hotelName,
-      hotelCode: req.app.locals.hotelCode
+router.get('/index', function (req, res) {
+  
+  res.render("ble/web/admin/index",{
+    page:"index",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index1', function (req, res) {
+  
+  res.render("ble/web/admin/index1",{
+    page:"index",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index2', function (req, res) {
+  
+  res.render("ble/web/admin/index2",{
+    page:"index",
+    title: req.app.locals.hotelName
+  })
+});
+router.get('/index3', function (req, res) {
+  
+  res.render("ble/web/admin/index3",{
+    page:"index",
+    title: req.app.locals.hotelName
   })
 });
 module.exports = router;

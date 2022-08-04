@@ -75,17 +75,25 @@ const relayCheck = function(){
 
     return data;
 }
+const mqttCheck = function(){
 
+    var data = new Uint8Array(10); 
+    data[0] = 211;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+    data[4] = 0;
+    data[5] = 0;
+    data[6] = 0;
+    data[7] = 0;
+    data[8] = 0;
+    data[9] = 0;
+
+    data = checkSum(data);
+
+    return data;
+}
 const bleConnect = function(){
-    let today = new Date();   
-
-    let year = today.getFullYear(); // 년도
-    let month = today.getMonth() + 1;  // 월
-    let date = today.getDate();  // 날짜
-    let hours = today.getHours(); // 시
-    let minutes = today.getMinutes();  // 분
-    year = String(year).substr(2,4);
-
     var data = new Uint8Array(10); 
     data[0] = 210;
     data[1] = 1;
@@ -353,3 +361,4 @@ module.exports.bleConnect = bleConnect;
 module.exports.bleDisConnect = bleDisConnect;
 module.exports.bleTest = bleTest;
 module.exports.bleOpen = bleOpen;
+module.exports.mqttCheck = mqttCheck;

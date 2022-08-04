@@ -22,45 +22,111 @@
 <script type="text/javascript" src="/js/image-popup/jquery.magnific-popup.js"></script>
 
 <script type="text/javascript">
-	
-	$(window).ready(function() {
+    var socket = io();
+    var bleConnect = false;
 
-		$("#connect").on("click", function(){
-			$.ajax({
-                url:"/bleConnect",
-                data:{
-                    topic: "oasyss32/20001/501"
-                },
-                success : function(result){
-                    console.log(result);
-                }
-            });
-		});
-		$("#openBtn").on("click", function(){
-			$.ajax({
-                url:"/doorOn",
-                data:{
-                    topic: "oasyss32/20001/501"
-                },
-                success : function(result){
-                    console.log(result);
-                }
-            });
-		});
-        $("#test").on("click", function(){
-            $.ajax({
-                url:"/ble/mobile/mysql/co",
-                data:{
-                    xml:"bs_code_insert_key"
-                },success:function(res){
-                    console.log(res);
-                }
-            });
-        });
+	socket.on("ble", function(data){
+		console.log(data);
+        if(data.msg == "scanstop"){
+            Alert("검색된 도어락이 없습니다.\n관리자에게 문의해 주세요.");
+            $.loading.end();
+        }else if(data.msg == "connect"){
+            $("#connect").removeClass("disabled");
+            $("#connect").addClass("on");
+            Alert("도어락이 연결 되었습니다.");
+            bleConnect = true;
+            $.loading.end();
+        }else if(data.msg == "disconnect"){
+            $("#connect").removeClass("on");
+            $("#connect").addClass("disabled");
+            Alert("도어락 연결이 종료 되었습니다.");
+            bleConnect = false;
+            $.loading.end();
+        }else if(data.msg == "mqttConnect"){
+            clearInterval(mqttInterver);
+            if(!data.state){
+                $.ajax({
+                    url:"/bleConnect",
+                    data:{
+                        topic: "oasyss32/20001/501"
+                    },
+                    success : function(result){
+                    }
+                });
+            }else{
+                $("#connect").removeClass("disabled");
+                $("#connect").addClass("on");
+                Alert("도어락이 연결 되어 있습니다.");
+                $.loading.end();
+            }
+        }else if(data.msg == "open"){
+            clearInterval(actionInterver);
+            $.loading.end();
+            if(data.state == "1"){
+                Alert("문이 열렸습니다.");
+            }
+        }
+        
+        
 	});
-    function test(){
-        alert("a");
+    var actionInterver;
+    function actionCheck(){
+        var count = 0;
+        actionInterver = setInterval(function(){
+            count++;
+            if(count > 15){
+                clearInterval(actionInterver);
+                Alert("도어락 연결을 확인해 주세요.");
+                $.loading.end();
+            }
+        }, 1000);
     }
+    var mqttInterver;
+    function mqttCheck(){
+        var mqttCount = 0;
+        mqttInterver = setInterval(function(){
+            mqttCount++;
+            if(mqttCount > 10){
+                clearInterval(mqttInterver);
+                Alert("브릿지 연결을 확인해 주세요.");
+                $.loading.end();
+            }
+        }, 1000);
+    }
+	$(window).ready(function() {
+        $.loading.start('도어락 연결 중입니다.');
+        socket.emit("joinRoom", "1", "test", "0");
+        setTimeout(function(){
+            $.ajax({
+                url:"/mqttCheck",
+                data:{
+                    topic: "oasyss32/20001/501"
+                },
+                success : function(result){
+                    mqttCheck();
+                }
+            });  
+        },1000);
+        
+		
+		$("#openBtn").on("click", function(){
+            if(!bleConnect){Alert("도어락을 연결해 주세요.");}
+            Confirm("문을 여시겠습니까?", function(){
+                $.loading.start('문을 여는 중입니다.');
+                $.ajax({
+                    url:"/doorOn",
+                    data:{
+                        topic: "oasyss32/20001/501"
+                    },
+                    success : function(result){
+                        console.log(result);
+                        actionCheck();
+                    }
+                });
+            });
+		});
+	});
+
 </script>
 </head>
 <body>
@@ -89,7 +155,7 @@
                     </div>
                     <div class="room_link_box">
                         <!-- 연결중일때 .on -->
-                        <button class="room_link_btn on" id="connect">
+                        <button class="room_link_btn disabled" id="connect">
                             <span class="room_link_icon"></span>
                             연결
                         </button>

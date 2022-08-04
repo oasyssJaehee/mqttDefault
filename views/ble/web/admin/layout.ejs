@@ -52,55 +52,8 @@ function googleTranslateElementInit() {
 </script><script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script type="text/javascript">
     var socket = io();
-    socket.on("refresh", function(data){
-        layout_init();
-    });
     $(window).ready(function() {
-        socket.emit("joinAdmin", 'admin');
-        layout_init();
-        var urlPath = $(location).attr('pathname').split("/");
-        $(".left_menu_li").removeClass("active");
-        $.each($(".left_menu_li"), function(i,v){
-            if($(this).attr("data-url") == urlPath[3]){
-                $(this).addClass("active");
-            }
-        });
-        $.each($(".left_menu_sub_list"), function(i,v){
-            if($(this).attr("data-url") == urlPath[3]){
-                $(this).find("a").addClass("active");
-            }
-        });
-
-        $(".chat_count_icon").on("click", function(){
-            location.href="./chatList";
-        });
-        $(".logout_btn").on("click", function(){
-            $.ajax({
-				url:"./user_log_out",
-				success: function(re){
-					location.href = "./login";
-				}
-			});
-        });
     });
-    function layout_init(){
-        $.ajax({
-            url : "/mysql/chat",
-            data:{
-                xml: "chat_not_read"
-            }, success: function(res){
-                if(res.length>0){
-                    var chatNotCount = res[0].CHAT_NOT_COUNT;
-                    $(".chat_count_icon").css("display", "flex");
-                    if(Number(chatNotCount) == 0){
-                        $(".chat_count_icon").css("display", "none");
-                    }else{
-                        $("#chat_count").text(moneyComma(chatNotCount));
-                    }
-                }
-            }
-        });
-    }
 </script>
 </head>
 <style>
@@ -215,19 +168,6 @@ function googleTranslateElementInit() {
                 </span>
                 <!-- <h2 class="chat_count_txt">읽지 않은 메세지 <em id="chat_count" class="notice_color">0건</em></h2> -->
             </a>
-            <div class="content_box">
-                <!-- 알림 팁 -->
-                <div class="top_notice_grp cont_shadow_box" style="display:none">
-                    <div class="notice_top_box">
-                        <p class="notice_txt">읽지 않은 메세지 <em id="chat_count" class="notice_color">0건</em>이 있습니다.</p>
-                    </div>
-                    <div class="notice_bottom_box">
-                        <p class="notice_txt">안녕하세요. <%=brandName%>을 사용해주셔서 감사합니다. 제비처럼 빠른 일처리, <%=brandName%>에서 만나보세요.</p>
-                    </div>
-                </div>
-                <!-- //알림 팁 -->
-                <section> <%- body %> </section>
-            </div>
             <!-- //메뉴 --> 
             
         </div>
