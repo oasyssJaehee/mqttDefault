@@ -1252,6 +1252,7 @@ font-size: 14px; font-weight: 500;}
          .body_open_key_box{ margin-bottom: 30px;}
     .door_open_btn{display:block;justify-content: center; box-shadow: 2px 4px 8px 0px #2934391c; width:220px;height: 220px; border: 0; background-color:#fff;
          box-sizing: border-box;  font-size:26px; font-weight: bold; color:#fe9c9f;border-radius: 50%; text-align: center; margin:0 auto}
+    .body_key_tit_sub{font-weight: 400;color: #999; margin-bottom: 4px;font-size: 14px;}
     .body_key_tit{font-size:16px;}
 
     .open_icon{width:100px;  display: block; margin: 0 auto; margin-bottom: 4px;;}
@@ -1260,5 +1261,14 @@ font-size: 14px; font-weight: 500;}
     .door_open_tit{display:block;line-height:30px;}
     .door_open_tit01{font-size: 24px;}
 
+    .body_key_sub_icon{display: block; width:30px; height: 30px; position: absolute; bottom: 16px; right: 16px; background-repeat: no-repeat; background-position: center;
+    background-size:100%;}
+    .body_key_sub_icon01{background-image: url('/static/img/mobile/door/control_icon.png');}
+    .body_key_sub_icon02{background-image: url('/static/img/mobile/door/order_icon.png');}
+    .body_key_sub_icon03{background-image: url('/static/img/mobile/door/news_icon.png');}
+    .body_key_sub_icon04{background-image: url('/static/img/mobile/door/list_icon.png');}
+
+
+ 
 
 
