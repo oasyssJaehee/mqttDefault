@@ -27,9 +27,90 @@
 
 
 </script>
+<style>
+    body, html{background-color:#fff;}
+    .contents{padding: 20px; box-sizing: border-box; width: 100%; padding-top:80px;}
+</style>
 </head>
 <body>
 	<div class="contents">
+        <div class="sub_page_wrap news_wrap">
+            <div class="sub_page_topbox">
+                <div class="sub_page_icon">
+                    <img src="/static/img/mobile/door/news_icon.png">
+                </div>
+                <div class="sub_page_tbox">
+                    <p class="sub_page_txt">Hotel News</p>
+                    <h2 class="sub_page_tit">호텔 뉴스</h2>
+                </div>
+            </div>
+            <div class="cont_list_box">
+                <div class="news_list_searchbox">
+                    <div class="news_list_searchgrp dis_flex_row dis_flex_row_center">
+                        <div class="news_list_search">
+                            <input type="text" class="news_list_search_inp" placeholder="제목 또는 내용을 입력해주세요.">
+                        </div>
+                        <div class="news_list_sc_btnbox">
+                            <a class="news_list_sc_btn">검색</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="news_list_titlebox dis_flex_row dis_flex_row_center">
+                    <div class="news_list_title news_list_title01">No.</div>
+                    <div class="news_list_title news_list_title02">제목</div>
+                    <div class="news_list_title news_list_title03">날짜</div>
+                </div>
+                <!-- 리스트 갯수 15개 -->
+                <ul class="news_list_ul">
+                    <li class="news_list_li">
+                        <div class="news_list_tbox dis_flex_row dis_flex_row_center">
+                            <h2 class="news_list_num news_list_tit news_list_tit01">3</h2>
+                            <h2 class="news_list_maintit news_list_tit news_list_tit02">호텔 7월 수영장 개장 안내</h2>
+                            <p class="news_list_txt news_list_tit news_list_tit03">2022-07-01</p>
+                        </div>
+                    </li>
+                    <li class="news_list_li">
+                        <div class="news_list_tbox dis_flex_row dis_flex_row_center">
+                            <h2 class="news_list_num news_list_tit news_list_tit01">2</h2>
+                            <h2 class="news_list_maintit news_list_tit news_list_tit02">호텔 7월 수영장 개장 안내</h2>
+                            <p class="news_list_txt news_list_tit news_list_tit03">2022-07-01</p>
+                        </div>
+                    </li>
+                    <li class="news_list_li">
+                        <div class="news_list_tbox dis_flex_row dis_flex_row_center">
+                            <h2 class="news_list_num news_list_tit news_list_tit01">1</h2>
+                            <h2 class="news_list_maintit news_list_tit news_list_tit02">호텔 7월 수영장 개장 안내</h2>
+                            <p class="news_list_txt news_list_tit news_list_tit03">2022-07-01</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="paging_btn_grp">
+                    <ul class="paging_btn_ul dis_flex_row dis_flex_row_center">
+                        <li class="paging_btn_li">
+                            <a class="paging_btn paging_btn_prev"></a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num active">1</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">2</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">3</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">4</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">5</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn paging_btn_next"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 	</div>
 </body>
 </html>

@@ -27,9 +27,64 @@
 
 
 </script>
+<style>
+    body, html{background-color:#fff;}
+    .contents{padding: 20px; box-sizing: border-box; width: 100%; padding-top:80px;}
+</style>
 </head>
 <body>
 	<div class="contents">
-	</div>
+        <div class="sub_page_wrap access_wrap">
+            <div class="sub_page_topbox">
+                <div class="sub_page_icon">
+                    <img src="/static/img/mobile/door/list_icon.png">
+                </div>
+                <div class="sub_page_tbox">
+                    <p class="sub_page_txt">Access List</p>
+                    <h2 class="sub_page_tit">출입 내역</h2>
+                </div>
+            </div>
+            <div class="cont_list_box">
+                <div class="access_list_titlebox dis_flex_row dis_flex_row_center">
+                    <div class="access_list_title access_list_title01">출입 시간</div>
+                    <div class="access_list_title access_list_title02">출입 방식</div>
+                </div>
+                <!-- 리스트 갯수 15개 -->
+                <ul class="access_list_ul">
+                    <li class="access_list_li">
+                        <div class="access_list_tbox dis_flex_row dis_flex_row_center">
+                            <h2 class="access_list_num access_list_tit access_list_tit01">2022-07-01 AM 10:22</h2>
+                            <h2 class="access_list_maintit access_list_tit access_list_tit02">폰키</h2>
+                        </div>
+                    </li>
+                </ul>
+                <div class="paging_btn_grp">
+                    <ul class="paging_btn_ul dis_flex_row dis_flex_row_center">
+                        <li class="paging_btn_li">
+                            <a class="paging_btn paging_btn_prev"></a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num active">1</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">2</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">3</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">4</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn_num paging_btn_num">5</a>
+                        </li>
+                        <li class="paging_btn_li">
+                            <a class="paging_btn paging_btn_next"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

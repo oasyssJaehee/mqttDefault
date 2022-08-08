@@ -65,100 +65,44 @@ function googleTranslateElementInit() {
             <!-- 메뉴 -->
             <div class="left_menu_acco">
                 <div class="home_logo_box dis_flex_row">
-                    <div class="menu_icon">
-                        <a class="menu_logo_btn dis_inblock">
-                            <img src="/static/img/web/icon_menu.png">
-                        </a>
-                    </div>
                     <div class="home_logo">
                         <a class="home_logo_btn dis_inblock" href="/opener/admin/main">
                             <img src="/static/img/web/<%=logoName%>">
-                            <h2 class="jj_title"><%=hotelName%></h2>
-                            <h2 class="jj_title" style="color: #000; margin-top: 8px;background: #dfdfdf;font-size: 15px;   display: table;"><%=session.name%></h2>
                         </a>
                     </div>
                 </div>
-                <ul class="left_menu_ul">
-                    <li class="left_menu_li" data-url="main">
-                        <a class="left_menu_btn left_menu_icon left_menu_icon01" href="./main">메인화면</a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                    </li>
-                    <li class="left_menu_li" data-url="chatList">
-                        <a class="left_menu_btn left_menu_icon left_menu_icon02" href="./chatList">AS문의</a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                    </li>
-                    <!-- 서브메뉴가 있을경우 -->
-                    <% if(session.level == '0010000' || session.level == '0010001' || session.level == '0010003'){%>
-                    <li class="left_menu_li active" data-url="userSett">
-                        <a class="left_menu_btn left_menu_icon left_menu_icon03" href="./userSett">사용자<span class="right_arrow"></span></a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                        <ul class="left_menu_subbox">
-                            <li class="left_menu_sub_list" data-url="userSett">
-                                <a class="left_menu_sub_btn" href="./userSett"><span class="pointer_left"></span>회원 관리</a>
-                            </li>
-                            
-                            <!-- <li class="left_menu_sub_list" data-url="userAdmin">
-                                <a class="left_menu_sub_btn"  href="./userAdmin"><span class="pointer_left"></span>담당 관리</a>
-                            </li> -->
-                            
-                            <!-- <li class="left_menu_sub_list">
-                                <a class="left_menu_sub_btn" data-url=""><span class="pointer_left"></span>AS 업체</a>
-                            </li> -->
-                        </ul>
-                    </li>
-                    <%}%>
-                    <li class="left_menu_li">
-                        <a data-url="notice" href="./notice" class="left_menu_btn left_menu_icon left_menu_icon04">커뮤니티</a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                    </li>
-                    <li class="left_menu_li">
-                        <a data-url="notice" href="./mqtt" class="left_menu_btn left_menu_icon left_menu_icon05">출입문</a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                        <ul class="left_menu_subbox">
-                            <li class="left_menu_sub_list" data-url="mqtt">
-                                <a class="left_menu_sub_btn" href="./mqtt"><span class="pointer_left"></span>출입문 제어</a>
-                            </li>
-                            <li class="left_menu_sub_list" data-url="mqttList">
-                                <a class="left_menu_sub_btn not_fun"><span class="pointer_left"></span>출입 기록</a>
-                            </li>
-                            <% if(session.level == '0010000' || session.level == '0010001'){%>
-                            <li class="left_menu_sub_list" data-url="mqttSett">
-                                <a class="left_menu_sub_btn"  href="./mqttSett"><span class="pointer_left"></span>출입문 관리</a>
-                            </li>
-                            <%}%>
-                            <!-- <li class="left_menu_sub_list" data-url="sett">
-                                <a class="left_menu_sub_btn" href="./sett"><span class="pointer_left"></span>계정 변경</a>
-                            </li> -->
-                        </ul>
-                    </li>
-                    
-                    <li class="left_menu_li" data-url="roomSett">
-                        <a class="left_menu_btn left_menu_icon left_menu_icon05" href="./sett">환경설정</a>
-                        <span class="left_menu_line"></span>
-                        <div class="menu_active_bg"></div>
-                        <ul class="left_menu_subbox">
-                                <% if(session.level == '0010000' || session.level == '0010001'){%>
-                                <li class="left_menu_sub_list" data-url="roomSett">
-                                    <a class="left_menu_sub_btn" href="./roomSett"><span class="pointer_left"></span>동/호 관리</a>
-                                </li>
-                                <li class="left_menu_sub_list" data-url="">
-                                    <a class="left_menu_sub_btn" href="./codeSett"><span class="pointer_left"></span>코드 관리</a>
-                                </li>
-                                <%}%>
-                                <li class="left_menu_sub_list" data-url="sett">
-                                    <a class="left_menu_sub_btn" href="./sett"><span class="pointer_left"></span>계정 변경</a>
-                                </li>
-                            </ul>
+                <div class="left_menu_box">
+                    <div class="left_menu_titbox">
+                        <h2 class="left_menu_tit">객실 제어</h2>
+                    </div>
+                    <ul class="left_menu_ul">
+                        <li class="left_menu_li">
+                            <a class="left_menu_page_btn">
+                                도어락 제어
+                            </a>
                         </li>
-                        
-                    
-                </ul>
-                <!-- <a class="admin_logout_btn" href="./sett" style="bottom: 65px;background-image: url(/static/img/web/people.png);">계정변경</a> -->
+                    </ul>
+                    <div class="left_menu_titbox">
+                        <h2 class="left_menu_tit">로그</h2>
+                    </div>
+                    <ul class="left_menu_ul">
+                        <li class="left_menu_li">
+                            <a class="left_menu_page_btn">
+                                동작 내역
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="left_menu_titbox">
+                        <h2 class="left_menu_tit">환경 설정</h2>
+                    </div>
+                    <ul class="left_menu_ul">
+                        <li class="left_menu_li">
+                            <a class="left_menu_page_btn">
+                                객실 설정
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <a class="admin_logout_btn logout_btn">로그아웃</a>
             </div>
             <a class="chat_count_icon" style="display:none;">
@@ -166,7 +110,6 @@ function googleTranslateElementInit() {
                 <span class="chat_count_talk_icon">
                     <img src="/static/img/web/foot_chat_icon.png">
                 </span>
-                <!-- <h2 class="chat_count_txt">읽지 않은 메세지 <em id="chat_count" class="notice_color">0건</em></h2> -->
             </a>
             <!-- //메뉴 --> 
             
