@@ -56,7 +56,8 @@
             }else{
                 $("#connect").removeClass("disabled");
                 $("#connect").addClass("on");
-                Alert("도어락이 연결 되어 있습니다.");
+                bleConnect = true;
+                Alert("도어락이 연결 되었습니다.");
                 $.loading.end();
             }
         }else if(data.msg == "open"){
@@ -70,6 +71,21 @@
         
 	});
     var actionInterver;
+    var clickInterver;
+    var openClick = false;
+
+    function clickCheck(){
+        var count = 0;
+        clickInterver = setInterval(function(){
+            count++;
+            if(count > 20){
+                openClick = false;
+                clearInterval(clickInterver);
+                
+            }
+        }, 1000);
+    }
+    
     function actionCheck(){
         var count = 0;
         actionInterver = setInterval(function(){
@@ -95,7 +111,7 @@
     }
 	$(window).ready(function() {
         $.loading.start('도어락 연결 중입니다.');
-        socket.emit("joinRoom", "1", "test", "0");
+        socket.emit("joinRoom", "2", "test", "0");
         setTimeout(function(){
             $.ajax({
                 url:"/mqttCheck",
@@ -122,6 +138,7 @@
 		
 		$("#openBtn").on("click", function(){
             if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
+            if(openClick){Alert("잠시 뒤 시도해 주세요.");return;}
             Confirm("문을 여시겠습니까?", function(){
                 $.loading.start('문을 여는 중입니다.');
                 $.ajax({
@@ -130,8 +147,9 @@
                         topic: "oasyss32/20001/501"
                     },
                     success : function(result){
-                        console.log(result);
+                        openClick = true;
                         actionCheck();
+                        clickCheck();
                     }
                 });
             });

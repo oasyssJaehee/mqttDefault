@@ -164,7 +164,7 @@ client.on("message", function(topic, message){
         }else if(ms.state == "3"){
             msg = "scanstop"
         }
-        io.to("rm_1").emit("ble", {
+        io.to("rm_2").emit("ble", {
             msg : msg
         });
     }else if(ms.cmd == "211"){
@@ -172,7 +172,7 @@ client.on("message", function(topic, message){
         var msg = "";
         msg = "mqttConnect",
         state = ms.state
-        io.to("rm_1").emit("ble", {
+        io.to("rm_2").emit("ble", {
             msg : msg,
             state:state
         });
@@ -180,7 +180,7 @@ client.on("message", function(topic, message){
         console.log("BLE 동작");
         var msg = "open";
         state = ms.state
-        io.to("rm_1").emit("ble", {
+        io.to("rm_2").emit("ble", {
             msg : msg,
             state:state
         });
