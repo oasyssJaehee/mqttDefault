@@ -67,6 +67,14 @@ router.get('/index', function (req, res) {
     title: req.app.locals.hotelName
   })
 });
+router.get('/keySett', function (req, res) {
+  var uri = req.url;
+
+  res.render("ble/mobile/keySett",{
+    page:"login",
+    title: req.app.locals.hotelName
+  })
+});
 router.get('/index1', function (req, res) {
   var uri = req.url;
 
