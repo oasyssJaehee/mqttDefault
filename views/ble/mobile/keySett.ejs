@@ -24,7 +24,14 @@
 <script type="text/javascript">
     var socket = io();
     var bleConnect = false;
-
+    $(window).ready(function() {
+        $(".password_change_btn").on("click", function(){
+            $("#pass_change_pop").css("display", "block");
+        });
+        $(".popup_bottom_btn_cancel").on("click", function(){
+            $("#pass_change_pop").css("display", "none");
+        });
+    });
 
 </script>
 <style>
@@ -110,11 +117,11 @@
             </div>
         </div>
         <!-- 비밀번호 변경 팝업 -->
-        <div class="popup_wrap">
+        <div id="pass_change_pop" style="display: none;" class="popup_wrap">
             <div class="popup_box">
                 <div class="popup_tbox">
                     <p class="popup_txt">변경하실 비밀번호를<br>입력해주세요.</p>
-                    <p class="popup_txt color_ff6066">한번 더<br>입력해주세요.</p>
+                    <!-- <p class="popup_txt color_ff6066">한번 더<br>입력해주세요.</p> -->
                     <div class="popup_input_box">
                         <input class="popup_inp" type="text" placeholder="비밀번호를 입력해주세요.">
                     </div>
@@ -124,7 +131,7 @@
                         <a class="popup_bottom_btn popup_bottom_btn_cancel">취소</a>
                     </li>
                     <li class="popup_bottom_btnbox">
-                        <a class="popup_bottom_btn popup_bottom_btn_save">저장</a>
+                        <a class="popup_bottom_btn popup_bottom_btn_save">확인</a>
                     </li>
                 </ul>
             </div>

@@ -65,13 +65,21 @@ router.get('/login', function (req, res) {
 router.get('/index', function (req, res) {
   var uri = req.url;
   var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
 
-  console.log(query);
+  var pri_check = req.cookies["pri_check"];
   res.render("ble/mobile/index",{
     page:"index",
     title: AppInfo.hotelName,
-    hotelCode: AppInfo.hotelCode,
-    logoName : AppInfo.logoName
+    logoName: AppInfo.logoName,
+    hotelCode: dec[0],
+    rspk: dec[1],
+    acno : dec[2],
+    rono: dec[3],
+    pri_check: pri_check
   })
 });
 router.get('/keySett', function (req, res) {
@@ -79,7 +87,9 @@ router.get('/keySett', function (req, res) {
 
   res.render("ble/mobile/keySett",{
     page:"login",
-    title: req.app.locals.hotelName
+    title: AppInfo.hotelCode,
+    title: AppInfo.hotelName,
+    logoName: AppInfo.logoName
   })
 });
 router.get('/index1', function (req, res) {
@@ -117,6 +127,14 @@ router.get('/index4', function (req, res) {
 //mysql
 const connection = mysql.connection()
 
+router.get('/pri_cookie', function (req, res) {
+  res.cookie("pri_check", "1", {
+    maxAge: (1000*60*60*24) * 7
+  });
+  res.setHeader('Content-Type', 'application/json');
+  res.send();
+  res.end();
+});
 //업체코드 입력
 router.get('/mysql/co', function (req, res) {
   var uri = req.url;

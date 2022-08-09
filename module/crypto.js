@@ -11,7 +11,6 @@ const cipher = (password, key) => {
 	const encryptResult = encrypt.update(password, 'utf8', 'base64') // 암호화
 		+ encrypt.final('base64') // 인코딩
 		
-	console.log(encryptResult)
 	return encryptResult
 }
 
@@ -21,7 +20,7 @@ const decipher = (password, key) => {
 	const decodeResult = decode.update(password, 'base64', 'utf8') // 암호화된 문자열, 암호화 했던 인코딩 종류, 복호화 할 인코딩 종류 설정
 		+ decode.final('utf8') // 복호화 결과의 인코딩
 		
-	console.log(decodeResult)
+	return decodeResult
 }
 module.exports = {
     cipher,

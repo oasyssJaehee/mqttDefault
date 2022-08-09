@@ -54,7 +54,7 @@ router.post('/apiKeyCreate', function (req, res) {
                     }else{
                         if(rows.length > 0){
                             //단축URL발급
-                            var enc = crypto.cipher(AppInfo.hotelCode+rows[0].RSPK+inputData.acno+inputData.rono, AppInfo.AES_KEY);
+                            var enc = crypto.cipher(AppInfo.hotelCode+"/"+rows[0].RSPK+"/"+inputData.acno+"/"+inputData.rono, AppInfo.AES_KEY);
                             var url = AppInfo.httpUrl+"/ble/mobile/index?key="+enc;
                             var naverQuery = encodeURI(url);
                             var api_url = 'https://openapi.naver.com/v1/util/shorturl';

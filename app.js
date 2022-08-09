@@ -13,6 +13,10 @@ const server = http.createServer(app)
 const io = socket(server)
 const path = require('path');
 
+var cookieParser = require('cookie-parser')
+
+app.use(cookieParser())
+
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 

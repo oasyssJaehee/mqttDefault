@@ -154,6 +154,28 @@
                 });
             });
 		});
+        if("<%=pri_check%>" != ""){
+            $("#pri_warp").css("display", "none");
+        }else{
+            $("#pri_warp").css("display", "block");
+        }
+        $("#pri_confirm").on("click", function(){
+            var ck = $("#pri_check").is(":checked");
+            if(ck){
+                $("#pri_warp").css("display", "none");
+                $.ajax({
+                    url:"./pri_cookie",
+                    success:function(){
+
+                    }
+                });
+            }else{
+                Alert("약관에 동의해 주세요.");
+            }
+        });
+        $(".password_set_btn").on("click", function(){
+            location.href = "./keySett";
+        });
 	});
 
 </script>
@@ -239,7 +261,7 @@
                 </div>
             </div>
         </div>
-        <div class="popup_wrap">
+        <div id="pri_warp" style="display: none;" class="popup_wrap">
             <div class="popup_box popup_box_ver02">
                 <div class="popup_tbox">
                     <h2 class="popup_tit dis_flex_row dis_flex_row_center"><span class="warning_icon"></span>사용 안내</h2>
@@ -260,15 +282,15 @@
                     </div>
                     <div class="check_box dis_flex_row dis_flex_row_center">
                         <div class="check_box_btn">
-                            <input type="checkbox" class="ck nohidden" id="text2">
-                            <label class="ck_btn" for="text2"></label>
+                            <input type="checkbox" class="ck nohidden" id="pri_check">
+                            <label class="ck_btn" for="pri_check"></label>
                         </div>
-                        <label class="ck_tit" for="text2">동의 후 사용합니다.</label>
+                        <label class="ck_tit" for="pri_check">동의 후 사용합니다.</label>
                     </div>
                 </div>
                 <ul class="popup_bottom_box">
                     <li class="popup_bottom_btnbox">
-                        <a class="popup_bottom_btn popup_bottom_btn_save">확인</a>
+                        <a id="pri_confirm" class="popup_bottom_btn popup_bottom_btn_save">확인</a>
                     </li>
                 </ul>
             </div>

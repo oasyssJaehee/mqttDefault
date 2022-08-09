@@ -1,6 +1,6 @@
 const serverPort = 6001;
 const hotelCode = "20001";
-const hotelName = "오아시스아파트";
+const hotelName = "오아시스";
 
 const saleType = "jebee";
 const mqttUrl = "mqtt://210.114.18.107";
