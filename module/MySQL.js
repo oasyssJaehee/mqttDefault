@@ -21,6 +21,8 @@ const roomMapper = require('mybatis-mapper');
 roomMapper.createMapper(['./db/xml/room.xml']);
 const coMapper = require('mybatis-mapper');
 coMapper.createMapper(['./db/xml/co.xml']);
+const apiMapper = require('mybatis-mapper');
+apiMapper.createMapper(['./db/xml/api.xml']);
 
 function useMysql(req, res, mapper){
     var result;
@@ -66,10 +68,13 @@ var returnRoomMapper = function(){
 var returnCoMapper = function(){
     return coMapper
 }
-
+var returnApiMapper = function(){
+    return apiMapper
+}
 module.exports.connection = returnConnection
 module.exports.userMapper = returnUserMapper
 module.exports.mqttMapper = returnMqttMapper
 module.exports.commonMapper = returnCommonMapper
 module.exports.chatMapper = returnChatMapper
 module.exports.coMapper = returnCoMapper
+module.exports.apiMapper = returnApiMapper

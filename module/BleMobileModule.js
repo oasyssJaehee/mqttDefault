@@ -9,6 +9,8 @@ const mysql = require("./MySQL.js")
 const multer = require('multer');
 const path = require('path');
 const { Console } = require('console');
+const crypto = require('./crypto');
+const AppInfo = require('./AppInfo');
 
 // multer setting
 const upload = multer({
@@ -39,10 +41,11 @@ router.get('/login', function (req, res) {
   if(openKey){
     res.render("ble/mobile/login",{
       page:"login",
-      title: req.app.locals.hotelName,
+      title: AppInfo.hotelName,
       openKey: openKey,
       layout: false,
-      hotelCode: req.app.locals.hotelCode
+      hotelCode: AppInfo.hotelCode,
+      logoName : AppInfo.logoName
     })
   }else{
     if(req.session.user){
@@ -61,10 +64,14 @@ router.get('/login', function (req, res) {
 });
 router.get('/index', function (req, res) {
   var uri = req.url;
+  var query = url.parse(uri, true).query;
 
+  console.log(query);
   res.render("ble/mobile/index",{
-    page:"login",
-    title: req.app.locals.hotelName
+    page:"index",
+    title: AppInfo.hotelName,
+    hotelCode: AppInfo.hotelCode,
+    logoName : AppInfo.logoName
   })
 });
 router.get('/keySett', function (req, res) {

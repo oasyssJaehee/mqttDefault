@@ -21,6 +21,8 @@ const multer = require('multer');
 
 var fileUploadRouter = require('./module/file');
 
+const AppInfo = require('./module/AppInfo');
+
 //경로 설정
 app.use(express.static(path.join(__dirname, 'static')));
 app.use('/local', express.static('./static/local'))
@@ -37,43 +39,6 @@ app.use(express.static(__dirname + '/'));
 
 app.set('layout', './ble/web/admin/layout', '')
 app.use(expressLayouts);
-//기초 세팅
-var serverPort = 6001;
-var hotelCode = "20001";
-var hotelName = "오아시스아파트";
-
-var saleType = "jebee";
-const mqttUrl = "mqtt://210.114.18.107";
-var logoName = "logo_jebee.png";
-
-// var serverPort = 6002;
-// var hotelCode = "0020003";
-// var hotelName = "STAGE9";
-// var logoName = "logo_stage9.png";
-
-// var serverPort = 6003;
-// var hotelCode = "0020004";
-// var hotelName = "빌드원";
-
-// var hotelCode = "0020002";
-// var hotelName = "복음로얄아파트";
-// var saleType = "hive";
-// const mqttUrl = "mqtt://183.111.125.45";
-
-// const mqttUrl = "mqtt://test";
-
-//로고이미지명
-// var logoName = "logo_jebee.png";
-var brandName = "제비넷";
-if (saleType=="hive"){
-    logoName = "logo_hive.png";
-    brandName = "하이브넷";
-}
-//글로발
-app.locals.hotelCode = hotelCode;
-app.locals.hotelName = hotelName;
-app.locals.saleType = saleType;
-app.locals.logoName = logoName;
 
 
 //세션연결
@@ -111,7 +76,7 @@ const options = {
     password:"1234",
 };
 //mqtt 연결
-const client = mqtt.connect(mqttUrl, options);
+const client = mqtt.connect(AppInfo.mqttUrl, options);
 //받은 서버 아이피
 var os = require('os');
 
@@ -135,7 +100,7 @@ function getServerIp() {
 
 
 
-client.subscribe("esp32/"+Number(hotelCode)+"/#")
+client.subscribe("esp32/"+Number(AppInfo.hotelCode)+"/#")
 
 client.on("message", function(topic, message){
     console.log("rec =====>");
@@ -194,8 +159,8 @@ const openerMobileModule = require('./module/BleMobileModule.js')
 app.use('/ble/mobile', openerMobileModule)
 const openerAdminModule = require('./module/BleAdminModule.js')
 app.use('/ble/admin', openerAdminModule)
-const AppReceiveModule = require('./module/AppReceive.js')
-app.use('/app/rec', AppReceiveModule)
+const ApiReceiveModule = require('./module/ApiReceive.js')
+app.use('/api/rec', ApiReceiveModule)
 
 const mysql = require("./module/MySQL.js")
 const mqttModule = require('./module/MqttData.js')
@@ -525,7 +490,7 @@ app.get('/bleOpen', function(request, response) {
 
 
 
-server.listen(serverPort, function() {
+server.listen(AppInfo.serverPort, function() {
     console.log('서버 실행 중..')
     // console.log(document);
 })
