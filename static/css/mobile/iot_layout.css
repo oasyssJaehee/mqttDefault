@@ -576,13 +576,7 @@ margin:0 auto ; color:#0ca8ff; box-sizing:border-box; margin-bottom:30px;}
  .user_info_ckbox_widthbox:last-child{border-bottom:0;}
  .def_cont_checkbox01{width:calc(100% - 70px);float:left;}
  .def_cont_checkbox02{width:70px;float:left;}
-.ck{display:none;} 
-.ck + .ck_btn {
-display:inline-block;  background-image:url('/img/opener/no_check_icon.png'); background-size:25px; background-repeat: no-repeat; background-position: left; transition: 0.3s;
-width:100%; padding-left:35px;font-size:14px; font-weight:500; box-sizing:border-box; height:40px;line-height:40px; box-sizing:border-box;}
-.ck:checked + .ck_btn { color:#0ca8ff;
-	background-image: url('/img/opener/check_icon.png');
-}
+
 
 .ck_state_tab{display:inline-block;padding:7px 12px; background:#0ca8ff; color:#fff; font-weight:bold; border-radius:100px; margin-top:6px;}
 
@@ -782,7 +776,6 @@ position: absolute; top:50%; left: 50%; transform: translate(-50%, -50%);transit
 
 .room_ck_btnbox{display: flex; flex-direction: row;align-items: center;justify-content: center; margin-top: 8px;}
 .ck_btn02_txt{padding-right: 8px;;}
-.check_box_btn{position: relative;width: 15px; height: 15px;;}
 .ck02 { width:15px; height:15px; opacity: 0; top:0; left:0; position: absolute;border:0; padding:0; margin:0; cursor: pointer;}
 .ck02 + .ck_btn02 {
 display:inline-block;  background-image:url('/static/img/opener/star_icon.png'); background-position: center; background-size: 100%; background-repeat: no-repeat;
@@ -1196,8 +1189,10 @@ font-size: 14px; font-weight: 500;}
 
     /* 공통적용 */
     .dis_flex_row{display: flex; flex-direction: row;}
+    .dis_flex_column{display: flex; flex-direction: column;}
     .dis_flex_row_center{align-items: center;}
     .dis_flex_row_end{justify-content: space-between;}
+    .dis_flex_row_justify_center{justify-content: center;}
     .mb20{margin-bottom: 20px;}
     .mb30{margin-bottom: 30px;}
     .mb40{margin-bottom: 40px;}
@@ -1246,6 +1241,8 @@ font-size: 14px; font-weight: 500;}
 .key_top_tbox .eng_tit{font-weight: 400; font-size: 16px; color:#fff;}
 .key_top_tbox .kor_tit{font-weight: 600; font-size: 20px; margin-top:8px;color:#fff;}
 
+.password_icon{display: block; ;}
+
 
     /* .body_open_key_box{width:215px; height:215px; padding: 15px;box-sizing: border-box; margin:0 auto; margin-bottom: 30px;
          background:linear-gradient(190deg, #ABDCFF, #0396FF);border-radius: 50%;} */
@@ -1267,8 +1264,260 @@ font-size: 14px; font-weight: 500;}
     .body_key_sub_icon02{background-image: url('/static/img/mobile/door/order_icon.png');}
     .body_key_sub_icon03{background-image: url('/static/img/mobile/door/news_icon.png');}
     .body_key_sub_icon04{background-image: url('/static/img/mobile/door/list_icon.png');}
+    .password_icon{background-image: url('/static/img/mobile/door/password_icon.png');}
+
+    .password_set_box{    width: 100%; height: 140px;border-radius: 12px; background-color: #fff; box-shadow: 2px 4px 8px 0px #2934390a; margin-bottom: 20px;}
+    .password_set_btn{width:100%; height: 100%;; padding: 16px; position: relative;
+        box-sizing: border-box; display: block;}
+
+        .body_key_tit_sub{font-weight: 400;color: #999; margin-bottom: 4px;font-size: 14px;}
+    .body_key_tit{font-size:16px;}
 
 
+    /* 객실 제어 */
+    .sub_page_topbox{width:100%; display: flex; flex-direction: row; align-items: center; margin-bottom: 20px;}
+    .sub_page_icon{width:58px; height:58px; margin-right:12px;}
+    .sub_page_icon img{width: 100%;}
+    .sub_page_txt{font-size: 18px; color:#999; margin-bottom: 4px;}
+    .sub_page_tit{font-size: 28px; color:#000;}
+
+    .cont_list_box{width:100%;}
+    .cont_list_ul{width:100%; display: flex; flex-direction: column;}
+    .cont_list_li{width:100%; background-color:#fff; padding:18px;box-sizing: border-box;
+    display: flex; flex-direction: row;align-items: center;justify-content: space-between; border-bottom:1px solid #eee;}
+    .cont_list_li:last-child{margin-bottom: 0;}
+
+    .cont_list_tbox{display: flex; flex-direction: row; align-items: center;}
+    .cont_list_icon{width:30px; height: 30px;; margin-right: 12px; background-repeat: no-repeat; background-position: center; background-size: 100%;}
+    .cont_list_all{background-image: url('/static/img/mobile/door/all_icon.png');}
+    .cont_list_light{background-image: url('/static/img/mobile/door/light_icon.png');}
+    .cont_list_aircon{background-image: url('/static/img/mobile/door/aircon_icon.png');}
+    .cont_list_tv{background-image: url('/static/img/mobile/door/tv_icon.png'); background-size: calc(100% - 3px);}
+
+    .radio_togle{position: relative; display: inline-block;vertical-align: middle;}
+    .tg_btn:after { content:""; display:block; width:16px; height:16px; position:absolute; top:3px; left:3px; background:#fff; border-radius:100px; transition:0.3s; }
+    .tg { display:none;}
+    .tg_btn{transition: 0.3s;}
+    .tg + .tg_btn {display:inline-block; width:40px; height:22px; position:relative;background:#0000001A;; border-radius:100px;margin:0 auto; cursor:pointer;vertical-align:middle;}
+
+    .tg:checked + .tg_btn {
+        background:#ff6066; 
+    }
+
+    .tg:checked + .tg_btn:after {
+        left:21px;
+        color:#ff6066;
+    }
+
+    .cont_list_tit{font-size: 16px;;}
+
+
+
+    /* 스마트 오더 */
+.order_list_box{width:100%;}
+.order_state_ul{width:100%; display: flex; flex-direction: row; margin-bottom:12px;}
+.order_state_li{margin-right:8px;}
+.order_state_li:last-child{margin-right: 0;}
+.order_state_btn{display: inline-block; padding:6px 12px;font-weight:500; box-sizing: border-box; border-radius: 100px; background-color:#eee; font-size:14px;color:#666;}
+.order_state_btn.active{background-color:#ff6066;color:#fff; }
+
+
+
+
+.order_list_ul{width:100%; display: flex; flex-direction: column;}
+.order_list_li{width:100%;background-color:#fff; padding:8px 0;box-sizing: border-box; border-bottom:1px solid #eee;}
+.order_list_li:last-child{border-bottom: 0;}
+.order_list_grp{width:100%;justify-content: space-between;}
+
+.order_list_infobox{width:calc(100% - 100px);overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.order_list_tbox{display: flex; flex-direction: row; align-items: center; width:calc(100% - 92px);}
+.order_list_tit{font-size: 16px;overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.order_list_txt{font-size: 14px; margin-top:8px; color:#999;overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.order_list_price{font-size: 14px; margin-top:8px; font-weight: bold;overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+
+
+.order_list_imgbox{position: relative; width:80px; margin-right:12px;}
+.order_list_imgbox:after{display: block; content: ""; padding-bottom: 100%;}
+.order_list_img{ position: absolute; top: 0;left: 0;width: 100%; height: 100%; background-color:#f6f6f6; border-radius: 8px; overflow: hidden;}
+
+
+
+.pm_cont_btn{width:30px; height: 30px; display: block; border: 1px solid #ddd; border-radius: 50%; box-sizing: border-box; background-repeat: no-repeat;
+background-position: center; background-size: 12px;}
+.pm_cont_plus{background-image: url('/static/img/mobile/door/plus_icon.png');}
+.pm_cont_minus{background-image: url('/static/img/mobile/door/minus_icon.png');}
+.pm_num_box{padding:0 4px;}
+.pm_num{font-weight: bold; color:#000; font-size: 18px;}
+
+.order_list_btnbox{width:100%; margin-top:12px; border-radius: 8px; overflow: hidden;}
+.order_list_btn{display:block; width:100%; padding:10px; box-sizing: border-box;   text-align:center; font-size:15px; font-weight: 500;}
+.order_list_btn01{background-color:#f3f3f3; color:#333;}
+.order_list_btn02{background-color:#ff6066; color:#fff;}
+
+
+.bag_close_btn{width:50px; height:50px; background-color: #fff; box-sizing: border-box; position: absolute; top:-25px; left:50%; transform: translateX(-50%); border-radius: 50%;;
+    box-shadow: 0px -7px 22px 0px #2934390f; background-image: url('/static/img/mobile/door/close_icon.png'); background-repeat: no-repeat; background-position: center;
+background-size: 12px;}
+
+.shop_bag_btn{width: 60px; height: 60px;position: fixed; bottom: 20px; right:20px; border-radius: 50%; background-color:rgba(255,96,102,0.9);
+display: flex; flex-direction: column;     justify-items: center; align-items: center; justify-content: center;z-index: 1;}
+.shop_bag_icon{width:35px; height:35px; display: block;}
+.shop_bag_icon img{width: 100%;}
+.shop_bag_num{width:22px; height: 22px; border-radius: 50%; background-color:#fff;color:#ff6066; font-weight: bold;; display: flex;align-items: center; justify-content: center;
+font-size: 12px; position: absolute; top:10px; right:10px;}
+
+
+
+.shop_total_box{position:fixed; width:100%; max-height: 75%; background-color:#fff; bottom:0; left:0;box-shadow: 0px -5px 20px 0px #29343921;
+padding:20px; box-sizing: border-box;z-index: 2;}
+.shop_total_box .order_list_li{position: relative; padding-left:15px;}
+.shop_total_box .order_list_li .delete_btn{position:absolute; left:-0px; top:50%; transform: translateY(-50%); width:30px; height:30px;
+display:block; border-radius: 50%; background-color:#ff6066; background-size: 12px; background-repeat: no-repeat; background-position: center; 
+background-image: url('/static/img/mobile/door/w_minus_icon.png');}
+.shop_total_tit{font-size:18px; margin-bottom: 4px;;}
+.shop_total_bag_icon{width:28px; height:28px; background-image: url('/static/img/mobile/door/p_shop_bag_icon.png'); background-position: center; background-repeat: no-repeat;
+background-size: 100%; margin-right:4px;}
+
+
+.shop_total_grp{max-height:calc(100vh - 450px); overflow-y: auto;}
+.shop_total_numbox{margin-top:12px; width:100%;}
+
+.shop_total_num_tit{font-size:18px; margin-right:8px; font-weight: 500;}
+.shop_total_num_tit:last-child{margin-right: 0;}
+.shop_total_num_txt{font-weight: bold; color:#ff6066;}
+
+
+.all_buy_btn{background-color:#ff6066; color:#fff;display:block; width:100%; padding:15px; box-sizing: border-box;   text-align:center; font-size:15px; font-weight: 500;
+    border-radius: 8px; margin-top:15px;}
+
+
+.news_list_li{border-bottom: 1px solid #eee;;}
+.news_list_titlebox{width:100%;padding: 10px 0; box-sizing: border-box; border-bottom: 1px solid #000; }
+.news_list_title{color:#000; width:100%; font-size: 14px;}
+.news_list_title01{max-width:50px;}
+.news_list_title03{max-width:80px; text-align: right;}
+
+.news_list_tit{width:100%; font-size: 14px;;}
+.news_list_tit01{max-width:50px;}
+.news_list_tit02{width:calc(100% - 130px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.news_list_tit03{max-width:80px;text-align: right; color:#999;}
+
+.news_list_tbox{padding:15px 0; box-sizing: border-box; width: 100%;;}
+
+.news_list_searchbox{width:100%; margin-bottom: 15px;}
+.news_list_searchgrp{width: 100%;;}
+.news_list_search{margin-right:8px; width:100%;}
+.news_list_search_inp{height: 40px; width:100%;padding: 8px; box-sizing: border-box; border-radius: 8px; border:1px solid #ddd;
+background-image:url('/static/img/mobile/door/search_icon.png'); background-size: 18px; background-repeat: no-repeat;  background-position: center left 8px;
+padding-left: 40px; outline: none;;}
+.news_list_sc_btn{border-radius: 8px; width:55px; height: 40px; background-color:#ff6066; display:block;text-align: center;line-height: 40px; color:#fff;}
+
+
+/* 출입 내역 */
+
+.access_list_li{border-bottom: 1px solid #eee;;}
+.access_list_titlebox{width:100%;padding: 10px 0; box-sizing: border-box; border-bottom: 1px solid #000; }
+.access_list_title{color:#000; width:100%; font-size: 14px;}
+.access_list_title01{max-width:50px;}
+.access_list_title03{max-width:80px; text-align: right;}
+
+.access_list_tit{width:100%; font-size: 14px;;}
+.access_list_tit01{max-width:50px;}
+.access_list_tit02{width:calc(100% - 130px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.access_list_tit03{max-width:80px;text-align: right; color:#999;}
+
+.access_list_tbox{padding:15px 0; box-sizing: border-box; width: 100%;;}
+
+.paging_btn_grp{width:100%; display: flex; flex-direction: column;     justify-items: center; align-content: center;
+    align-items: center; justify-content: center; margin-top:15px;}
+    .paging_btn_num{width:25px; height:25px; display: flex; border-radius: 50%;;    justify-content: center;
+        align-items: center; font-size: 15px;;}
+        .paging_btn {width:25px; height:25px; display: flex; border-radius: 50%;;    justify-content: center;
+           align-items: center;  border:1px solid #ddd; background-repeat: no-repeat; background-position: center; background-size: 10px;}
+    .paging_btn_prev{ margin-right: 4px; background-image: url('/static/img/mobile/door/prev_icon.png');}
+    .paging_btn_next{ margin-left: 4px; background-image: url('/static/img/mobile/door/next_icon.png');}
+    .paging_btn_num.active{background-color:#ff6066; color:#fff; font-weight: bold;}
  
+
+/* 비밀번호 설정 */
+.password_change_box{width:100%;margin-top:30px; padding-bottom: 20px; box-sizing: border-box; margin-bottom: 20px; border-bottom: 1px solid #eee;}
+.password_change_txt{text-align: center; color:#999; font-size: 14px; font-weight: bold; margin-bottom:8px;}
+.password_change_tit{font-size: 38px; padding: 10px; border-bottom: 1px solid #ddd; margin-right: 8px;  box-sizing: border-box;}
+.password_change_tit05{border-bottom: 0;}
+.password_change_tit:last-child{margin-right: 0;}
+
+.password_change_btn{display: block; width:100%; padding:16px; box-sizing: border-box;color:#fff; background-color:#ff6066; font-size:16px; margin-top: 40px;
+text-align: center; border-radius: 8px; font-weight: 500;}
+
+.password_change_list{width: 100%;}
+.password_change_tabbox{width:100%;padding:4px; box-sizing: border-box; background-color:#f3f5f6; border-radius: 8px;;}
+.password_change_tab_list{width:100%; transition: 0.3s;}
+.password_change_tab{display: block; padding:10px 12px; width: 100%; text-align: center; font-size:14px; color:#9EACB2;font-weight: 600; border-radius: 8px;
+box-sizing: border-box;transition: 0.3s;}
+
+.password_change_tab_list.active .password_change_tab{ background-color:#fff; box-shadow: 0px 5px 6px 0px #2934391a; color:#49555A;}
+
+.password_change_li{border-bottom: 1px solid #eee;;}
+.password_change_tab_contbox .password_change_top_tbox{width:100%;padding: 10px 0; box-sizing: border-box; border-bottom: 1px solid #000; }
+.password_change_top_txt p{color:#000; width:100%; font-size: 14px;}
+.password_change_top_txt{width:100%;}
+.password_change_top_tit{width:100%;}
+.password_change_top_tit > h2{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+
+.password_change_top_txt02{max-width:80px; text-align: center;}
+.password_change_top_txt03{max-width:80px; text-align: right;}
+.password_change_top_tit02{max-width:80px; text-align: center;}
+.password_change_top_tit03{max-width:80px; text-align: right;}
+.password_change_tab_contbox01 .password_change_top_tit01{width:calc(100% - 160px);}
+
+.password_change_li{padding:15px 0; box-sizing: border-box; width: 100%;}
+.color_ff6066{color:#ff6066;}
+
+
+/* 모바일 팝업 */
+.popup_wrap{width:100%; height: 100%; z-index: 10; position:fixed; top:0; left:0; background-color:rgba(0,0,0,0.45);}
+.popup_box{border-radius: 12px;  min-width:260px;background-color:#fff; box-shadow: 2px 4px 8px 0px #2934390a; position:absolute; top:50%; left:50%; transform: translate(-50%, -50%);}
+.popup_tbox{padding:16px; text-align: center; line-height: 170%;}
+.popup_txt{font-size:18px; line-height:170%;}
+.popup_input_box{width:100%; margin-top:16px;}
+.popup_inp{width:100%; box-sizing: border-box; padding:8px; border-radius: 8px;outline: none; border:1px solid #ccc; height: 40px;}
+.popup_bottom_box{width:100%; display: flex; flex-direction: row;border-top:1px solid #ddd; box-sizing: border-box;}
+.popup_bottom_btnbox{width:100%; border-right: 1px solid #ddd;}
+.popup_bottom_btnbox:last-child{border-right: 0;}
+.popup_bottom_btn{width:100%; height:100%; padding:16px; box-sizing: border-box; text-align: center; display: block; font-size:15px;}
+.popup_bottom_btn_cancel{color:#999;}
+.popup_bottom_btn_save{color:#0ca8ff}
+
+
+/* Check */
+.check_box{margin-top:16px;}
+.check_box_btn{width:24px; height:24px; margin-right:8px;}
+.ck { width:24px; height:24px; opacity: 0; top:0; left:0; position: absolute;border:0; padding:0; margin:0; cursor: pointer;}
+.ck + .ck_btn {
+display:inline-block;  
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239EACB2' d='M19,5v14H5V5H19z M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z'/%3E%3C/svg%3E");
+ background-size:24px; width:24px; height:24px; background-repeat: no-repeat; background-position: center; transition: 0.3s;}
+.ck + .ck_btn_height{height:auto;}
+
+.ck:checked + .ck_btn {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300BB71' d='M19,3H5C3.89,3,3,3.9,3,5v14c0,1.1,0.89,2,2,2h14c1.109,0,2-0.9,2-2V5C21,3.9,20.109,3,19,3z M10,17l-5-5 l1.41-1.41L10,14.17l7.59-7.59L19,8L10,17z'/%3E%3C/svg%3E");
+    background-position: 100%;}
+.ck_tit{font-size:16px; font-weight: bold;}
+
+.popup_box_ver02{width:calc(100% - 60px);}
+.popup_box_ver02 .popup_tit{font-size: 24px; text-align: left; margin-bottom: 12px;}
+.popup_box_ver02 .popup_txt{font-size:14px; text-align: left;}
+
+.warning_icon{width:28px; height:28px; background-image: url('/static/img/mobile/door/warning_icon.png'); background-repeat: no-repeat; background-position: center ;
+background-size :100%; margin-right: 8px;;}
+.popup_info_box{padding:10px; border-radius:8px;box-sizing: border-box; background-color:#f9f9f9; border:1px solid #ddd; margin-top:12px; text-align:left;}
+.popup_info_tbox{width:100%; display: flex; flex-direction: row;  margin-bottom: 12px;}
+.popup_info_tbox:last-child{margin-bottom: 0;;}
+.popup_info_state{width:20px; height:20px; display: block;line-height:20px;text-align: center; border-radius:50%; background-color:#ff6066;
+color:#fff; font-weight:bold; margin-right: 8px;;}
+.popup_info_tit{width:calc(100% - 28px); line-height:170%;}
+
 
 
