@@ -380,18 +380,29 @@
 <style>
     html, body{background-color:#fff;}
     .contents{padding:20px; padding-top:80px;}
+    .sub_page_tit{font-size: 22px;}
 </style>
 </head>
 <body>
 	<div class="contents">
         <div class="sub_page_wrap password_wrap dis_flex_column">
             <div class="sub_page_topbox">
-                <div class="sub_page_icon">
-                    <img src="/static/img/mobile/door/password_icon.png">
-                </div>
-                <div class="sub_page_tbox">
-                    <p class="sub_page_txt">Room Password Setting</p>
-                    <h2 class="sub_page_tit">객실 비밀번호 설정</h2>
+                <div class="ps_btn_grp dis_flex_row dis_flex_row_center">
+                    <div class="ps_btn_width ps_btn_width01 dis_flex_row dis_flex_row_center">
+                        <div class="sub_page_icon">
+                            <img src="/static/img/mobile/door/password_icon.png">
+                        </div>
+                        <div class="sub_page_tbox">
+                            <p class="sub_page_txt">Set Room Password</p>
+                            <h2 class="sub_page_tit">객실 비밀번호 설정</h2>
+                        </div>
+                    </div>
+                    <div class="ps_btn_width ps_btn_width02">
+                        <button class="room_link_btn disabled" id="connect">
+                            <span class="room_link_icon"></span>
+                            연결
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="password_change_box">

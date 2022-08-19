@@ -1278,8 +1278,9 @@ font-size: 14px; font-weight: 500;}
     .sub_page_topbox{width:100%; display: flex; flex-direction: row; align-items: center; margin-bottom: 20px;}
     .sub_page_icon{width:58px; height:58px; margin-right:12px;}
     .sub_page_icon img{width: 100%;}
-    .sub_page_txt{font-size: 18px; color:#999; margin-bottom: 4px;}
-    .sub_page_tit{font-size: 28px; color:#000;}
+    .sub_page_tbox{width:calc(100% - 72px);}
+    .sub_page_txt{font-size: 18px; color:#999; margin-bottom: 4px; overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .sub_page_tit{font-size: 28px; color:#000;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
     .cont_list_box{width:100%;}
     .cont_list_ul{width:100%; display: flex; flex-direction: column;}
@@ -1447,8 +1448,15 @@ padding-left: 40px; outline: none;;}
 .password_change_tit05{border-bottom: 0;}
 .password_change_tit:last-child{margin-right: 0;}
 
-.password_change_btn{display: block; width:100%; padding:16px; box-sizing: border-box;color:#fff; background-color:#ff6066; font-size:16px; margin-top: 40px;
-text-align: center; border-radius: 8px; font-weight: 500;}
+.ps_btn_grp{width:100%;}
+.ps_btn_width{width:100%; margin-right:12px;}
+.ps_btn_width:last-child{margin-right: 0;}
+.ps_btn_width02{max-width: 59px;;}
+.ps_btn_width02 .room_link_btn{box-shadow: none;  width:59px; height:59px;}
+.ps_btn_width02 .room_link_btn.disabled{background-color: #eee;;}
+.ps_btn_width02 .room_link_btn .room_link_btn.on{background-color: ;}
+.password_change_btn{display: block; width:100%; padding:16px; box-sizing: border-box;color:#fff; background-color:#ff6066; font-size:16px; 
+text-align: center; border-radius: 8px; font-weight: 500;  margin-top:40px;}
 
 .password_change_list{width: 100%;}
 .password_change_tabbox{width:100%;padding:4px; box-sizing: border-box; background-color:#f3f5f6; border-radius: 8px;;}
@@ -1474,6 +1482,8 @@ box-sizing: border-box;transition: 0.3s;}
 
 .password_change_li{padding:15px 0; box-sizing: border-box; width: 100%;}
 .color_ff6066{color:#ff6066;}
+
+
 
 
 /* 모바일 팝업 */
