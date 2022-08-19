@@ -113,13 +113,23 @@ client.on("message", function(topic, message){
 
     let ms = JSON.parse(message.toString());
     var num = topic.toString().replace("esp32/", "");
+    if(ms.state == true){
+        ms.state = "1";
+    }else if(ms.state == false){
+        ms.state = "0";
+    }
+    if(ms.cmd == "c"){
+        ms.cmd = "12";
+    }else if(ms.cmd == "f"){
+        ms.cmd = "15";
+    }
     num = num.split('/');
     ms.hotel = num[0];
     ms.num = num[1];
     ms.type = "rec";
     ms.recIp = getServerIp();
     // console.log(ms);
-    // queryModule.insertMqttLog(ms);
+    queryModule.insertMqttLog(ms);
 
     if(ms.cmd == "255"){
         console.log("와이파이 연결");
@@ -133,7 +143,7 @@ client.on("message", function(topic, message){
         }else if(ms.state == "3"){
             msg = "scanstop"
         }
-        io.to("rm_2").emit("ble", {
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
             msg : msg
         });
     }else if(ms.cmd == "211"){
@@ -141,20 +151,43 @@ client.on("message", function(topic, message){
         var msg = "";
         msg = "mqttConnect",
         state = ms.state
-        io.to("rm_2").emit("ble", {
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
             msg : msg,
             state:state
         });
     }else if(ms.cmd == "81"){
-        console.log("BLE 동작");
+        console.log("BLE OPEN");
         var msg = "open";
         state = ms.state
-        io.to("rm_2").emit("ble", {
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
+            msg : msg,
+            state:state
+        });
+    }else if(ms.cmd == "5"){
+        console.log("BLE DOOR TIME");
+        var msg = "doorTimeSett";
+        state = ms.state
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
+            msg : msg,
+            state:state
+        });
+    }else if(ms.cmd == "12"){
+        console.log("BLE PASS TIME");
+        var msg = "passTimeSett";
+        state = ms.state
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
+            msg : msg,
+            state:state
+        });
+    }else if(ms.cmd == "15"){
+        console.log("BLE PASS SETT");
+        var msg = "passSett";
+        state = ms.state
+        io.to("rm_"+ms.hotel+"_"+ms.num).emit("ble", {
             msg : msg,
             state:state
         });
     }
-    
 })
 
 
@@ -182,6 +215,25 @@ app.get('/', function(req, res) {
         res.redirect("/ble/admin/login")
     }
     
+})
+app.get('/socket/room', function(req, res) {
+    var uri = req.url;
+    var data = url.parse(uri, true).query;
+    var resData = {};
+    
+    var roomCount = 0;
+    console.log(roomArray);
+    for(var i=0; i<roomArray.length; i++){
+        if(roomArray[i].rmName == "rm_"+data.name){
+            console.log(roomArray[i]);
+            roomCount++;
+        }
+    }
+    resData.room_size = roomCount;
+    res.setHeader('Content-Type', 'application/json');
+    var result = JSON.stringify(resData)
+    res.send(result);
+    res.end();
 })
 
 const connection = mysql.connection()
@@ -273,7 +325,6 @@ app.get('/mysql/mqtt', function (req, res) {
     var format = {language: 'sql', indent: '  '};
     var xml_name = data.xml;
     var query = mysql.commonMapper().getStatement("mqtt", xml_name, data, format);
-    
     connection.query(query, function (err, rows, fields) {
         if(err){
             res.setHeader('Content-Type', 'application/json');
@@ -297,6 +348,8 @@ var adminRoomArray = new Array();
 io.use(function(socket, next){
     sessionMiddle(socket.request, socket.request.res || {}, next);
 });
+
+
 io.sockets.on("connection", function(socket){
     console.log("socket connect ===>");
     socket.on("error", function(err){
@@ -348,6 +401,7 @@ io.sockets.on("connection", function(socket){
         });
     });
     socket.on("joinRoom", (main_key, user, admin) => {
+        
         console.log("join Room ===>" + user);
         socket.join("rm_"+main_key)
         var obj = new Object();
@@ -356,6 +410,8 @@ io.sockets.on("connection", function(socket){
         obj.mainKey = main_key;
         obj.rmName = 'rm_'+main_key;
         obj.admin = admin
+
+        
 
         roomArray.push(obj);
         //room접속 로그
@@ -366,6 +422,7 @@ io.sockets.on("connection", function(socket){
             admin: admin,
             socket: socket.id
         }
+        
         // var format = {language: 'sql', indent: '  '};
         // var query = mysql.chatMapper().getStatement("chat", "chat_room_insert", data, format);
         // connection.query(query, function (err, rows, fields) {
@@ -435,7 +492,23 @@ app.get('/doorTime', function(request, response) {
   
     var uri = request.url;
     var query = url.parse(uri, true).query;
-    client.publish(query.topic, JSON.stringify(mqttModule.doorTime()), {qos:2})
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.doorTime());
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = mqttModule.doorTime()[0];
+    ms.state = mqttModule.doorTime()[1];
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    queryModule.insertMqttLog(ms)
 
     response.send(query);
 
@@ -444,20 +517,128 @@ app.get('/doorOn', function(request, response) {
   
     var uri = request.url;
     var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.doorOpen()), {qos:2})
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.doorOpen());
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = mqttModule.doorOpen()[0];
+    ms.state = mqttModule.doorOpen()[1];
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    queryModule.insertMqttLog(ms)
 
     response.send(query);
-
-    
 })
+app.get('/doorTimeSett', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.doorTime());
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = mqttModule.doorTime()[0];
+    ms.state = mqttModule.doorTime()[1];
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    queryModule.insertMqttLog(ms)
+
+    response.send(query);
+})
+app.get('/passTimeSett', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    var date = query.date;
+    date = date.replace(/-/gi, "");
+    date = date.replace(/ /gi, "");
+    date = date.replace(/PM/gi, "");
+    date = date.replace(/AM/gi, "");
+    date = date.replace(/:/gi, "");
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.doorPassTime(date));
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = 204;
+    ms.state = 12;
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    queryModule.insertMqttLog(ms)
+
+    response.send(query);
+})
+app.get('/passSett', function(request, response) {
+  
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.doorPass(query.pass));
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = 204;
+    ms.state = 15;
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    ms.remark = query.pass;
+    queryModule.insertMqttLog(ms)
+
+    response.send(query);
+})
+
 app.get('/mqttCheck', function(request, response) {
   
     var uri = request.url;
     var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.mqttCheck()), {qos:2})
 
+    var jsonData;
+    jsonData = JSON.stringify(mqttModule.mqttCheck());
+    client.publish(query.topic, jsonData, {qos:2})
+
+    let ms = JSON.parse(jsonData);
+    var num = query.topic.toString().replace("oasyss32/", "");
+    num = num.split('/');
+    ms.hotel = num[0];
+    ms.num = num[1];
+    ms.cmd = mqttModule.mqttCheck()[0];
+    ms.state = mqttModule.mqttCheck()[1];
+    ms.type = "send";
+    ms.userId = query.userId;
+    ms.hd = "wifi";
+    ms.recIp = getServerIp();
+    ms.open = query.open;
+    queryModule.insertMqttLog(ms)
     response.send(query);
 
 })
