@@ -41,7 +41,7 @@ app.use('/file', express.static('./upload'));
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/'));
 
-app.set('layout', './ble/web/admin/layout', '')
+app.set('layout', '', '')
 app.use(expressLayouts);
 
 

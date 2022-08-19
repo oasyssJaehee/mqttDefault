@@ -4,6 +4,7 @@ const fs = require('fs')
 const url = require('url');
 const mysql = require("./MySQL.js");
 const connection = mysql.connection();
+const AppInfo = require('./AppInfo');
 
 router.use((req, res, next) => {
     // changing layout for my admin panel
@@ -21,11 +22,12 @@ router.get('/index', function (req, res) {
   })
 });
 router.get('/index1', function (req, res) {
-  
   res.render("ble/web/admin/index1",{
     page:"index",
     title: req.app.locals.hotelName,
-    logoName:"a"
+    logoName:AppInfo.logoName,
+    hotelName:AppInfo.hotelName,
+    brandName:AppInfo.hotelName
   })
 });
 router.get('/index2', function (req, res) {
