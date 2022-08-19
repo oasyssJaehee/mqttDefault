@@ -189,14 +189,6 @@ const bleTest = function(){
     return data;
 }
 const doorOpen = function(){
-    let today = new Date();   
-
-    let year = today.getFullYear(); // 년도
-    let month = today.getMonth() + 1;  // 월
-    let date = today.getDate();  // 날짜
-    let hours = today.getHours(); // 시
-    let minutes = today.getMinutes();  // 분
-    year = String(year).substr(2,4);
 
     var data = new Uint8Array(10); 
     data[0] = 204;
@@ -214,7 +206,7 @@ const doorOpen = function(){
 
     return data;
 }
-const doorPass = function(pass1,pass2,pass3,pass4){
+const doorPass = function(pass){
 
     var data = new Uint8Array(10); 
     data[0] = 204;
@@ -222,10 +214,10 @@ const doorPass = function(pass1,pass2,pass3,pass4){
     data[2] = 0;
     data[3] = 0;
     data[4] = 0;
-    data[5] = pass1;
-    data[6] = pass2;
-    data[7] = pass3;
-    data[8] = pass4;
+    data[5] = pass.at(0);
+    data[6] = pass.at(1);
+    data[7] = pass.at(2);
+    data[8] = pass.at(3);
     data[9] = 0;
 
     data = checkSum(data);
@@ -286,8 +278,13 @@ const doorPassVerify = function(user,pass1,pass2,pass3,pass4){
 
     return data;
 }
-const doorPassTime = function(year, month, date, hours, min){
-
+const doorPassTime = function(date){
+    var year = date.substring(2,4);
+    var month = date.substring(4,6);
+    var toDate = date.substring(6,8);
+    var hours = date.substring(8,10);
+    var minutes = date.substring(10,12);
+    
     var data = new Uint8Array(10);
     data[0] = 204;
     data[1] = 12;
@@ -295,9 +292,9 @@ const doorPassTime = function(year, month, date, hours, min){
     data[3] = 0;
     data[4] = year;
     data[5] = month;
-    data[6] = date;
+    data[6] = toDate;
     data[7] = hours;
-    data[8] = min;
+    data[8] = minutes;
     data[9] = 0;
 
     
@@ -313,6 +310,7 @@ const doorTime = function(){
     let date = today.getDate();  // 날짜
     let hours = today.getHours(); // 시
     let minutes = today.getMinutes();  // 분
+    
     year = String(year).substr(2,4);
 
     var data = new Uint8Array(10);
@@ -327,7 +325,6 @@ const doorTime = function(){
     data[8] = minutes;
     data[9] = 0;
 
-    
     data = checkSum(data);
 
     return data;
@@ -356,6 +353,8 @@ module.exports.relayOff = relayOff;
 module.exports.relayContact = relayContact;
 module.exports.relayCheck = relayCheck;
 module.exports.doorTime = doorTime;
+module.exports.doorPassTime = doorPassTime;
+module.exports.doorPass = doorPass;
 module.exports.doorOpen = doorOpen;
 module.exports.bleConnect = bleConnect;
 module.exports.bleDisConnect = bleDisConnect;

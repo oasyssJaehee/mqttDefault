@@ -216,17 +216,21 @@
     ,MQTT_ACTION_HOTEL
     ,MQTT_ACTION_REQDATE
     ,MQTT_ACTION_CMD
+    ,MQTT_ACTION_STATE
     ,MQTT_ACTION_USER
     ,MQTT_ACTION_LOG
     ,MQTT_ACTION_OPEN
+    ,MQTT_ACTION_REMARK
     ) VALUES (
     #{num}
     ,#{hotel}
     ,SYSDATE()
     ,#{cmd}
+    ,#{state}
     ,#{userId}
     ,#{insertId}
     ,#{open}
+    ,#{remark}
     )
     </insert>
     <update id="mqtt_action_update">
@@ -285,18 +289,19 @@
         IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
         MQTT_LIST_NAME,
         IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
-        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE
+        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE,
+        MQTT_ACTION_STATE
     FROM mqtt_action
-    LEFT JOIN opener_code OPEN
+    LEFT JOIN bridge_code OPEN
     ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
     LEFT JOIN MQTT_LIST 
     ON MQTT_LIST_NUM = MQTT_ACTION_NUM
-    LEFT JOIN opener_code CODE
+    LEFT JOIN bridge_code CODE
         ON CODE.CODE_CODE = MQTT_LIST_DCOD
-        LEFT JOIN opener_code CODE2
+        LEFT JOIN bridge_code CODE2
         ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
     WHERE MQTT_ACTION_USER = #{userId}
-    AND MQTT_ACTION_CMD = '2'
+    AND MQTT_ACTION_STATE IN ('1', '15')
     ORDER BY MQTT_ACTION_REQDATE DESC
     LIMIT ${page},${pageSize}
     </select>
@@ -499,6 +504,58 @@ LEFT JOIN opener_code CODE1
     ,#{ck}
     )
     </insert>
+    <!-- 도어락 시간체크 -->
+    <select id="door_time_check">
+    SELECT ACTION1.MQTT_ACTION_KEY AS KEY1,
+        ACTION1.MQTT_ACTION_NUM AS NUM1,
+        ACTION1.MQTT_ACTION_CMD AS CMD1,
+        ACTION1.MQTT_ACTION_STATE AS STATE1,
+        ACTION2.MQTT_ACTION_KEY AS KEY2,
+        ACTION2.MQTT_ACTION_NUM AS NUM2,
+        ACTION2.MQTT_ACTION_CMD AS CMD2,
+        ACTION2.MQTT_ACTION_STATE AS STATE2
+        
+    FROM mqtt_action ACTION1
+    LEFT JOIN (
+    SELECT
+    MQTT_ACTION_KEY,
+    MQTT_ACTION_HOTEL,
+    MQTT_ACTION_NUM,
+    MQTT_ACTION_STATE,
+    MQTT_ACTION_CMD,
+    MQTT_ACTION_USER
+    FROM mqtt_action
+    WHERE MQTT_ACTION_STATE = '12'
+    AND MQTT_ACTION_ANSDATE IS NOT NULL
+    ) ACTION2 ON
+    ACTION2.MQTT_ACTION_USER = ACTION1.MQTT_ACTION_USER
+    WHERE ACTION1.MQTT_ACTION_STATE = '5'
+    AND ACTION1.MQTT_ACTION_USER = #{userId}
+    AND ACTION1.MQTT_ACTION_ANSDATE IS NOT NULL
+    AND ACTION1.MQTT_ACTION_HOTEL = #{hotelCode}
+    ORDER BY ACTION1.MQTT_ACTION_KEY DESC
+    LIMIT 1
+    </select>
+    <select id="user_pass_check">
+    SELECT MQTT_ACTION_KEY,
+        MQTT_ACTION_HOTEL,
+        MQTT_ACTION_NUM,
+        MQTT_ACTION_REQDATE,
+        MQTT_ACTION_ANSDATE,
+        MQTT_ACTION_CMD,
+        MQTT_ACTION_STATE,
+        MQTT_ACTION_USER,
+        MQTT_ACTION_LOG,
+        MQTT_ACTION_OPEN,
+        MQTT_ACTION_REMARK
+    FROM mqtt_action
+    WHERE MQTT_ACTION_STATE = '15'
+    AND MQTT_ACTION_USER = #{userId}
+    AND MQTT_ACTION_ANSDATE IS NOT NULL
+    AND MQTT_ACTION_HOTEL = #{hotelCode}
+    ORDER BY MQTT_ACTION_ANSDATE DESC
+    LIMIT 1
+    </select>
 </mapper>
 
 

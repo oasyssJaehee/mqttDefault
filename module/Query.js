@@ -24,6 +24,7 @@ function insertMqttLog(jsonData){
     var hd = jsonData.hd;
     var recIp = jsonData.recIp;
     var open = jsonData.open;
+    var remark = jsonData.remark;
 
     if(hotel == undefined) hotel = "";
     if(num == undefined) num = "";
@@ -38,6 +39,7 @@ function insertMqttLog(jsonData){
     if(userId == undefined) userId = "auto";
     if(recIp == undefined) recIp = "";
     if(open == undefined) open = "";
+    if(remark == undefined) remark = "";
 
     var data = {};
 
@@ -56,7 +58,8 @@ function insertMqttLog(jsonData){
         userId : userId,
         hd : hd,
         recIp: recIp,
-        open: open
+        open: open,
+        remark: remark
     };
     
     var query = mysql.mqttMapper().getStatement("mqtt", "mqtt_log_insert", data, format);
@@ -68,9 +71,13 @@ function insertMqttLog(jsonData){
             if((data.cmd != "1" && data.cmd != "255") && (data.type != "rec" || data.type != "auto")){
                 data.insertId = rows.insertId;
                 //릴레이 On
-                if(data.cmd == "2" && data.type != "rec"){
+                if(data.cmd == "204" && data.type != "rec"){
                     insertAction(data);
-                }else if(data.cmd == "2" && data.type == "rec"){
+                }else if((data.cmd == "204"
+                || data.cmd == "81"
+                || data.cmd == "5"
+                || data.cmd == "12"
+                || data.cmd == "15") && data.type == "rec"){
                     updateAction(actionKey);
                 }
                 // updateCmdLog(insertId);

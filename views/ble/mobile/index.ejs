@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title><%=title%></title>
+<title></title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
 <meta name="format-detection" content="telephone=no" />
@@ -24,13 +24,15 @@
 <script type="text/javascript">
     var socket = io();
     var bleConnect = false;
-
+    var socketConnect = false;
+    
 	socket.on("ble", function(data){
 		console.log(data);
         if(data.msg == "scanstop"){
             Alert("검색된 도어락이 없습니다.\n관리자에게 문의해 주세요.");
             $.loading.end();
         }else if(data.msg == "connect"){
+            clearInterval(actionInterver);
             $("#connect").removeClass("disabled");
             $("#connect").addClass("on");
             Alert("도어락이 연결 되었습니다.");
@@ -44,16 +46,19 @@
             $.loading.end();
         }else if(data.msg == "mqttConnect"){
             clearInterval(mqttInterver);
-            if(!data.state){
+            if(data.state == "0"){
                 $.ajax({
                     url:"/bleConnect",
                     data:{
-                        topic: "oasyss32/20001/501"
+                        topic: "oasyss32/"+topic,
+                        open: "0110001"
                     },
                     success : function(result){
+                        actionCheck();
                     }
                 });
             }else{
+                clearInterval(actionInterver);
                 $("#connect").removeClass("disabled");
                 $("#connect").addClass("on");
                 bleConnect = true;
@@ -67,8 +72,6 @@
                 Alert("문이 열렸습니다.");
             }
         }
-        
-        
 	});
     var actionInterver;
     var clickInterver;
@@ -90,8 +93,10 @@
         var count = 0;
         actionInterver = setInterval(function(){
             count++;
-            if(count > 15){
+            if(count > 20){
                 clearInterval(actionInterver);
+                $("#connect").removeClass("on");
+                $("#connect").addClass("disabled");
                 Alert("도어락 연결을 확인해 주세요.");
                 $.loading.end();
             }
@@ -101,34 +106,103 @@
     function mqttCheck(){
         var mqttCount = 0;
         mqttInterver = setInterval(function(){
+            console.log("힝? " + mqttCount);
             mqttCount++;
-            if(mqttCount > 10){
+            if(mqttCount > 5){
                 clearInterval(mqttInterver);
                 Alert("브릿지 연결을 확인해 주세요.");
                 $.loading.end();
             }
         }, 1000);
     }
-	$(window).ready(function() {
-        $.loading.start('도어락 연결 중입니다.');
-        socket.emit("joinRoom", "2", "test", "0");
-        setTimeout(function(){
-            $.ajax({
-                url:"/mqttCheck",
-                data:{
-                    topic: "oasyss32/20001/501"
-                },
-                success : function(result){
-                    mqttCheck();
+    var acno = "<%=acno%>";
+    var hotelCode = "<%=hotelCode%>";
+    var rspk = "<%=rspk%>";
+    var rono = "<%=rono%>";
+    var roomName;
+    var topic;
+    var gname="";
+    function init(){
+        topic = hotelCode+"/"+rono;
+        roomName = hotelCode+"_"+rono;
+        hotelCode = pad(hotelCode, 7);
+        
+        $.loading.start("");
+        $.ajax({
+            url:"./mysql/fo",
+            data:{
+                xml:"bridge_tran_select",
+                acno: acno,
+                hotelCode: hotelCode,
+                rspk: rspk,
+                rono: rono
+            },success:function(res){
+                if(res.length == 0){
+                    Alert("비정상적인 접근 입니다.");
+                }else{
+                    $("#layout_logo").attr("src", res[0].BS_LOGO);
+                    $("#layout_logo").css("display", "block");
+                    $("#layout_title").text(res[0].BS_NAME);
+                    $("#idate").text(res[0].BRIDGE_TRAN_IDATE);
+                    $("#odate").text(res[0].BRIDGE_TRAN_ODATE);
+                    $(".room_num").text(res[0].BRIDGE_TRAN_RONO);
+                    gname = res[0].BRIDGE_TRAN_GNAME;
+                    $.loading.end();
+
+                    $("#index_con").css("display","block");
+                    first();
+
                 }
-            });  
-        },1000);
+            }
+        });
+    }
+    function first(){
+        $.ajax({
+            url:"/socket/room",
+            data:{
+                name: roomName
+            },
+            success:function(res){
+                if(Number(res.room_size) == 0){
+                    socketConnect = true;
+                    socket.emit("joinRoom", roomName, gname, "0");
+
+                    $.loading.start('도어락 연결 중입니다.');
+        
+                    setTimeout(function(){
+                        $.ajax({
+                            url:"/mqttCheck",
+                            data:{
+                                topic: "oasyss32/"+topic,
+                                userId: acno+"/"+rspk
+                            },
+                            success : function(result){
+                                mqttCheck();
+                            }
+                        });  
+                    },1000);
+                    
+                }else{
+                    socketConnect = false;
+                    Alert("현재 사용중인 폰키 입니다.");
+                }
+            }
+        });
+
+        
+    }
+
+	$(window).ready(function() {
+        init();
         $("#connect").on("click", function(){
+            if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
             $.ajax({
                 url:"/mqttCheck",
                 data:{
-                    topic: "oasyss32/20001/501"
+                    topic: "oasyss32/"+topic,
+                    open: "0110001",
+                    userId: acno+"/"+rspk
                 },
                 success : function(result){
                     mqttCheck();
@@ -137,6 +211,7 @@
         });
 		
 		$("#openBtn").on("click", function(){
+            if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
             if(openClick){Alert("잠시 뒤 시도해 주세요.");return;}
             Confirm("문을 여시겠습니까?", function(){
@@ -144,7 +219,9 @@
                 $.ajax({
                     url:"/doorOn",
                     data:{
-                        topic: "oasyss32/20001/501"
+                        topic: "oasyss32/"+topic,
+                        open: "0110001",
+                        userId: acno+"/"+rspk
                     },
                     success : function(result){
                         openClick = true;
@@ -174,14 +251,15 @@
             }
         });
         $(".password_set_btn").on("click", function(){
-            location.href = "./keySett";
+            if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
+            location.href = "./keySett?key=<%=key%>";
         });
 	});
 
 </script>
 </head>
-<body>
-	<div class="contents">
+<body >
+	<div id="index_con" class="contents" style="display:none;">
         <div class="key_wrap">
             <div class="key_grp_cont key_grp_cont01">
                 <div class="key_top_tbox">
@@ -215,8 +293,8 @@
             </div>
             <div class="key_grp_cont key_grp_cont04">
                 <div class="ck_data_box">
-                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-IN</em><em class="ck_txt">2022-08-03 PM 15:00</em></p>
-                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-OUT</em><em class="ck_txt">2022-08-04 AM 11:00</em></p>
+                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-IN</em><em id="idate" class="ck_txt">2022-08-03 PM 15:00</em></p>
+                    <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-OUT</em><em id="odate" class="ck_txt">2022-08-04 AM 11:00</em></p>
                 </div>
             </div> 
         </div>

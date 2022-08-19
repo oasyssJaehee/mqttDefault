@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title><%=title%></title>
+<title></title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
 <meta name="format-detection" content="telephone=no" />
@@ -24,12 +24,355 @@
 <script type="text/javascript">
     var socket = io();
     var bleConnect = false;
+    var actionInterver;
+    var clickInterver;
+    var openClick = false;
+    var defaultTime = 0;
+
+    function clickCheck(){
+        var count = 0;
+        clickInterver = setInterval(function(){
+            count++;
+            if(count > 20){
+                openClick = false;
+                clearInterval(clickInterver);
+                
+            }
+        }, 1000);
+    }
+    
+    function actionCheck(){
+        var count = 0;
+        actionInterver = setInterval(function(){
+            count++;
+            if(count > 15){
+                clearInterval(actionInterver);
+                Alert("도어락 연결을 확인해 주세요.");
+                bleConnect = false;
+                $.loading.end();
+            }
+        }, 1000);
+    }
+    var mqttInterver;
+    function mqttCheck(){
+        var mqttCount = 0;
+        mqttInterver = setInterval(function(){
+            mqttCount++;
+            if(mqttCount > 5){
+                clearInterval(mqttInterver);
+                Alert("브릿지 연결을 확인해 주세요.");
+                bleConnect = false;
+                $.loading.end();
+            }
+        }, 1000);
+    }
+    socket.on("ble", function(data){
+        if(data.msg == "scanstop"){
+            Alert("검색된 도어락이 없습니다.\n관리자에게 문의해 주세요.");
+            $.loading.end();
+        }else if(data.msg == "connect"){
+            $("#connect").removeClass("disabled");
+            $("#connect").addClass("on");
+            Alert("도어락이 연결 되었습니다.");
+            bleConnect = true;
+            $.loading.end();
+        }else if(data.msg == "disconnect"){
+            $("#connect").removeClass("on");
+            $("#connect").addClass("disabled");
+            bleConnect = false;
+            $.loading.end();
+            Alert("도어락 연결이 종료 되었습니다.", function(){
+            });
+            
+        }else if(data.msg == "mqttConnect"){
+            clearInterval(mqttInterver);
+            $.loading.end();
+            if(data.state == "0"){
+                Alert("비정상적인 접근 입니다.",function(){
+                    window.location.href='./index?key=<%=key%>';
+                });
+                
+            }else{
+                bleConnect = true;
+                doorStart();
+            }
+        }else if(data.msg == "open"){
+            clearInterval(actionInterver);
+            $.loading.end();
+            if(data.state == "1"){
+                Alert("문이 열렸습니다.");
+            }
+        }else if(data.msg == "doorTimeSett"){
+            clearInterval(actionInterver);
+            if(defaultTime == 0){
+                $.ajax({
+                    url:"/passTimeSett",
+                    data:{
+                        userId: acno+"/"+rspk,
+                        open: "0110001",
+                        topic: "oasyss32/"+topic,
+                        date:odate
+                    }, success:function(res3){
+                        actionCheck();
+                    }
+                });
+            }else{
+                clearInterval(actionInterver);
+                $.loading.end();
+            }
+            
+            
+
+            
+        }else if(data.msg == "passTimeSett"){
+            clearInterval(actionInterver);
+            $.loading.end();
+        }else if(data.msg == "passSett"){
+            $("#pass_change_pop").css("display", "none");
+            clearInterval(actionInterver);
+            $.loading.end();
+            Alert("비밀번호가 설정 되었습니다.", function(){
+                var pass = $("input[name='passSettInp']").val();
+                $(".password_change_tit01").text(pass.at(0));
+                $(".password_change_tit02").text(pass.at(1));
+                $(".password_change_tit03").text(pass.at(2));
+                $(".password_change_tit04").text(pass.at(3));
+                openList();
+            });
+        }
+	});
+    var acno = "<%=acno%>";
+    var hotelCode = "<%=hotelCode%>";
+    var rspk = "<%=rspk%>";
+    var rono = "<%=rono%>";
+    var odate = "";
+    var roomName;
+    var topic;
+    var gname="";
+    function init(){
+        topic = hotelCode+"/"+rono;
+        roomName = hotelCode+"_"+rono;
+        
+        $.loading.start("");
+        $.ajax({
+            url:"./mysql/fo",
+            data:{
+                xml:"bridge_tran_select",
+                acno: acno,
+                hotelCode: pad(hotelCode, 7),
+                rspk: rspk,
+                rono: rono
+            },success:function(res){
+                if(res.length == 0){
+                    Alert("비정상적인 접근 입니다.");
+                }else{
+                    $("#layout_logo").attr("src", res[0].BS_LOGO);
+                    $("#layout_logo").css("display", "block");
+                    $("#layout_title").text(res[0].BS_NAME);
+                    $("#idate").text(res[0].BRIDGE_TRAN_IDATE);
+                    $("#odate").text(res[0].BRIDGE_TRAN_ODATE);
+                    $(".room_num").text(res[0].BRIDGE_TRAN_RONO);
+                    gname = res[0].BRIDGE_TRAN_GNAME;
+                    odate = res[0].BRIDGE_TRAN_ODATE;
+                    $.loading.end();
+                    
+                    $("#index_con").css("display","block");
+                    $.ajax({
+                        url: "/mysql/mqtt",
+                        data:{
+                            xml: "user_pass_check",
+                            userId: acno+"/"+rspk,
+                            hotelCode:hotelCode
+                        },success:function(res2){
+                            if(res2.length != 0){
+                                var pass = res2[0].MQTT_ACTION_REMARK;
+                                $(".password_change_tit01").text(pass.at(0));
+                                $(".password_change_tit02").text(pass.at(1));
+                                $(".password_change_tit03").text(pass.at(2));
+                                $(".password_change_tit04").text(pass.at(3));
+                            }
+                            first();
+                        }
+                    });
+                    
+                }
+            }
+        });
+    }
+    function first(){
+        $.ajax({
+            url:"/socket/room",
+            data:{
+                name: roomName
+            },
+            success:function(res){
+                if(Number(res.room_size) == 0){
+                    socketConnect = true;
+                    socket.emit("joinRoom", roomName, gname, "0");
+                    $.loading.start('도어락 연결 중입니다.');
+        
+                    setTimeout(function(){
+                        $.ajax({
+                            url:"/mqttCheck",
+                            data:{
+                                topic: "oasyss32/"+topic,
+                                userId: acno+"/"+rspk
+                            },
+                            success : function(result){
+                                mqttCheck();
+                            }
+                        });  
+                    },1000);
+                    
+                }else{
+                    socketConnect = false;
+                    Alert("현재 사용중인 폰키 입니다.");
+                }
+            }
+        });
+    }
+    function doorStart(){
+        
+        $.ajax({
+            url:"/mysql/mqtt",
+            data:{
+                xml: "door_time_check",
+                userId: acno+"/"+rspk,
+                hotelCode:hotelCode
+            },success:function(res2){
+                if(res2.length == 0){
+                    defaultTime = 0;
+                    $.loading.start('도어락 기초 설정 중 입니다.');
+                    $.ajax({
+                        url:"/doorTimeSett",
+                        data:{
+                            userId: acno+"/"+rspk,
+                            open: "0110001",
+                            topic: "oasyss32/"+topic
+                        }, success:function(res3){
+                            actionCheck();
+                        }
+                    });
+                }else{
+                    if(res2[0].KEY2 == null){
+                        defaultTime = 1;
+                        $.loading.start('도어락 기초 설정 중 입니다.');
+                        $.ajax({
+                            url:"/passTimeSett",
+                            data:{
+                                userId: acno+"/"+rspk,
+                                open: "0110001",
+                                topic: "oasyss32/"+topic,
+                                date: odate
+                            }, success:function(res3){
+                                actionCheck();
+                            }
+                        });
+                    }
+                    if(res2[0].KEY1 == null){
+                        defaultTime = 2;
+                        $.loading.start('도어락 기초 설정 중 입니다.');
+                        $.ajax({
+                            url:"/doorTimeSett",
+                            data:{
+                                userId: acno+"/"+rspk,
+                                open: "0110001",
+                                topic: "oasyss32/"+topic
+                            }, success:function(res3){
+                                actionCheck();
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+    }
+    var total=0;
+    var page = 0;
+    var pageSize = 20;
+	var timer;
+	$(window).scroll(function() { 
+		if($(window).scrollTop() + $(window).height() >= $(document).height()) { 
+			clearTimeout( timer );
+			timer = setTimeout( scroll(), 150 );
+		}
+	});
+	function scroll(){
+		page = Number(page)+Number(pageSize);
+		if(total <= page){
+			page = total;
+		}
+		openList();
+	}
+    function openList(){
+        $.ajax({
+            url: "/mysql/mqtt",
+            data:{
+                xml: "mqtt_open_list",
+                userId: acno+"/"+rspk,
+                page: page,
+				pageSize: pageSize
+            }, success:function(res){
+                console.log(res);
+                $(".password_change_ulbox").empty();
+                var item = "";
+                if(res.length > 0){
+                    for(var i=0; i<res.length; i++){
+                        var state = res[i].MQTT_ACTION_STATE;
+                        var stateName="";
+                        if(state == "1"){
+                            stateName = "오픈";
+                        }else if(state == "15"){
+                            stateName = "비밀번호 변경";
+                        }
+                        item += "<li class='password_change_li'>"
+                            + "<div class='password_change_top_tit password_change_top_tit01 dis_flex_row dis_flex_row_center dis_flex_row_end'>"
+                            + "<h2>"+res[i].MQTT_ACTION_REQDATE+"</h2>"
+                            + "<h2 class='color_ff6066'>"+stateName+"</h2>"
+                            + "</div>"
+                            + "</li>"
+                    }
+                    
+                    
+                }else{
+
+                }
+                $(".password_change_ulbox").append(item);
+            }
+        })
+    }
     $(window).ready(function() {
+        openList();
         $(".password_change_btn").on("click", function(){
+            if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
             $("#pass_change_pop").css("display", "block");
         });
         $(".popup_bottom_btn_cancel").on("click", function(){
             $("#pass_change_pop").css("display", "none");
+        });
+        init();
+
+        $("#passSettConfirm").on("click", function(){
+            if(openClick){Alert("잠시 뒤 시도해 주세요.");return;}
+            var pass = $("input[name='passSettInp']").val();
+            if(pass.length < 4){
+                Alert("4자리 숫자를 입력해 주세요.");
+                return;
+            }
+            $.loading.start('비밀번호를 설정 중 입니다.');
+            $.ajax({
+                url:"/passSett",
+                data:{
+                    topic: "oasyss32/"+topic,
+                    open: "0110001",
+                    userId: acno+"/"+rspk,
+                    pass: pass
+                },
+                success : function(result){
+                    
+                }
+            });
         });
     });
 
@@ -54,16 +397,16 @@
             <div class="password_change_box">
                 <p class="password_change_txt">현재 비밀번호</p>
                 <div class="password_change_grp dis_flex_row dis_flex_row_center dis_flex_row_justify_center">
-                    <h2 class="password_change_tit password_change_tit01">1</h2>
-                    <h2 class="password_change_tit password_change_tit02">2</h2>
-                    <h2 class="password_change_tit password_change_tit03">3</h2>
-                    <h2 class="password_change_tit password_change_tit04">4</h2>
+                    <h2 class="password_change_tit password_change_tit01"></h2>
+                    <h2 class="password_change_tit password_change_tit02"></h2>
+                    <h2 class="password_change_tit password_change_tit03"></h2>
+                    <h2 class="password_change_tit password_change_tit04"></h2>
                     <h2 class="password_change_tit password_change_tit05">#</h2>
                 </div>
                 <a class="password_change_btn">비밀번호 변경</a>
             </div>
             <div class="password_change_list">
-                <ul class="password_change_tabbox dis_flex_row dis_flex_row_center mb20">
+                <ul style="display: none;" class="password_change_tabbox dis_flex_row dis_flex_row_center mb20">
                     <li class="password_change_tab_list password_change_tab_list01 active">
                         <a class="password_change_tab">출입 내역</a>
                     </li>
@@ -72,7 +415,7 @@
                     </li>
                 </ul>
                 <div class="password_change_grp">
-                    <div class="password_change_tab_contbox password_change_tab_contbox01">
+                    <div style="display: none;" class="password_change_tab_contbox password_change_tab_contbox01">
                         <div class="password_change_top_tbox dis_flex_row dis_flex_row_center">
                             <div class="password_change_top_txt password_change_top_txt01">
                                 <p>출입 시간</p> 
@@ -101,7 +444,7 @@
                     <div class="password_change_tab_contbox password_change_tab_contbox02">
                         <div class="password_change_top_tbox">
                             <div class="password_change_top_txt password_change_top_txt01">
-                                <p>변경 시간/상태</p> 
+                                <p>동작 내역</p> 
                             </div>
                         </div>
                         <ul class="password_change_ulbox">
@@ -123,7 +466,7 @@
                     <p class="popup_txt">변경하실 비밀번호를<br>입력해주세요.</p>
                     <!-- <p class="popup_txt color_ff6066">한번 더<br>입력해주세요.</p> -->
                     <div class="popup_input_box">
-                        <input class="popup_inp" type="text" placeholder="비밀번호를 입력해주세요.">
+                        <input name="passSettInp"class="popup_inp door_pass" type="text" placeholder="비밀번호를 입력해주세요.">
                     </div>
                 </div>
                 <ul class="popup_bottom_box">
@@ -131,7 +474,7 @@
                         <a class="popup_bottom_btn popup_bottom_btn_cancel">취소</a>
                     </li>
                     <li class="popup_bottom_btnbox">
-                        <a class="popup_bottom_btn popup_bottom_btn_save">확인</a>
+                        <a id="passSettConfirm" class="popup_bottom_btn popup_bottom_btn_save">확인</a>
                     </li>
                 </ul>
             </div>

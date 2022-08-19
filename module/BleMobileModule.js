@@ -73,23 +73,28 @@ router.get('/index', function (req, res) {
   var pri_check = req.cookies["pri_check"];
   res.render("ble/mobile/index",{
     page:"index",
-    title: AppInfo.hotelName,
-    logoName: AppInfo.logoName,
-    hotelCode: dec[0],
-    rspk: dec[1],
-    acno : dec[2],
-    rono: dec[3],
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key,
     pri_check: pri_check
   })
 });
 router.get('/keySett', function (req, res) {
   var uri = req.url;
-
+  var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
   res.render("ble/mobile/keySett",{
-    page:"login",
-    title: AppInfo.hotelCode,
-    title: AppInfo.hotelName,
-    logoName: AppInfo.logoName
+    page:"keySett",
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key
   })
 });
 router.get('/index1', function (req, res) {
@@ -151,7 +156,6 @@ var query = mysql.coMapper().getStatement("co", xml_name, data, format);
     }else{
         res.setHeader('Content-Type', 'application/json');
         if(rows.length > 0){
-          console.log(rows[0].BS_CODE);
           data.code = rows[0].BS_CODE;
           query = mysql.coMapper().getStatement("co", "bs_code_insert", data, format);
           connection.query(query, function (err, rows, fields) {
@@ -173,6 +177,29 @@ var query = mysql.coMapper().getStatement("co", xml_name, data, format);
             }
           });
         }
+    }
+  });
+});
+
+router.get('/mysql/fo', function (req, res) {
+  var uri = req.url;
+var data = url.parse(uri, true).query;
+var format = {language: 'sql', indent: '  '};
+var xml_name = data.xml;
+var query = mysql.foMapper().getStatement("fo", xml_name, data, format);
+
+  connection.query(query, function (err, rows, fields) {
+    if(err){
+      console.log(err);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(err));
+        res.end();
+    }else{
+        res.setHeader('Content-Type', 'application/json');
+        var result = JSON.stringify(rows)
+        res.send(result);
+        res.end();
+        
     }
   });
 });

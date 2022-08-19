@@ -3,7 +3,7 @@
 
 <html>
 <head>
-<title><%=title%></title>
+<title id="layout_title"></title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
 <meta name="format-detection" content="telephone=no" />
@@ -62,12 +62,11 @@ function googleTranslateElementInit() {
       }else if("<%=page%>" == "member" && $("#enroll_pop").css("display")!="none"){
         clickCancel();
       }else{
-        history.go(-1);
-        // window.location.href='./main';
+        window.location.href='./index?key=<%=key%>';
       }
     });
     $(".logo").on("click", function(){
-      // window.location.href='./main';
+      window.location.href='./index?key=<%=key%>';
     });
     function bottomMenuInit(){
       $(".bottom_tab_btn").removeClass("active");
@@ -143,8 +142,8 @@ function googleTranslateElementInit() {
 <body>
 	<!-- header -->
     <header class="hd">
-        <% if(page == 'main'){ %>
-          <a id="logOutBtn" class="menu_btn"><span class="logout_icon"></span>LOGOUT</a>
+        <% if(page == 'index'){ %>
+          <!-- <a id="logOutBtn" class="menu_btn"><span class="logout_icon"></span>LOGOUT</a> -->
         <% }else if(page == 'login'){ %>
           
         <% }else { %>
@@ -154,7 +153,7 @@ function googleTranslateElementInit() {
             <em class="top_search_btn_icon"></em>  
             <em class="top_search_btn_txt">빠른검색</em>
         </a> -->
-        <a class="logo" href="/opener/mobile/main"><img src="/static/img/web/<%=logoName%>" alt="logo"></a>
+        <a class="logo"><img style="display:none;" id="layout_logo" src="" alt="logo"></a>
         <a class="lang_btn1"><span class="stem03"></span>Language</a>
         <div id="google_translate_element"></div> 
         </header>

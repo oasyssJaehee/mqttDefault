@@ -16,28 +16,32 @@ router.get('/index', function (req, res) {
   
   res.render("ble/web/admin/index",{
     page:"index",
-    title: req.app.locals.hotelName
+    title: req.app.locals.hotelName,
+    logoName:"a"
   })
 });
 router.get('/index1', function (req, res) {
   
   res.render("ble/web/admin/index1",{
     page:"index",
-    title: req.app.locals.hotelName
+    title: req.app.locals.hotelName,
+    logoName:"a"
   })
 });
 router.get('/index2', function (req, res) {
   
   res.render("ble/web/admin/index2",{
     page:"index",
-    title: req.app.locals.hotelName
+    title: req.app.locals.hotelName,
+    logoName:"a"
   })
 });
 router.get('/index3', function (req, res) {
   
   res.render("ble/web/admin/index3",{
     page:"index",
-    title: req.app.locals.hotelName
+    title: req.app.locals.hotelName,
+    logoName:"a"
   })
 });
 module.exports = router;

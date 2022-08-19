@@ -207,7 +207,10 @@ function addDate(date,sep,flag,addNumber){
         return "";
     }
 }
-
+function pad (str, max) {
+    str = str.toString();
+    return str.length < max ? pad("0" + str, max) : str;
+}
 function setup(base){
 	$("input.phone").on("keyup", function() {
         $(this).val($(this).val().replace(/[^0-9-]/gi,""));
@@ -236,8 +239,8 @@ function setup(base){
         $(this).val($(this).val().replace(/[^0-9-]/gi,""));
 		var key = event.charCode || event.keyCode || 0;
 		$text = $(this);
-		if($(this).val().length > 8){
-			Alert("비밀번호는 8자리까지 가능 합니다.",function(){
+		if($(this).val().length > 4){
+			Alert("비밀번호는 4자리까지 가능 합니다.",function(){
 				$(this).focus();
 				var str = $text.val();
 				$text.val(str.slice(0,-1));

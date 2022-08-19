@@ -1,0 +1,33 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="fo">
+    <select id="bridge_tran_select">
+    SELECT BRIDGE_TRAN_RSPK,
+        BRIDGE_TRAN_BS,
+        BRIDGE_TRAN_ACNO,
+        BRIDGE_TRAN_RONO,
+        BRIDGE_TRAN_RTYPE,
+        DATE_FORMAT(BRIDGE_TRAN_IDATE, '%Y-%m-%d %p %H:%i') AS BRIDGE_TRAN_IDATE,
+        DATE_FORMAT(BRIDGE_TRAN_ODATE, '%Y-%m-%d %p %H:%i') AS BRIDGE_TRAN_ODATE,
+        BRIDGE_TRAN_GNAME,
+        BRIDGE_TRAN_URL,
+        BRIDGE_TRAN_KEY,
+        BRIDGE_TRAN_KIDA,
+        BRIDGE_TRAN_KCDA,
+        BRIDGE_TRAN_BKYB,
+        BRIDGE_TRAN_KUDA,
+        BS_NAME,
+        BS_LOGO,
+        BS_TEL,
+        BS_CODE
+    FROM fo_bridge_tran
+    LEFT JOIN co_bs_code BS
+    ON BS.BS_CODE = BRIDGE_TRAN_BS
+    WHERE BRIDGE_TRAN_BS = #{hotelCode}
+    AND BRIDGE_TRAN_RSPK = #{rspk}
+    AND BRIDGE_TRAN_ACNO = #{acno}
+    AND BRIDGE_TRAN_RONO = #{rono}
+    </select>
+</mapper>
