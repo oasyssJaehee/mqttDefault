@@ -22,7 +22,6 @@ router.get('/index', function (req, res) {
   })
 });
 router.get('/index1', function (req, res) {
-  console.log("힝잉?");
   res.render("ble/web/admin/index1",{
     page:"index",
     title: req.app.locals.hotelName,
