@@ -102,6 +102,18 @@ router.post('/apiKeyCreate', function (req, res) {
     });
    });
 });
+router.post('/apiKeyUpdate', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        console.log(inputData);
+        var format = {language: 'sql', indent: '  '};
+        var query = mysql.userMapper().getStatement("api", "bridge_tran_overlab", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+        });
+    });
+ });
 //안드로이드
 router.post('/user_face_list', function (req, res) {
    var inputData;
