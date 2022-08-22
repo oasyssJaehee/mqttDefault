@@ -25,6 +25,8 @@
     var socket = io();
     var bleConnect = false;
     var socketConnect = false;
+    var userTime = false;
+    var userUseMsg = "";
     
 	socket.on("ble", function(data){
 		console.log(data);
@@ -47,6 +49,7 @@
         }else if(data.msg == "mqttConnect"){
             clearInterval(mqttInterver);
             if(data.state == "0"){
+                if(!userTime){Alert(userUseMsg);$.loading.end();return;}
                 $.ajax({
                     url:"/bleConnect",
                     data:{
@@ -54,7 +57,7 @@
                         open: "0110001"
                     },
                     success : function(result){
-                        actionCheck();
+                        actionCheck(20);
                     }
                 });
             }else{
@@ -89,11 +92,11 @@
         }, 1000);
     }
     
-    function actionCheck(){
+    function actionCheck(limit){
         var count = 0;
         actionInterver = setInterval(function(){
             count++;
-            if(count > 20){
+            if(count > limit){
                 clearInterval(actionInterver);
                 $("#connect").removeClass("on");
                 $("#connect").addClass("disabled");
@@ -137,6 +140,7 @@
                 rspk: rspk,
                 rono: rono
             },success:function(res){
+                console.log(res);
                 if(res.length == 0){
                     Alert("비정상적인 접근 입니다.");
                 }else{
@@ -150,8 +154,19 @@
                     $.loading.end();
 
                     $("#index_con").css("display","block");
-                    first();
-
+                    if(res[0].CHECKIN == '0'){
+                        $.loading.end();
+                        userUseMsg = "사용기간이 아닙니다.";
+                        Alert(userUseMsg);
+                        userTime = false;
+                    }else if(res[0].BRIDGE_TRAN_KCDA != ""){
+                        userTime = false;
+                        userUseMsg = "취소된 폰키 입니다.";
+                        Alert(userUseMsg);
+                    }else{
+                        userTime = true;
+                        first();
+                    }
                 }
             }
         });
@@ -195,6 +210,7 @@
 	$(window).ready(function() {
         init();
         $("#connect").on("click", function(){
+            if(!userTime){Alert(userUseMsg);return;}
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
             $.ajax({
@@ -211,6 +227,7 @@
         });
 		
 		$("#openBtn").on("click", function(){
+            if(!userTime){Alert(userUseMsg);return;}
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
             if(openClick){Alert("잠시 뒤 시도해 주세요.");return;}
@@ -225,7 +242,7 @@
                     },
                     success : function(result){
                         openClick = true;
-                        actionCheck();
+                        actionCheck(10);
                         clickCheck();
                     }
                 });
@@ -251,6 +268,7 @@
             }
         });
         $(".password_set_btn").on("click", function(){
+            if(!userTime){Alert(userUseMsg);return;}
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             location.href = "./keySett?key=<%=key%>";
         });

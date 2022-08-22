@@ -14,6 +14,7 @@
     ,BRIDGE_TRAN_ACNO
     ,BRIDGE_TRAN_RONO
     ,BRIDGE_TRAN_RTYPE
+    ,BRIDGE_TRAN_RNAME
     ,BRIDGE_TRAN_IDATE
     ,BRIDGE_TRAN_ODATE
     ,BRIDGE_TRAN_GNAME
@@ -29,6 +30,7 @@
     ,#{acno}
     ,#{rono}
     ,#{rtype}
+    ,#{rname}
     ,#{idate}
     ,#{odate}
     ,#{gname}
@@ -36,8 +38,8 @@
     ,#{url}
     ,#{key}
     ,SYSDATE()
-    ,'user'
-    ,'user'
+    ,#{user}
+    ,#{user}
     )
     </insert>
     <select id="bridge_tran_overlab">
@@ -58,10 +60,102 @@
     FROM fo_bridge_tran
     WHERE BRIDGE_TRAN_BS = #{bcode}
     AND BRIDGE_TRAN_RONO = #{rono}
+    AND BRIDGE_TRAN_ACNO = #{acno}
     <![CDATA[
     AND BRIDGE_TRAN_IDATE <= #{idate}
     AND BRIDGE_TRAN_ODATE >= #{idate}
     ]]>
     AND BRIDGE_TRAN_KCDA IS NULL
     </select>
+    <insert id="api_log_insert">
+   INSERT INTO fo_api_log (
+    API_LOG_SEQ
+    ,API_LOG_BS
+    ,API_LOG_ACNO
+    ,API_LOG_RONO
+    ,API_LOG_RTYPE
+    ,API_LOG_RNAME
+    ,API_LOG_IDATE
+    ,API_LOG_ODATE
+    ,API_LOG_GNAME
+    ,API_LOG_PHONE
+    ,API_LOG_URL
+    ,API_LOG_ENC
+    ,API_LOG_RES
+    ,API_LOG_TYPE
+    ,API_LOG_TF
+    ,API_LOG_DATE
+    ,API_LOG_USER
+    ) VALUES (
+    #{seq}
+    ,#{bcode}
+    ,#{acno}
+    ,#{rono}
+    ,#{rtype}
+    ,#{rname}
+    ,#{idate}
+    ,#{odate}
+    ,#{gname}
+    ,AES_ENCRYPT(#{phone}, #{AES_KEY})
+    ,#{url}
+    ,#{key}
+    ,#{res}
+    ,#{type}
+    ,#{tf}
+    ,SYSDATE()
+    ,#{user}
+    )
+    </insert>
+    <select id="api_log_insert_seq">
+    SELECT IFNULL(MAX(API_LOG_SEQ), 0) + 1 AS SEQ
+    FROM fo_api_log
+    WHERE API_LOG_BS = #{bcode}
+    AND API_LOG_ACNO = #{acno}
+    </select>
+    <select id="api_log_select">
+    SELECT API_LOG_BS AS BCODE,
+        API_LOG_SEQ AS SEQ,
+        API_LOG_ACNO AS ACNO,
+        API_LOG_RONO AS RONO,
+        API_LOG_RTYPE AS RTYPE,
+        API_LOG_RNAME AS RNAME,
+        API_LOG_IDATE AS IDATE,
+        API_LOG_ODATE AS ODATE,
+        API_LOG_GNAME AS GNAME,
+        cast(AES_DECRYPT(API_LOG_PHONE, 'ioptoprr89u34547yhdt') as CHAR) AS PHONE,
+        API_LOG_URL AS URL,
+        API_LOG_ENC AS ENCKEY,
+        API_LOG_TYPE AS TYPE,
+        API_LOG_TF AS TF,
+        DATE_FORMAT(API_LOG_DATE, '%Y%m%d%H%i%s') AS DATE,
+        API_LOG_USER AS USER
+    FROM fo_api_log
+    WHERE API_LOG_BS = #{bcode}
+    AND API_LOG_ACNO = #{acno}
+    </select>
+    <update id="bridge_tran_update">
+    UPDATE fo_bridge_tran
+    SET 
+    BRIDGE_TRAN_IDATE = #{idate},
+    BRIDGE_TRAN_ODATE = #{odate},
+    BRIDGE_TRAN_BKYB = 'U',
+    BRIDGE_TRAN_KUDA = SYSDATE(),
+    BRIDGE_TRAN_LUSER = #{user}
+    WHERE BRIDGE_TRAN_RSPK = #{rspk}
+    AND BRIDGE_TRAN_ACNO =#{acno}
+    AND BRIDGE_TRAN_BS = #{bcode}
+    
+    </update>
+    <update id="bridge_tran_delete">
+    UPDATE fo_bridge_tran
+    SET 
+    BRIDGE_TRAN_KCDA = SYSDATE(),
+    BRIDGE_TRAN_LUSER = #{user},
+    BRIDGE_TRAN_BKYB = 'C',
+    BRIDGE_TRAN_KCDA = SYSDATE()
+    WHERE BRIDGE_TRAN_RSPK = #{rspk}
+    AND BRIDGE_TRAN_ACNO =#{acno}
+    AND BRIDGE_TRAN_BS = #{bcode}
+    
+    </update>
 </mapper>

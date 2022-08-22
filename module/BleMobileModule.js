@@ -99,34 +99,66 @@ router.get('/keySett', function (req, res) {
 });
 router.get('/index1', function (req, res) {
   var uri = req.url;
-
+  var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
   res.render("ble/mobile/index1",{
-    page:"login",
-    title: req.app.locals.hotelName
+    page:"keySett",
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key
   })
 });
 router.get('/index2', function (req, res) {
   var uri = req.url;
-
+  var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
   res.render("ble/mobile/index2",{
-    page:"login",
-    title: req.app.locals.hotelName
+    page:"keySett",
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key
   })
 });
 router.get('/index3', function (req, res) {
   var uri = req.url;
-
+  var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
   res.render("ble/mobile/index3",{
-    page:"login",
-    title: req.app.locals.hotelName
+    page:"keySett",
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key
   })
 });
 router.get('/index4', function (req, res) {
   var uri = req.url;
-
+  var query = url.parse(uri, true).query;
+  var key = query.key;
+  key = key.replace(/ /gi, "+");
+  var dec = crypto.decipher(key, AppInfo.AES_KEY);
+  var decArr = dec.split("/");
   res.render("ble/mobile/index4",{
-    page:"login",
-    title: req.app.locals.hotelName
+    page:"keySett",
+    hotelCode: decArr[0],
+    rspk: decArr[1],
+    acno : decArr[2],
+    rono: decArr[3],
+    key: query.key
   })
 });
 //mysql
