@@ -2,14 +2,14 @@ const { post } = require('request');
 const iconv  = require('iconv-lite');
 
 const serverPort = 6001;
-const hotelCode = "20001";
-const hotelName = "오아시스";
+var hotelCode = "20001";
+var hotelName = "오아시스";
 
-const saleType = "jebee";
-const mqttUrl = "mqtt://210.114.18.107";
-const logoName = "logo_jebee.png";
-const AES_KEY = "ioptoprr89u34547yhdt";
-const httpUrl = "http://bridge.oasyss.co.kr";
+var saleType = "jebee";
+var mqttUrl = "mqtt://210.114.18.107";
+var logoName = "logo_jebee.png";
+var AES_KEY = "ioptoprr89u34547yhdt";
+var httpUrl = "http://bridge.oasyss.co.kr";
 
 
 const sendSms = function(data){

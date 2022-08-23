@@ -209,11 +209,12 @@ const { query } = require('express');
 //기본 접속 경로
 app.get('/', function(req, res) {
     var filter = "win16|win32|win64|macintel|mac|"; // PC일 경우 가능한 값
-    if (req.header('user-agent').indexOf('Mobile') != -1) {
-        res.redirect("/ble/mobile/login")
-    } else {
-        res.redirect("/ble/admin/login")
-    }
+    res.redirect("/ble/admin/login")
+    // if (req.header('user-agent').indexOf('Mobile') != -1) {
+    //     res.redirect("/ble/mobile/login")
+    // } else {
+    //     res.redirect("/ble/admin/login")
+    // }
     
 })
 app.get('/socket/room', function(req, res) {

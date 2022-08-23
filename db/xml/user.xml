@@ -634,7 +634,7 @@
         ADMIN_ID,
         ADMIN_PASS,
         ADMIN_LEVEL,
-        ADMIN_APART,
+        ADMIN_BS_CODE,
         ADMIN_FUSER,
         ADMIN_FDATE,
         ADMIN_LUSER,
@@ -642,10 +642,16 @@
         ADMIN_USE,
         ADMIN_IMGNAME,
         ADMIN_IMGPATH,
-        ADMIN_EDATE
-    FROM opener_user_admin
+        ADMIN_EDATE,
+        BS_NAME,
+        BS_LOGO,
+        BS_TEL
+    FROM co_user_admin
+    LEFT JOIN co_bs_code
+    ON BS_CODE = ADMIN_BS_CODE
     WHERE ADMIN_ID = #{id}
     AND ADMIN_PASS = PASSWORD(#{pw})
+    AND ADMIN_BS_CODE = #{bnum}
     AND ADMIN_USE = '1'
     </select>
     <select id="select_user_admin_id" resultType="casemap">

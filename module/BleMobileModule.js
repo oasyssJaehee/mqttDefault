@@ -33,35 +33,6 @@ router.use((req, res, next) => {
 router.post('/', upload.single('img'));
 
 
-router.get('/login', function (req, res) {
-  var uri = req.url;
-  var query = url.parse(uri, true).query;
-  var openKey="";
-  openKey = query.openKey;
-  if(openKey){
-    res.render("ble/mobile/login",{
-      page:"login",
-      title: AppInfo.hotelName,
-      openKey: openKey,
-      layout: false,
-      hotelCode: AppInfo.hotelCode,
-      logoName : AppInfo.logoName
-    })
-  }else{
-    if(req.session.user){
-      res.redirect("/ble/mobile/main")
-      // res.render("opener/mobile/login",{})
-    }else{
-      res.render("ble/mobile/login",{
-        page:"login",
-        title: req.app.locals.hotelName,
-        openKey: openKey,
-        layout: false,
-        hotelCode: req.app.locals.hotelCode
-      })
-    }
-  }
-});
 router.get('/index', function (req, res) {
   var uri = req.url;
   var query = url.parse(uri, true).query;
@@ -157,9 +128,9 @@ const sendSms = function(data){
 		'DESTPHONE':'01089097195',
 		'STYPE':'1',
 		'SUBJECT':'test',
-		'MSG':'¾È³çÇÏ¼¼¿ä'
+		'MSG':'ì•ˆë…•í•˜ì„¸ìš”'
 	}
-	var stringData = "&SENDPHONE=070-8858-0840&DESTPHONE=01089097195&STYPE=1&SUBJECT=test&MSG=¾È³çÇÏ¼¼¿ä";
+	var stringData = "&SENDPHONE=070-8858-0840&DESTPHONE=01089097195&STYPE=1&SUBJECT=test&MSG=ì•ˆë…•í•˜ì„¸ìš”";
   
   // stringData = "";
   // stringData += "&SENDPHONE=";
@@ -171,7 +142,7 @@ const sendSms = function(data){
   // stringData += "&SUBJECT=";
   // stringData += iconv.encode("test", 'iso-8859-1');
   // stringData += "&MSG=";
-  // stringData += iconv.encode("?•ˆ?…•?•˜?„¸?š”", 'iso-8859-1');
+  // stringData += iconv.encode("?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½", 'iso-8859-1');
 
 	// var buffer = iconv.encode(stringData, 'ksc5601');
   buffer = iconv.encode(stringData, 'iso-8859-1');
@@ -229,7 +200,7 @@ router.get('/pri_cookie', function (req, res) {
   res.send();
   res.end();
 });
-//?—…ì²´ì½”?“œ ?ž…? ¥
+//?ï¿½ï¿½ì²´ì½”?ï¿½ï¿½ ?ï¿½ï¿½?ï¿½ï¿½
 router.get('/mysql/co', function (req, res) {
   var uri = req.url;
 var data = url.parse(uri, true).query;

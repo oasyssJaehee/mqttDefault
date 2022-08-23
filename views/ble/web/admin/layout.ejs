@@ -53,6 +53,27 @@ function googleTranslateElementInit() {
 <script type="text/javascript">
     var socket = io();
     $(window).ready(function() {
+        var urlPath = $(location).attr('pathname').split("/");
+        $(".left_menu_li").removeClass("active");
+        $.each($(".left_menu_li"), function(i,v){
+            if($(this).attr("data-url") == urlPath[3]){
+                $(this).addClass("active");
+            }
+        });
+        $.each($(".left_menu_sub_list"), function(i,v){
+            if($(this).attr("data-url") == urlPath[3]){
+                $(this).find("a").addClass("active");
+            }
+        });
+
+        $(".logout_btn").on("click", function(){
+            $.ajax({
+				url:"./user_log_out",
+				success: function(re){
+					location.href = "./login";
+				}
+			});
+        });
     });
 </script>
 <style>
@@ -68,7 +89,7 @@ function googleTranslateElementInit() {
                 <div class="home_logo_box dis_flex_row">
                     <div class="home_logo">
                         <a class="home_logo_btn dis_inblock" href="/opener/admin/main">
-                            <img src="/static/img/web/<%=logoName%>">
+                            <img src="<%=logoName%>">
                         </a>
                     </div>
                 </div>
@@ -79,7 +100,7 @@ function googleTranslateElementInit() {
                     <ul class="left_menu_ul">
                         <li class="left_menu_li">
                             <a class="left_menu_page_btn">
-                                도어 제어
+                                객실 현황
                             </a>
                         </li>
                     </ul>
@@ -97,8 +118,8 @@ function googleTranslateElementInit() {
                         <h2 class="left_menu_tit">환경 설정</h2>
                     </div>
                     <ul class="left_menu_ul">
-                        <li class="left_menu_li">
-                            <a class="left_menu_page_btn">
+                        <li class="left_menu_li"  data-url="roomSett">
+                            <a class="left_menu_page_btn"  href="./roomSett">
                                 객실 설정
                             </a>
                         </li>
