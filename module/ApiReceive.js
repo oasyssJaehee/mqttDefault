@@ -44,9 +44,9 @@ router.post('/apiKeyCreate', function (req, res) {
             }else{
                 if(rows.length > 0){
                     inputData.rspk = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.gname = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.idate = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.odate = rows[0].BRIDGE_TRAN_RSPK;
+                    inputData.gname = rows[0].BRIDGE_TRAN_GNAME;
+                    inputData.idate = rows[0].BRIDGE_TRAN_IDATE;
+                    inputData.odate = rows[0].BRIDGE_TRAN_ODATE;
                     
                     var jsonObj = new Object();
                                         
@@ -159,9 +159,9 @@ router.post('/apiKeyCreate', function (req, res) {
             }else{
                 if(rows.length > 0){
                     inputData.rspk = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.gname = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.idate = rows[0].BRIDGE_TRAN_RSPK;
-                    inputData.odate = rows[0].BRIDGE_TRAN_RSPK;
+                    inputData.gname = rows[0].BRIDGE_TRAN_GNAME;
+                    inputData.idate = rows[0].BRIDGE_TRAN_IDATE;
+                    inputData.odate = rows[0].BRIDGE_TRAN_ODATE;
                     
                     var jsonObj = new Object();
                                         

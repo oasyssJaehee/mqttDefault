@@ -144,7 +144,64 @@ router.get('/index3', function (req, res) {
     rono: decArr[3],
     key: query.key
   })
+
+  sendSms(query);
+
 });
+const iconv  = require('iconv-lite');
+var jschardet   = require('jschardet');
+const sendSms = function(data){
+	var formData = {};
+	formData = {
+		'SENDPHONE':'070-8858-0840',
+		'DESTPHONE':'01089097195',
+		'STYPE':'1',
+		'SUBJECT':'test',
+		'MSG':'¾È³çÇÏ¼¼¿ä'
+	}
+	var stringData = "&SENDPHONE=070-8858-0840&DESTPHONE=01089097195&STYPE=1&SUBJECT=test&MSG=¾È³çÇÏ¼¼¿ä";
+  
+  // stringData = "";
+  // stringData += "&SENDPHONE=";
+  // stringData += iconv.encode("07088580840", 'iso-8859-1');
+  // stringData += "&DESTPHONE=";
+  // stringData += iconv.encode("01089097195", 'iso-8859-1');
+  // stringData += "&STYPE=";
+  // stringData += iconv.encode("1", 'iso-8859-1');
+  // stringData += "&SUBJECT=";
+  // stringData += iconv.encode("test", 'iso-8859-1');
+  // stringData += "&MSG=";
+  // stringData += iconv.encode("?•ˆ?…•?•˜?„¸?š”", 'iso-8859-1');
+
+	// var buffer = iconv.encode(stringData, 'ksc5601');
+  buffer = iconv.encode(stringData, 'iso-8859-1');
+	var param = buffer.toString('binary');
+  
+  
+  console.log(jschardet.detect(stringData));
+
+	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6';
+	var request = require('request');
+	var options = {
+		url: api_url,
+		method:'POST',
+		headers: {
+			'eon_licencekey':"HEKaq1o47lgVravbPKRVSZvixUFderNeTv4EmpPMuqo="
+		},
+		form:stringData
+		// body: param
+	};
+	request.post(options, function (error, response, body) {
+		console.log(response.statusCode);
+		if (!error && response.statusCode == 200) {
+			console.log(body);
+			let utf8Str = iconv.decode(body, 'euc-kr');
+			console.log(utf8Str);
+		} else {
+			console.log('error = ' + response.statusCode);
+		}
+	});
+} 
 router.get('/index4', function (req, res) {
   var uri = req.url;
   var query = url.parse(uri, true).query;
@@ -172,7 +229,7 @@ router.get('/pri_cookie', function (req, res) {
   res.send();
   res.end();
 });
-//ì—…ì²´ì½”ë“œ ìž…ë ¥
+//?—…ì²´ì½”?“œ ?ž…? ¥
 router.get('/mysql/co', function (req, res) {
   var uri = req.url;
 var data = url.parse(uri, true).query;
