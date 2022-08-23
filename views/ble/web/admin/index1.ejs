@@ -11,7 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <style>
-    body, html{background-color:#000;}
     .spin{display: none;}
     </style>
 </head>
@@ -19,9 +18,214 @@
     $(window).ready(function() {
     });
 </script>
-
+<style>
+.total_numbox{margin-bottom:0; margin-top:15px;}
+</style>
 <body>
-    ㅁㄴㅁㄴㅇㅁㄴㅇㅁㄴㅇ
-	ㅁㄴㅇㄴㅁㅇㄴㅁㅇㅁㄴㅇ
+    <div class="right_contbox">
+        <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
+            <h2 class="main_cont_tit">객실 제어</h2>
+            <div class="main_cont_btn_grp">
+                <div calss="main_cont_width main_cont_width01">
+                    <button class="icon_btn excel"></button>
+                </div>
+            </div>
+        </div>
+        <div class="wcont_box wcont_box_style01">
+            <div class="data_search_box dis_flex_row">
+                <div class="data_search_grp">
+                    <label class="setup_title">날짜</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <input class="inp_style date" type="text">
+                            </div>
+                        </div>
+                        <div class="inp_moving_width inp_moving_width02">
+                            ~
+                        </div>
+                        <div class="inp_moving_width inp_moving_width02">
+                            <div class="data_search_inpbox">
+                                <input class="inp_style date" type="text">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">구분</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox02">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">상태</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox03">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">분류</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox04">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">동작</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox05">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">객실 번호</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox06 dis_flex_row">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <input class="inp_style search" type="text">
+                            </div>
+                        </div>
+                        <div class="inp_moving_width inp_moving_width02">
+                            <button class="default_btn">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="total_numbox dis_flex_row dis_flex_center dis_flex_end">
+            <div class="total_tab_box dis_flex_row dis_flex_center">
+                <div class="total_tab all active">전체</div>
+                <div class="total_tab">폰키 미발급</div>
+                <div class="total_tab">메이드키 미발급</div>
+                <div class="total_tab">마스터키 미발급</div>
+            </div>
+            <h2 class="total_num_tit">총 3 개</h2>
+        </div>
+        <div class="view_grp">
+            <ul class="view_grp_listbox">
+                <li class="view_grp_list on">
+                    <div class="view_tbox view_tbox01">
+                        <!-- 객실번호 -->
+                        <div class="view_tit_grp">
+                            <div class="view_tit_box">
+                                <h2 class="view_tit view_tit01">201</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox03">
+                        <!-- 객실번호 -->
+                        <div class="key_tbox key_tbox01 on">
+                            <div class="key_icon key_icon01"></div>
+                            <p class="view_txt view_txt01">폰키</p>
+                        </div>
+                        <div class="key_tbox key_tbox02 on">
+                            <div class="key_icon key_icon02"></div>
+                            <p class="view_txt view_txt01">메이드키</p>
+                        </div>
+                        <div class="key_tbox key_tbox03 off">
+                            <div class="key_icon key_icon03 "></div>
+                            <p class="view_txt view_txt01">마스터키</p>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox02">
+                        <h2 class="view_tit view_tit03">사용기간</h2>
+                        <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
+                    </div>
+                </li>
+                <li class="view_grp_list on">
+                    <div class="view_tbox view_tbox01">
+                        <!-- 객실번호 -->
+                        <div class="view_tit_grp">
+                            <div class="view_tit_box">
+                                <h2 class="view_tit view_tit01">202</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox03">
+                        <!-- 객실번호 -->
+                        <div class="key_tbox key_tbox01 on">
+                            <div class="key_icon key_icon01"></div>
+                            <p class="view_txt view_txt01">폰키</p>
+                        </div>
+                        <div class="key_tbox key_tbox02 off">
+                            <div class="key_icon key_icon02 off"></div>
+                            <p class="view_txt view_txt01">메이드키</p>
+                        </div>
+                        <div class="key_tbox key_tbox03 off">
+                            <div class="key_icon key_icon03"></div>
+                            <p class="view_txt view_txt01">마스터키</p>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox02">
+                        <h2 class="view_tit view_tit03">사용기간</h2>
+                        <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
+                    </div>
+                </li>
+                <li class="view_grp_list">
+                    <div class="view_tbox view_tbox01">
+                        <!-- 객실번호 -->
+                        <div class="view_tit_grp">
+                            <div class="view_tit_box">
+                                <h2 class="view_tit view_tit01">203</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox03">
+                        <!-- 객실번호 -->
+                        <div class="key_tbox key_tbox01 off">
+                            <div class="key_icon key_icon01"></div>
+                            <p class="view_txt view_txt01">폰키</p>
+                        </div>
+                        <div class="key_tbox key_tbox02 off">
+                            <div class="key_icon key_icon02 "></div>
+                            <p class="view_txt view_txt01">메이드키</p>
+                        </div>
+                        <div class="key_tbox key_tbox03 on">
+                            <div class="key_icon key_icon03 off"></div>
+                            <p class="view_txt view_txt01">마스터키</p>
+                        </div>
+                    </div>
+                    <div class="view_tbox view_tbox02">
+                        <h2 class="view_tit view_tit03">사용기간</h2>
+                        <p class="view_txt view_txt02">00.00 ~ 00.00</h2>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>
