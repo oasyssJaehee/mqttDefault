@@ -121,37 +121,18 @@ router.get('/index3', function (req, res) {
 });
 const iconv  = require('iconv-lite');
 var jschardet   = require('jschardet');
+
+
 const sendSms = function(data){
 	var formData = {};
 	formData = {
-		'SENDPHONE':'070-8858-0840',
-		'DESTPHONE':'01089097195',
+		'SENDPHONE':'00000000000',
+		'DESTPHONE':'00000000000',
 		'STYPE':'1',
-		'SUBJECT':'test',
-		'MSG':'안녕하세요'
+		'SUBJECT':'TITLE',
+		'MSG':'안녕하세요\t\n'
 	}
-	var stringData = "&SENDPHONE=070-8858-0840&DESTPHONE=01089097195&STYPE=1&SUBJECT=test&MSG=안녕하세요";
-  
-  // stringData = "";
-  // stringData += "&SENDPHONE=";
-  // stringData += iconv.encode("07088580840", 'iso-8859-1');
-  // stringData += "&DESTPHONE=";
-  // stringData += iconv.encode("01089097195", 'iso-8859-1');
-  // stringData += "&STYPE=";
-  // stringData += iconv.encode("1", 'iso-8859-1');
-  // stringData += "&SUBJECT=";
-  // stringData += iconv.encode("test", 'iso-8859-1');
-  // stringData += "&MSG=";
-  // stringData += iconv.encode("?��?��?��?��?��", 'iso-8859-1');
-
-	// var buffer = iconv.encode(stringData, 'ksc5601');
-  buffer = iconv.encode(stringData, 'iso-8859-1');
-	var param = buffer.toString('binary');
-  
-  
-  console.log(jschardet.detect(stringData));
-
-	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6';
+	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6P';
 	var request = require('request');
 	var options = {
 		url: api_url,
@@ -159,20 +140,17 @@ const sendSms = function(data){
 		headers: {
 			'eon_licencekey':"HEKaq1o47lgVravbPKRVSZvixUFderNeTv4EmpPMuqo="
 		},
-		form:stringData
-		// body: param
+		form:formData
 	};
 	request.post(options, function (error, response, body) {
 		console.log(response.statusCode);
 		if (!error && response.statusCode == 200) {
 			console.log(body);
-			let utf8Str = iconv.decode(body, 'euc-kr');
-			console.log(utf8Str);
 		} else {
-			console.log('error = ' + response.statusCode);
+			console.log('error = ' + error);
 		}
 	});
-} 
+}
 router.get('/index4', function (req, res) {
   var uri = req.url;
   var query = url.parse(uri, true).query;
