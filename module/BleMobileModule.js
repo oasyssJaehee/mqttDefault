@@ -40,6 +40,7 @@ router.get('/index', function (req, res) {
   key = key.replace(/ /gi, "+");
   var dec = crypto.decipher(key, AppInfo.AES_KEY);
   var decArr = dec.split("/");
+  console.log(dec);
 
   var pri_check = req.cookies["pri_check"];
   res.render("ble/mobile/index",{
@@ -119,38 +120,6 @@ router.get('/index3', function (req, res) {
   sendSms(query);
 
 });
-const iconv  = require('iconv-lite');
-var jschardet   = require('jschardet');
-
-
-const sendSms = function(data){
-	var formData = {};
-	formData = {
-		'SENDPHONE':'00000000000',
-		'DESTPHONE':'00000000000',
-		'STYPE':'1',
-		'SUBJECT':'TITLE',
-		'MSG':'안녕하세요\t\n'
-	}
-	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6P';
-	var request = require('request');
-	var options = {
-		url: api_url,
-		method:'POST',
-		headers: {
-			'eon_licencekey':"HEKaq1o47lgVravbPKRVSZvixUFderNeTv4EmpPMuqo="
-		},
-		form:formData
-	};
-	request.post(options, function (error, response, body) {
-		console.log(response.statusCode);
-		if (!error && response.statusCode == 200) {
-			console.log(body);
-		} else {
-			console.log('error = ' + error);
-		}
-	});
-}
 router.get('/index4', function (req, res) {
   var uri = req.url;
   var query = url.parse(uri, true).query;

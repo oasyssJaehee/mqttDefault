@@ -46,18 +46,6 @@
             Alert("도어락 연결이 종료 되었습니다.");
             bleConnect = false;
             $.loading.end();
-            setTimeout(function(){
-                $.ajax({
-                    url:"/bleConnect",
-                    data:{
-                        topic: "oasyss32/"+topic,
-                        open: "0110001"
-                    },
-                    success : function(result){
-                        actionCheck(20);
-                    }
-                });
-            },500);
         }else if(data.msg == "mqttConnect"){
             clearInterval(mqttInterver);
             if(data.state == "0"){
@@ -138,11 +126,12 @@
     var topic;
     var gname="";
     function init(){
-        topic = hotelCode+"/"+rono;
-        roomName = hotelCode+"_"+rono;
+        topic = removePad(hotelCode)+"/"+rono;
+        roomName = removePad(hotelCode)+"_"+rono;
         hotelCode = pad(hotelCode, 7);
         
         $.loading.start("");
+        console.log(acno +"/"+hotelCode+"/"+rspk+"/"+rono);
         $.ajax({
             url:"./mysql/fo",
             data:{
@@ -152,7 +141,6 @@
                 rspk: rspk,
                 rono: rono
             },success:function(res){
-                console.log(res);
                 if(res.length == 0){
                     Alert("비정상적인 접근 입니다.");
                 }else{

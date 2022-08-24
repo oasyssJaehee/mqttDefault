@@ -207,6 +207,12 @@ function addDate(date,sep,flag,addNumber){
         return "";
     }
 }
+//앞에 0 제거 추가
+function removePad (str) {
+    str = str.toString();
+    var b = str.replace(/(^0+)/, "");
+    return b
+}
 function pad (str, max) {
     str = str.toString();
     return str.length < max ? pad("0" + str, max) : str;

@@ -28,4 +28,53 @@
     ,'1'
     )
     </insert>
+    <select id="bs_select">
+    SELECT BS_CODE,
+        BS_ENC,
+        BS_NAME,
+        BS_TEL,
+        BS_SEND_TEL,
+        BS_NUM,
+        BS_ADDR,
+        BS_LOGO,
+        BS_LUSER,
+        BS_LDATE,
+        BS_USE
+    FROM co_bs_code
+    WHERE BS_CODE = #{bcode}
+    AND BS_ENC = #{benc}
+    </select>
+    <insert id="sms_log_insert">
+    INSERT INTO fo_sms_log (
+    SMS_LOG_BS
+    ,SMS_LOG_STEL
+    ,SMS_LOG_RTEL
+    ,SMS_LOG_TITLE
+    ,SMS_LOG_CONT
+    ,SMS_LOG_ACNO
+    ,SMS_LOG_RONO
+    ,SMS_LOG_GNAME
+    ,SMS_LOG_DATE
+    ,SMS_LOG_USER
+    ,SMS_LOG_CPID
+    ,SMS_LOG_ASP
+    ,SMS_LOG_TYPE
+    ,SMS_LOG_TEMP
+    ) VALUES (
+    #{bcode}
+    ,#{sendTel}
+    ,AES_ENCRYPT(#{phone}, #{AES_KEY})
+    ,#{title}
+    ,#{msg}
+    ,#{acno}
+    ,#{rono}
+    ,#{gname}
+    ,SYSDATE()
+    ,#{user}
+    ,#{cpid}
+    ,#{resCode}
+    ,#{stype}
+    ,#{temp}
+    )
+    </insert>
 </mapper>

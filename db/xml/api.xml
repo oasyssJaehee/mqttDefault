@@ -51,6 +51,7 @@
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_GNAME,
+        BRIDGE_TRAN_URL,
         BRIDGE_TRAN_KIDA,
         BRIDGE_TRAN_KCDA,
         BRIDGE_TRAN_BKYB,
@@ -60,7 +61,6 @@
     FROM fo_bridge_tran
     WHERE BRIDGE_TRAN_BS = #{bcode}
     AND BRIDGE_TRAN_RONO = #{rono}
-    AND BRIDGE_TRAN_ACNO = #{acno}
     <![CDATA[
     AND BRIDGE_TRAN_IDATE <= #{idate}
     AND BRIDGE_TRAN_ODATE >= #{idate}
@@ -114,7 +114,7 @@
     </select>
     <select id="api_log_select">
     SELECT API_LOG_BS AS BCODE,
-        API_LOG_SEQ AS SEQ,
+        CAST(API_LOG_SEQ AS unsigned) AS SEQ,
         API_LOG_ACNO AS ACNO,
         API_LOG_RONO AS RONO,
         API_LOG_RTYPE AS RTYPE,
@@ -155,6 +155,17 @@
     BRIDGE_TRAN_KCDA = SYSDATE()
     WHERE BRIDGE_TRAN_RSPK = #{rspk}
     AND BRIDGE_TRAN_ACNO =#{acno}
+    AND BRIDGE_TRAN_BS = #{bcode}
+    
+    </update>
+    <update id="bridge_tran_delete_re">
+    UPDATE fo_bridge_tran
+    SET 
+    BRIDGE_TRAN_KCDA = SYSDATE(),
+    BRIDGE_TRAN_LUSER = #{user},
+    BRIDGE_TRAN_BKYB = 'C',
+    BRIDGE_TRAN_KCDA = SYSDATE()
+    WHERE BRIDGE_TRAN_rono = #{rono}
     AND BRIDGE_TRAN_BS = #{bcode}
     
     </update>

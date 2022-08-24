@@ -104,7 +104,7 @@ function getServerIp() {
 
 
 
-client.subscribe("esp32/"+Number("0020001")+"/#")
+client.subscribe("esp32/#")
 
 client.on("message", function(topic, message){
     console.log("rec =====>");
