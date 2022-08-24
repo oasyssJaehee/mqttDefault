@@ -53,21 +53,26 @@ font-weight:500; color:#727272; line-height: 50px; padding-left: 50px; box-sizin
 
 
 /*로그인*/
-.login_wrap{display:block;box-sizing:border-box; background:#FFF; border-radius: 12px; box-shadow: 0px 2px 4px 0px #29343914; overflow: hidden;
-position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); min-width: 400px; height:500px;}
-.log_cont01{width: 600px; height:500px; background-image: url('/static/img/web/login_bg02.png'); background-size: cover; 
-    position:relative;background-repeat: no-repeat; background-position: right -50px center;}
-.log_cont02{padding:70px 40px; box-sizing: border-box; width: 350px;} 
+.login_wrap{display:block;width:100%; position: relative;}
+.login_center_box{display: flex; flex-direction: column; align-items: center;    height: 100vh;justify-content: center;}
+
+.center_tbox img{width:100%;}
+.log_cont01{background-color:#333; width:550px; height:100vh; position: absolute; top:0; left:0; background-image: url('/static/img/opener/left_login_bg.png');
+background-repeat: no-repeat; background-position: center; background-size: cover;display: flex;flex-direction: column;align-items: center;justify-content: center;}
+.center_tbox{width:200px;}
+
+.log_cont02{padding:100px; box-sizing: border-box; padding-left:650px; width:100%;}
 .login_logo{width:250px; margin: 0 auto;}
 .login_logo img{width: 100%;}
-.login_tit{font-size: 58px; margin-bottom: 15px; text-align: center; letter-spacing: 3px;}
-.input_title{padding-bottom:8px; font-size: 13px;}
+.login_tit_eng{font-size: 26px;  text-align: left; font-weight: 400; margin-bottom: 40px; color:#9ca2a9;}
+.login_tit{font-size: 68px;  letter-spacing: 3px; text-align: left;}
+.input_title{padding-bottom:8px; font-size: 18px; font-weight: 700;}
 .input_title_box{margin-bottom: 15px;}
 .input_title_box03{display: flex; flex-direction: row; align-items: center;}
-.input_title_box03 .ck_text{padding-left: 8px; cursor: pointer;}
+.input_title_box03 .ck_text{padding-left: 8px; cursor: pointer;display:block}
 
-.log_btn{display: block; width: 100%; border-radius: 8px; height: 40px; text-align: center; background:linear-gradient(90deg, #2e3192, #585dcb); color:#fff; line-height: 40px; font-size: 15px;
-    font-weight: bold;}
+.login_tit_inpbox{max-width: 400px;;}
+
 
 .log_cont_logo{display: block; width: 250px;}
 .log_cont_logo img{ width: 100%;}
@@ -76,6 +81,15 @@ position: fixed; top:50%; left:50%; transform: translate(-50%, -50%); min-width:
 
 
 /*공통 CSS*/
+/* Check */
+.ck { width:24px; height:24px; opacity: 0; top:0; left:0; position: absolute;border:0; padding:0; margin:0; cursor: pointer;}
+.ck + .ck_btn {
+display:inline-block;  background-image: url('/static/img/opener/no_check_icon.png'); background-size:18px; width:24px; height:24px;
+ background-repeat: no-repeat; background-position: center; transition: 0.3s;cursor: pointer;}
+.ck + .ck_btn_height{height:auto;}
+.width_24px{width:24px; height: 24px;;}
+.ck:checked + .ck_btn {background-image: url('/static/img/opener/n_check_icon.png');}
+.ck_text{font-size: 15px; font-weight:500;; color:#999;}
 
 
 .hover_table tr{ transition: 0.3s;cursor: pointer;}
@@ -142,7 +156,9 @@ button{box-sizing: border-box; outline: none;  border:0;}
 ::-webkit-scrollbar-button { display: none; } /* 스크롤 바 상 하단 버튼 */
 
 
-.inp_style{ height: 40px;border-radius: 8px; outline: none; border:1px solid #dbdbdb; min-width: 170px;box-sizing: border-box; width:100%; ;}
+.inp_style{ height: 40px;border-radius: 8px; outline: none; border:1px solid #dbdbdb; min-width: 170px;box-sizing: border-box; width:100%; ;font-family: 'Pretendard', sans-serif;}
+.login_inp_style{ height: 50px;border-radius: 4px; outline: none; border:2px solid #dbdbdb; min-width: 170px;box-sizing: border-box; width:100%; 
+    font-size: 16px;;font-family: 'Pretendard', sans-serif; font-weight: 500;}
 .inp_style.date{background-image:url('/static/img/opener/calendar_icon.png'); background-repeat: no-repeat; background-position: left 8px center; background-size:20px;
 padding-left: 36px;}
 .inp_style.search{background-image:url('/static/img/opener/search_icon.png'); background-repeat: no-repeat; background-position: left 8px center; background-size:20px;
@@ -171,6 +187,12 @@ select:focus{border-color: #ffacaf;}
 .default_btn:hover{background-color: #fe4047;}
 
 .default_btn:disabled{background-color:#ccc; color:#666;}
+
+.default_btn_big{display: block; border-radius: 4px; border: 0; height:50px; text-align: center; background-color:#ff6066; color:#fff; font-weight:600; width:100% ; 
+    padding: 0 8px; box-sizing: border-box; transition: 0.3s; font-size:16px;}
+.default_btn_big:hover{background-color: #fe4047;}
+
+.default_btn_big:disabled{background-color:#ccc; color:#666;}
 
 .default_btn_gray{display: block; border-radius: 8px; border: 0; height:40px; text-align: center; background-color:#f3f5f6; color:#424a4d; font-weight:600; width:100% ; 
     padding: 0 8px; box-sizing: border-box; transition: 0.3s;}

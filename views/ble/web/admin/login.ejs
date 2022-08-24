@@ -19,6 +19,9 @@
 
 <!-- 폰트 -->
 <link href="/css/font/pretendard.css" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 
 <link href="/js/alert/jquery.alerts.phonekey.css" rel="stylesheet"/>
@@ -80,40 +83,47 @@
 .left_menu_acco{display:none;}
 .top_notice_grp{display: none;}
 .content_box{padding:0;}
-html, body{background:#e1e1e1;}
+html, body{background:#fff;}
+*{font-family: 'Montserrat','Pretendard', sans-serif;}
 </style>
 <body>
     <div class="login_wrap">
-        <div class="dis_flex_row">
+        <div class="login_center_box">
             <div class="log_cont log_cont01">
-                <div class="log_cont_tbox">
-                    <div class="log_cont_logo">
-                        <img src="/static/img/web/logo_jebee.png"/>
-                    </div>
-                    <h2 class="log_cont_txt">제비처럼 빠른 일 처리</h2>
+                <div class="center_tbox">
+                    <!-- 샘플로고입니다. -->
+                    <img src="/static/img/opener/sample_logo.png">
                 </div>
             </div>
             <div class="log_cont log_cont02">
-                
-                <h2 class="login_tit">LOGIN</h2>
-                <div class="input_title_box input_title_box01">
-                    <h2 class="input_title">CODE</h2>
-                    <input name="bnum" class="key_list_inp" type="text">
+                <div class="log_cont_grp">
+                    <h2 class="login_tit">LOGIN</h2>
+                    <h2 class="login_tit_eng">Please enter your login information.</h2>
+                    <div class="login_tit_inpbox">
+                        <div class="input_title_box input_title_box01">
+                            <h2 class="input_title">Code Number</h2>
+                            <input name="bnum" class="login_inp_style" type="text" placeholder="코드번호를 입력해주세요.">
+                        </div>
+                        <div class="input_title_box input_title_box01">
+                            <h2 class="input_title">ID</h2>
+                            <input name="id" class="login_inp_style" type="text" placeholder="아이디를 입력해주세요.">
+                        </div>
+                        <div class="input_title_box input_title_box02">
+                            <h2 class="input_title">Password</h2>
+                            <input name="pw" class="login_inp_style" type="password" placeholder="비밀번호를 입력해주세요.">
+                        </div>
+                        <div class="input_title_box input_title_box03">
+                            <div class="dis_flex_row dis_flex_center" style=" cursor: pointer;">
+                                <div class="width_24px">
+                                    <input class="ck" type="checkbox" id="log_ck">
+                                    <label class="ck_btn" for="log_ck"></label>
+                                </div>
+                                <label class="ck_text" for="log_ck">아이디 저장</label>
+                            </div>
+                        </div>
+                        <button class="log_btn default_btn_big">LOGIN</button>
+                    </div>
                 </div>
-                <div class="input_title_box input_title_box01">
-                    <h2 class="input_title">아이디</h2>
-                    <input name="id" class="key_list_inp" type="text">
-                </div>
-                <div class="input_title_box input_title_box02">
-                    <h2 class="input_title">비밀번호</h2>
-                    <input name="pw" class="key_list_inp" type="password">
-                </div>
-                <div class="input_title_box input_title_box03">
-                    <input class="ck" type="checkbox" id="log_ck">
-                    <label class="ck_btn" for="log_ck"></label>
-                    <label class="ck_text" for="log_ck">아이디 저장</label>
-                </div>
-                <a class="log_btn">로그인</a>
             </div>
         </div>
     </div>
