@@ -46,6 +46,18 @@
             Alert("도어락 연결이 종료 되었습니다.");
             bleConnect = false;
             $.loading.end();
+            setTimeout(function(){
+                $.ajax({
+                    url:"/bleConnect",
+                    data:{
+                        topic: "oasyss32/"+topic,
+                        open: "0110001"
+                    },
+                    success : function(result){
+                        actionCheck(20);
+                    }
+                });
+            },500);
         }else if(data.msg == "mqttConnect"){
             clearInterval(mqttInterver);
             if(data.state == "0"){

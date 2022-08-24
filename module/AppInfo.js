@@ -2,43 +2,60 @@ const { post } = require('request');
 const iconv  = require('iconv-lite');
 
 const serverPort = 6001;
-var hotelCode = "20001";
-var hotelName = "오아시스";
 
 var saleType = "jebee";
 var mqttUrl = "mqtt://210.114.18.107";
-var logoName = "logo_jebee.png";
 var AES_KEY = "ioptoprr89u34547yhdt";
 var httpUrl = "http://bridge.oasyss.co.kr";
 
+const SMSSTRING = function(data){
+	var bsName = data.BS_NAME;
+	var smsType = data.SMSTYPE;
+
+	var msg = "";
+
+	if(smsType == 1){
+		msg += "["+bsName+"]";
+		msg += "&#10;";
+		msg += "[고객명] : "+ data.gname;
+		msg += "[숙박기간]";
+		msg += "&#10;";
+		msg += data.idate +"~"+ data.odate;
+		msg += data.idate +"~"+ data.odate;
+		msg += "&#10;";
+		msg += data.idate +"~"+ data.odate;
+		msg += "[URL]";
+		msg += "&#10;";
+		msg += data.url;
+	}
+	return msg;
+}
 
 const sendSms = function(data){
+	var msg = SMSSTRING(data);
 	var formData = {};
 	formData = {
 		'SENDPHONE':'070-8858-0840',
 		'DESTPHONE':'01089097195',
 		'STYPE':'1',
 		'SUBJECT':'test',
-		'MSG':'테스트입니다만?'
+		'MSG':msg
 	}
+
 	var stringData = "&SENDPHONE=070-8858-0840&DESTPHONE=01089097195&STYPE=1&SUBJECT=test&MSG=테스트입니다";
 	var buffer = iconv.encode(stringData, 'EUC-KR'); // 파라미터를 euc-kr 로 인코딩 해 버퍼에 담은 후,
 	var param = buffer.toString('binary'); // 바이너리로 변환해 이스케이프하면 된다.
 
 
-	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6';
+	var api_url = 'http://blue3.eonmail.co.kr:8081/weom/servlet/api.EONASP6P';
 	var request = require('request');
 	var options = {
 		url: api_url,
 		method:'POST',
 		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
 			'eon_licencekey':"HEKaq1o47lgVravbPKRVSZvixUFderNeTv4EmpPMuqo="
 		},
-		form:param,
-		qsStringifyOptions: {
-			encoding: false
-		 } 
+		form:formData
 		// body: param
 	};
 	request.post(options, function (error, response, body) {
@@ -55,11 +72,8 @@ const sendSms = function(data){
 
 module.exports = {
     serverPort,
-    hotelCode,
-	hotelName,
 	saleType,
 	mqttUrl,
-	logoName,
 	AES_KEY,
 	httpUrl
 }

@@ -449,7 +449,9 @@ router.post('/apiKeyPlogSearch', function (req, res) {
     var inputData;
     req.on('data', (data) => {
         inputData = JSON.parse(data);
-        AppInfo.sendSms(data);
+        inputData.BS_NAME = "오아시스";
+        inputData.SMSTYPE = 1;
+        AppInfo.sendSms(inputData);
 
         var returnData = {res:117};
         var jsonObj = new Object();
