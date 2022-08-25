@@ -12,7 +12,7 @@ html, body{background:#f3f5f6;}
 .home_logo_box{width:100%; padding:40px;box-sizing: border-box; text-align: center;}
 .menu_icon{width:50px; display: none;}
 .menu_icon img{width: 100%;}
-.home_logo{width: 150px; margin:0 auto;}
+.home_logo{width: 200px; margin:0 auto;}
 .home_logo img{width: 100%}
 
 .left_menu_ul{clear: both; width:100%;max-height: 66vh; overflow-y: auto;}
@@ -59,7 +59,7 @@ font-weight:500; color:#727272; line-height: 50px; padding-left: 50px; box-sizin
 .center_tbox img{width:100%;}
 .log_cont01{background-color:#333; width:550px; height:100vh; position: absolute; top:0; left:0; background-image: url('/static/img/opener/left_login_bg.png');
 background-repeat: no-repeat; background-position: center; background-size: cover;display: flex;flex-direction: column;align-items: center;justify-content: center;}
-.center_tbox{width:200px;}
+.center_tbox{width:250px;}
 
 .log_cont02{padding:100px; box-sizing: border-box; padding-left:650px; width:100%;}
 .login_logo{width:250px; margin: 0 auto;}
