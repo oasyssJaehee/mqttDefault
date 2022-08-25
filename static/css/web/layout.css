@@ -45,7 +45,7 @@ font-weight:500; color:#727272; line-height: 50px; padding-left: 50px; box-sizin
 
 .left_menu_box{padding:0 20px; box-sizing: border-box;}
 .left_menu_titbox{padding:15px 0; box-sizing:border-box; }
-.left_menu_tit{font-size:20px; color:#000;}
+.left_menu_tit{font-size:15px; color:#000;}
 .left_menu_page_btn{display: block; font-size: 15px;}
 
 
@@ -223,6 +223,15 @@ select:focus{border-color: #ffacaf;}
 .icon_btn_txt_left:hover{background-color:#f6f6f6;}
 
 
+.room_link_btn{width:50px; height:50px; border:0; border-radius: 50%; background-color:#ddd; box-shadow: 2px 4px 8px 0px #2934390a;margin-right: 20px;;
+display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; transition: 0.3s; color:#111;}
+.room_link_btn .room_link_icon{display:block; width:16px; height: 16px; background-repeat: no-repeat; background-position: center; background-size: 100%;
+background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom: 4px;}
+.room_link_btn.on{background-color:#ff6066; color:#fff;}
+.room_link_btn.on .room_link_icon{background-image: url('/static/img/mobile/door/bluetooth_on.png');}
+.room_link_btn:disabled{background-color:#ddd; }
+
+
 
 .sel_style{width:100%; box-sizing:border-box;border-radius:8px; border:1px solid #dbdbdb;height:40px;padding:0 8px;outline:none;
     -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image:url('/img/opener/drop_icon.png'); background-repeat:no-repeat;
@@ -358,7 +367,7 @@ font-weight:600;}
 .popup_header .view_tbox03 .view_txt01{width:auto;}
 
 .popup_title{margin-right:12px;}
-.popup_title01{font-size:28px;}
+.popup_title01{font-size:34px;}
 .popup_title02{font-size:24px; font-weight: 400; color:#9ca2a9;}
 
 .popup_close{width: 40px; height:40px; display:block; background-image: url('/static/img/opener/cancel_icon.png'); background-repeat: no-repeat ; background-position: center;
