@@ -40,10 +40,20 @@
             Alert("도어락이 연결 되었습니다.");
             bleConnect = true;
             $.loading.end();
+            oDateCheck();
         }else if(data.msg == "disconnect"){
             $("#connect").removeClass("on");
             $("#connect").addClass("disabled");
             Alert("도어락 연결이 종료 되었습니다.");
+            $.ajax({
+                url:"/bleConnect",
+                data:{
+                    topic: "oasyss32/"+topic,
+                    open: "0110001"
+                },
+                success : function(result){
+                }
+            });
             bleConnect = false;
             $.loading.end();
         }else if(data.msg == "mqttConnect"){
@@ -67,6 +77,7 @@
                 bleConnect = true;
                 Alert("도어락이 연결 되었습니다.");
                 $.loading.end();
+                oDateCheck();
             }
         }else if(data.msg == "open"){
             clearInterval(actionInterver);
@@ -74,6 +85,17 @@
             if(data.state == "1"){
                 Alert("문이 열렸습니다.");
             }
+        }else if(data.msg == "passTimeSett"){
+            clearInterval(actionInterver);
+
+            var put ={
+                passTime:odate,
+                rono:rono,
+                bsCode:pad(hotelCode, 7),
+                user: acno+"/"+rspk
+            };
+            door_sett(put);
+            $.loading.end();
         }
 	});
     var actionInterver;
@@ -125,6 +147,7 @@
     var roomName;
     var topic;
     var gname="";
+    var odate = "";
     function init(){
         topic = removePad(hotelCode)+"/"+rono;
         roomName = removePad(hotelCode)+"_"+rono;
@@ -149,6 +172,7 @@
                     $("#layout_title").text(res[0].BS_NAME);
                     $("#idate").text(res[0].BRIDGE_TRAN_IDATE);
                     $("#odate").text(res[0].BRIDGE_TRAN_ODATE);
+                    odate = res[0].BRIDGE_TRAN_ODATE;
                     $(".room_num").text(res[0].BRIDGE_TRAN_RONO);
                     gname = res[0].BRIDGE_TRAN_GNAME;
                     $.loading.end();
@@ -203,27 +227,82 @@
                 }
             }
         });
-
-        
     }
+    //도어락 정보 저장
+    function door_sett(data){
+        $.ajax({
+            url:"./doorSett",
+            data:data
+            , success:function(res){
+            }
+        });
+    }
+    function oDateCheck(){
+        $.ajax({
+            url:"/mysql/mqtt",
+            data:{
+                xml: "door_time_check",
+                userId: acno+"/"+rspk,
+                rono:rono,
+                bsCode:pad(hotelCode, 7)
+            },success:function(res){
+                console.log(res);
+                if(res.length > 0){
+                    var setEdate = res[0].ROOM_TIME_PASS;
+                    if(setEdate != ""){
+                        var oneOdate="";
+                        var date = odate;
+                        date = date.replace(/-/gi, "");
+                        date = date.replace(/ /gi, "");
+                        date = date.replace(/PM/gi, "");
+                        date = date.replace(/AM/gi, "");
+                        date = date.replace(/:/gi, "");
 
+                        var year = date.substring(0,4);
+                        var month = date.substring(4,6);
+                        var toDate = date.substring(6,8);
+                        var hours = date.substring(8,10);
+                        var minutes = date.substring(10,12);
+                        oneOdate = year+""+month+""+toDate+""+hours+""+minutes;
+                        if(setEdate != oneOdate){
+                            $.loading.start('도어락 기초 설정 중 입니다.');
+                            $.ajax({
+                                url:"/passTimeSett",
+                                data:{
+                                    userId: acno+"/"+rspk,
+                                    open: "0110001",
+                                    topic: "oasyss32/"+topic,
+                                    date: odate
+                                }, success:function(res){
+                                    actionCheck(10);
+                                }
+                            });
+                        }
+                    }
+                    defaultTime = 0;
+                }
+            }
+        });
+    }
+    
 	$(window).ready(function() {
         init();
         $("#connect").on("click", function(){
             if(!userTime){Alert(userUseMsg);return;}
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
-            $.ajax({
-                url:"/mqttCheck",
-                data:{
-                    topic: "oasyss32/"+topic,
-                    open: "0110001",
-                    userId: acno+"/"+rspk
-                },
-                success : function(result){
-                    mqttCheck();
-                }
-            });  
+            setTimeout(function(){
+                        $.ajax({
+                    url:"/mqttCheck",
+                    data:{
+                        topic: "oasyss32/"+topic,
+                        userId: acno+"/"+rspk
+                    },
+                    success : function(result){
+                        mqttCheck();
+                    }
+                });  
+            },1000);
         });
 		
 		$("#openBtn").on("click", function(){

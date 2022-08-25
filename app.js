@@ -309,6 +309,7 @@ app.get('/mysql/room', function (req, res) {
     var query = mysql.roomMapper().getStatement("room", xml_name, data, format);
     connection.query(query, function (err, rows, fields) {
         if(err){
+            console.log(err);
             res.setHeader('Content-Type', 'application/json');
             res.send(JSON.stringify(err));
             res.end();

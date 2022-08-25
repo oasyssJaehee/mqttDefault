@@ -84,3 +84,4 @@ module.exports.chatMapper = returnChatMapper
 module.exports.coMapper = returnCoMapper
 module.exports.apiMapper = returnApiMapper
 module.exports.foMapper = returnFoMapper
+module.exports.roomMapper = returnRoomMapper

@@ -506,36 +506,61 @@ LEFT JOIN opener_code CODE1
     </insert>
     <!-- 도어락 시간체크 -->
     <select id="door_time_check">
-    SELECT ACTION1.MQTT_ACTION_KEY AS KEY1,
-        ACTION1.MQTT_ACTION_NUM AS NUM1,
-        ACTION1.MQTT_ACTION_CMD AS CMD1,
-        ACTION1.MQTT_ACTION_STATE AS STATE1,
-        ACTION2.MQTT_ACTION_KEY AS KEY2,
-        ACTION2.MQTT_ACTION_NUM AS NUM2,
-        ACTION2.MQTT_ACTION_CMD AS CMD2,
-        ACTION2.MQTT_ACTION_STATE AS STATE2
-        
-    FROM mqtt_action ACTION1
-    LEFT JOIN (
-    SELECT
-    MQTT_ACTION_KEY,
-    MQTT_ACTION_HOTEL,
-    MQTT_ACTION_NUM,
-    MQTT_ACTION_STATE,
-    MQTT_ACTION_CMD,
-    MQTT_ACTION_USER
-    FROM mqtt_action
-    WHERE MQTT_ACTION_STATE = '12'
-    AND MQTT_ACTION_ANSDATE IS NOT NULL
-    ) ACTION2 ON
-    ACTION2.MQTT_ACTION_USER = ACTION1.MQTT_ACTION_USER
-    WHERE ACTION1.MQTT_ACTION_STATE = '5'
-    AND ACTION1.MQTT_ACTION_USER = #{userId}
-    AND ACTION1.MQTT_ACTION_ANSDATE IS NOT NULL
-    AND ACTION1.MQTT_ACTION_HOTEL = #{hotelCode}
-    ORDER BY ACTION1.MQTT_ACTION_KEY DESC
+    SELECT ROOM_DOOR_BS,
+        ROOM_DOOR_KEY,
+        ROOM_DOOR_RONO,
+        IFNULL(ROOM_PASS_USER, '') AS ROOM_PASS_USER,
+        IFNULL(ROOM_PASS_CLEANER, '') AS ROOM_PASS_CLEANER,
+        IFNULL(ROOM_PASS_MASTER, '') AS ROOM_PASS_MASTER,
+        IFNULL(ROOM_TIME_DOOR, '') AS ROOM_TIME_DOOR,
+        IFNULL(ROOM_TIME_PASS, '') AS ROOM_TIME_PASS,
+        ROOM_DOOR_DATE,
+        ROOM_DOOR_USER,
+        ROOM_DOOR_ADMIN
+    FROM fo_room_door
+    WHERE ROOM_DOOR_RONO = #{rono}
+    AND ROOM_DOOR_BS = #{bsCode}
     LIMIT 1
     </select>
+    <update id="door_sett_update">
+    UPDATE fo_room_door
+    SET
+    ROOM_DOOR_DATE = SYSDATE()
+    <if test="pass != ''">,ROOM_PASS_USER = #{pass}</if>
+    <if test="cleaner != ''">,ROOM_PASS_CLEANER = #{cleaner}</if>
+    <if test="master != ''">,ROOM_PASS_MASTER = #{master}</if>
+    <if test="doorTime != ''">,ROOM_TIME_DOOR = #{doorTime}</if>
+    <if test="passTime != ''">,ROOM_TIME_PASS = #{passTime}</if>
+    <if test="user != ''">,ROOM_DOOR_USER = #{user}</if>
+    <if test="admin != ''">,ROOM_DOOR_ADMIN = #{admin}</if>
+    WHERE ROOM_DOOR_RONO = #{rono}
+    AND ROOM_DOOR_BS = #{bsCode}
+    </update>
+    <insert id="door_sett_insert">
+    INSERT INTO fo_room_door (
+    ROOM_DOOR_BS
+    ,ROOM_DOOR_RONO
+    ,ROOM_DOOR_DATE
+    <if test="pass != ''">,ROOM_PASS_USER</if>
+    <if test="cleaner != ''">,ROOM_PASS_CLEANER</if>
+    <if test="master != ''">,ROOM_PASS_MASTER</if>
+    <if test="doorTime != ''">,ROOM_TIME_DOOR</if>
+    <if test="passTime != ''">,ROOM_TIME_PASS</if>
+    <if test="user != ''">,ROOM_DOOR_USER</if>
+    <if test="admin != ''">,ROOM_DOOR_ADMIN</if>
+    ) VALUES (
+    #{bsCode}
+    ,#{rono}
+    ,SYSDATE()
+    <if test="pass != ''">,#{pass}</if>
+    <if test="cleaner != ''">,#{cleaner}</if>
+    <if test="master != ''">,#{master}</if>
+    <if test="doorTime != ''">,#{doorTime}</if>
+    <if test="passTime != ''">,#{passTime}</if>
+    <if test="user != ''">,#{user}</if>
+    <if test="admin != ''">,#{admin}</if>
+    )
+    </insert>
     <select id="user_pass_check">
     SELECT MQTT_ACTION_KEY,
         MQTT_ACTION_HOTEL,

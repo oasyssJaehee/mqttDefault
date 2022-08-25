@@ -121,41 +121,25 @@
     </update>
     <insert id="room_insert">
     INSERT INTO fo_room_code (
-    ROOM_CODE_APART
+    ROOM_CODE_BS
     ,ROOM_CODE_NUM
     ,ROOM_CODE_FLOOR
     ,ROOM_CODE_DCOD
-    ,ROOM_CODE_STAU
-    ,ROOM_CODE_NSOLD
-    ,ROOM_CODE_NSALE
-    ,ROOM_CODE_VIRTUAL
-    ,ROOM_CODE_INTER
-    ,ROOM_CODE_RCNT
-    ,ROOM_CODE_PCNT
+    ,ROOM_CODE_HNAM
     ,ROOM_CODE_USE
     ,ROOM_CODE_SORT
-    ,ROOM_CODE_ACNO
-    ,ROOM_CODE_SEQ
     ,ROOM_CODE_FDATE
     ,ROOM_CODE_FUSER
     ,ROOM_CODE_LDATE
     ,ROOM_CODE_LUSER
     ) VALUES (
-    #{hotelCode}
-    ,#{addr2}
+    #{bsCode}
+    ,#{rono}
     ,#{floor}
     ,#{dcod}
-    ,#{stau}
-    ,0
-    ,0
-    ,0
-    ,0
-    ,0
-    ,0
-    ,#{ck}
-    ,'1'
-    ,'0'
-    ,'1'
+    ,#{hnam}
+    ,1
+    ,1
     ,SYSDATE()
     ,#{userId}
     ,SYSDATE()

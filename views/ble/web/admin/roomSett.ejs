@@ -10,24 +10,90 @@
 <!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
 </head>
 <style>
-.spin{display: none;}
 </style>
 <script type="text/javascript">
     var level = "<%=session.level%>"
     $(window).ready(function() {
+        $("#upload_btn").on("click", function(){
+            $("#id_file_upload").click();
+        });
         
     });
+    function upload(event){
+        var ajaxCount = 1;
+         var input = event.target;
+        var reader = new FileReader();
+        reader.onload = function(){
+            var fdata = reader.result;
+            var read_buffer = XLSX.read(fdata, {type : 'binary'});
+            read_buffer.SheetNames.forEach(function(sheetName){
+                var rowdata =XLSX.utils.sheet_to_json(read_buffer.Sheets[sheetName]);
+                var saveData = true;
+                
+                Confirm("["+rowdata.length+"개] 객실을 추가 하시겠습니까?\n*기존 데이터는 초기화 됩니다.", function(){
+                    // room_reset();
+                    
+                    $.loading.start('Loading...');
+                    setTimeout(function() {
+                        for(var i=0; i<rowdata.length; i++){
+                            var dcod = rowdata[i].타입;
+                            var hnam = rowdata[i].타입한글;
+                            var floor = rowdata[i].층;
+                            var rono = rowdata[i].객실번호;
+
+                            $.ajax({
+                                url:"/mysql/room",
+                                data:{
+                                    xml: "room_insert",
+                                    dcod:dcod,
+                                    floor:floor,
+                                    hnam:hnam,
+                                    rono:rono,
+                                    bsCode:"<%=bsCode%>",
+                                    userId: "<%=session.id%>"
+                                }, success: function(res){
+                                    ajaxCount++;
+                                    if(res.length == 0){
+                                        saveData = false;
+                                        msg = rono+"추가중 오류가 발생했습니다.";
+                                    }else{
+                                        if(ajaxCount == rowdata.length){
+                                            $.loading.end();
+                                            if(!saveData){
+                                                Alert(msg, function(){
+                                                    location.reload();
+                                                });
+                                            }else{
+                                                Alert("저장 되었습니다.", function(){
+                                                    location.reload();
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                    }, 1000);
+                });
+                
+            });
+        };
+        reader.readAsBinaryString(input.files[0]);
+    }
 </script>
 <body>
+    <input style="display: none;" type="file" id="id_file_upload" onchange="upload(event)"/>
     <div class="right_contbox">
         <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
-            <h2 class="main_cont_tit">사용 내역</h2>
+            <h2 class="main_cont_tit">객실 설정</h2>
             <div class="main_cont_btn_grp dis_flex_row dis_flex_center">
                 <div class="main_cont_width main_cont_width01">
-                    <button class="icon_btn_txt_left excel">엑셀 업로드</button>
+                    <button id="upload_btn" class="icon_btn_txt_left excel">엑셀 업로드</button>
                 </div>
                 <div class="main_cont_width main_cont_width01">
                     <button class="icon_btn_txt_left download">양식 다운로드</button>

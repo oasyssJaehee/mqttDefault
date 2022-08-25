@@ -121,6 +121,13 @@
             }
         }else if(data.msg == "doorTimeSett"){
             clearInterval(actionInterver);
+            var put ={
+                doorTime:"1",
+                rono:rono,
+                bsCode:pad(hotelCode, 7),
+                user: acno+"/"+rspk
+            };
+            door_sett(put);
             if(defaultTime == 0){
                 $.ajax({
                     url:"/passTimeSett",
@@ -137,19 +144,31 @@
                 clearInterval(actionInterver);
                 $.loading.end();
             }
-            
-            
-
-            
         }else if(data.msg == "passTimeSett"){
             clearInterval(actionInterver);
+
+            var put ={
+                passTime:odate,
+                rono:rono,
+                bsCode:pad(hotelCode, 7),
+                user: acno+"/"+rspk
+            };
+            door_sett(put);
             $.loading.end();
         }else if(data.msg == "passSett"){
+            var pass = $("input[name='passSettInp']").val();
             $("#pass_change_pop").css("display", "none");
             clearInterval(actionInterver);
             $.loading.end();
+            var put ={
+                pass:pass,
+                rono:rono,
+                bsCode:pad(hotelCode, 7),
+                user: acno+"/"+rspk
+            };
+            door_sett(put);
             Alert("비밀번호가 설정 되었습니다.", function(){
-                var pass = $("input[name='passSettInp']").val();
+                
                 $(".password_change_tit01").text(pass.at(0));
                 $(".password_change_tit02").text(pass.at(1));
                 $(".password_change_tit03").text(pass.at(2));
@@ -167,8 +186,8 @@
     var topic;
     var gname="";
     function init(){
-        topic = hotelCode+"/"+rono;
-        roomName = hotelCode+"_"+rono;
+        topic = removePad(hotelCode)+"/"+rono;
+        roomName = removePad(hotelCode)+"_"+rono;
         
         $.loading.start("");
         $.ajax({
@@ -212,23 +231,7 @@
                         
                         userTime = true;
                         openList();
-                        $.ajax({
-                            url: "/mysql/mqtt",
-                            data:{
-                                xml: "user_pass_check",
-                                userId: acno+"/"+rspk,
-                                hotelCode:hotelCode
-                            },success:function(res2){
-                                if(res2.length != 0){
-                                    var pass = res2[0].MQTT_ACTION_REMARK;
-                                    $(".password_change_tit01").text(pass.at(0));
-                                    $(".password_change_tit02").text(pass.at(1));
-                                    $(".password_change_tit03").text(pass.at(2));
-                                    $(".password_change_tit04").text(pass.at(3));
-                                }
-                                first();
-                            }
-                        });
+                        first();
                     }
                     
                     
@@ -275,7 +278,8 @@
             data:{
                 xml: "door_time_check",
                 userId: acno+"/"+rspk,
-                hotelCode:hotelCode
+                rono:rono,
+                bsCode:pad(hotelCode, 7)
             },success:function(res2){
                 console.log(res2);
                 if(res2.length == 0){
@@ -292,7 +296,7 @@
                         }
                     });
                 }else{
-                    if(res2[0].KEY2 == null){
+                    if(res2[0].ROOM_TIME_PASS == ""){
                         defaultTime = 1;
                         $.loading.start('도어락 기초 설정 중 입니다.');
                         $.ajax({
@@ -307,7 +311,7 @@
                             }
                         });
                     }
-                    if(res2[0].KEY1 == null){
+                    if(res2[0].ROOM_TIME_DOOR == ""){
                         defaultTime = 2;
                         $.loading.start('도어락 기초 설정 중 입니다.');
                         $.ajax({
@@ -321,8 +325,24 @@
                             }
                         });
                     }
+                    if(res2[0].ROOM_PASS_USER != ""){
+                        var pass = res2[0].ROOM_PASS_USER;
+                        $(".password_change_tit01").text(pass.at(0));
+                        $(".password_change_tit02").text(pass.at(1));
+                        $(".password_change_tit03").text(pass.at(2));
+                        $(".password_change_tit04").text(pass.at(3));
+                    }
                 }
 
+            }
+        });
+    }
+    //도어락 정보 저장
+    function door_sett(data){
+        $.ajax({
+            url:"./doorSett",
+            data:data
+            , success:function(res){
             }
         });
     }
