@@ -9,8 +9,8 @@ html, body{background:#f3f5f6;}
 .content_box{ padding:30px; padding-left: 310px; box-sizing: border-box; }
 
 
-.home_logo_box{width:100%; padding:40px;box-sizing: border-box; text-align: center;}
-.menu_icon{width:50px; display: none;}
+.home_logo_box{width:100%; padding:40px;box-sizing: border-box; text-align: center; border-bottom: 1px solid #eee;;}
+.menu_icon{width:20px; height:20px; margin-right: 8px; }
 .menu_icon img{width: 100%;}
 .home_logo{width: 200px; margin:0 auto;}
 .home_logo img{width: 100%}
@@ -43,10 +43,13 @@ font-weight:500; color:#727272; line-height: 50px; padding-left: 50px; box-sizin
 
 
 
-.left_menu_box{padding:0 20px; box-sizing: border-box;}
+.left_menu_box{padding:0 20px; box-sizing: border-box;padding-top:20px}
 .left_menu_titbox{padding:15px 0; box-sizing:border-box; }
 .left_menu_tit{font-size:15px; color:#000;}
-.left_menu_page_btn{display: block; font-size: 15px;}
+.left_menu_page_btn{display: block; font-size: 14px; padding:12px; box-sizing: border-box; width:100%; transition: 0.3s; margin-bottom: 8px; border-radius: 8px; font-weight:500;
+color:#666;}
+.left_menu_page_btn:last-child{margin-bottom: 0;}
+.left_menu_page_btn:hover{background-color:#f3f5f6;}
 
 
 
