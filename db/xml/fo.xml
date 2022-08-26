@@ -36,6 +36,8 @@
     AND BRIDGE_TRAN_RSPK = #{rspk}
     AND BRIDGE_TRAN_ACNO = #{acno}
     AND BRIDGE_TRAN_RONO = #{rono}
+
+
     </select>
     
 </mapper>

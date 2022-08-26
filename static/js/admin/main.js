@@ -4,7 +4,6 @@ function init(){
         data:{
             xml:"room_main_list"
         },success:function(res){
-            console.log(res);
             var item ="";
             for(var i=0;i<res.length;i++){
                 var stateStr = "";
@@ -31,7 +30,7 @@ function init(){
                 if(res[i].ROOM_PASS_MASTER != ''){
                     masterKey = "on"
                 }
-                item += "<li class='view_grp_list "+stateClass+"'>"
+                item += "<li class='view_grp_list "+stateClass+" on'>"
                       + "<div class='view_tbox view_tbox01'>"
                       + "<div class='room_state_box'>"
                       + "<span class='room_state "+stateClass+"'>"+stateStr+"</span>"

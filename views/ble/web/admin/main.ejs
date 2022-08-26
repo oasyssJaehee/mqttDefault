@@ -20,7 +20,7 @@
     
     $(window).ready(function() {
         init();
-        $(".view_grp_listbox li").on("click", function(){
+        $(document).on("click", ".view_grp_listbox li", function(){
             $("#room_main_pop").css("display","flex");
         });
     });
