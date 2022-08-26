@@ -132,17 +132,20 @@
         <div class="total_numbox dis_flex_row dis_flex_center dis_flex_end">
             <div class="total_tab_box dis_flex_row dis_flex_center">
                 <div class="total_tab all active">전체</div>
-                <div class="total_tab">폰키 미발급</div>
-                <div class="total_tab">메이드키 미발급</div>
-                <div class="total_tab">마스터키 미발급</div>
+                <div class="total_tab active js">체크인</div>
+                <div class="total_tab active gs">공실</div>
+                <div class="total_tab active cl">청소 요청</div>
             </div>
             <h2 class="total_num_tit">총 3 개</h2>
         </div>
         <div class="view_grp">
             <ul class="view_grp_listbox">
-                <li class="view_grp_list on">
+                <li class="view_grp_list js on">
                     <div class="view_tbox view_tbox01">
                         <!-- 객실번호 -->
+                        <div class="room_state_box">
+                            <span class="room_state js">체크인</span>
+                        </div>
                         <div class="view_tit_grp">
                             <div class="view_tit_box">
                                 <h2 class="view_tit view_tit01">201</h2>
@@ -172,9 +175,12 @@
                         <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
                     </div>
                 </li>
-                <li class="view_grp_list on">
+                <li class="view_grp_list gs on">
                     <div class="view_tbox view_tbox01">
                         <!-- 객실번호 -->
+                        <div class="room_state_box">
+                            <span class="room_state gs">공실</span>
+                        </div>
                         <div class="view_tit_grp">
                             <div class="view_tit_box">
                                 <h2 class="view_tit view_tit01">202</h2>
@@ -204,9 +210,12 @@
                         <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
                     </div>
                 </li>
-                <li class="view_grp_list">
+                <li class="view_grp_list cl">
                     <div class="view_tbox view_tbox01">
                         <!-- 객실번호 -->
+                        <div class="room_state_box">
+                            <span class="room_state cl">청소 요청</span>
+                        </div>
                         <div class="view_tit_grp">
                             <div class="view_tit_box">
                                 <h2 class="view_tit view_tit01">203</h2>
@@ -251,7 +260,12 @@
                             </button>
                             <h2 class="popup_title popup_title01">201</h2>
                             <h2 class="popup_title popup_title02">Standard</h2>
+                            <h2 class="popup_title popup_title03 js">체크인</h2>
+                            <h2 class="popup_title popup_title03 gs">공실</h2>
+                            <h2 class="popup_title popup_title03 cl">청소 요청</h2>
                         </div>
+                    </div>
+                    <div class="dis_flex_row dis_flex_center">
                         <div class="view_tbox view_tbox03">
                             <!-- 객실번호 -->
                             <div class="key_tbox key_tbox01 on">
@@ -267,8 +281,8 @@
                                 <p class="view_txt view_txt01">마스터키</p>
                             </div>
                         </div>
+                        <a class="popup_close"></a>
                     </div>
-                    <a class="popup_close"></a>
                 </div>
                 <div class="popup_header_tabgrp">
                     <ul class="popup_header_tab_ul dis_flex_row">
