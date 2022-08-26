@@ -3,122 +3,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="room">
-    <select id="room_list">
-        SELECT ROOM_CODE_APART,
-            ROOM_CODE_CODE,
-            ROOM_CODE_NUM,
-            ROOM_CODE_FLOOR,
-            ROOM_CODE_DCOD,
-            ROOM_CODE_STAU,
-            ROOM_CODE_NSOLD,
-            ROOM_CODE_NSALE,
-            ROOM_CODE_VIRTUAL,
-            ROOM_CODE_INTER,
-            ROOM_CODE_RCNT,
-            ROOM_CODE_PCNT,
-            ROOM_CODE_USE,
-            ROOM_CODE_SORT,
-            ROOM_CODE_ACNO,
-            ROOM_CODE_SEQ,
-            ROOM_CODE_FDATE,
-            ROOM_CODE_FUSER,
-            ROOM_CODE_LDATE,
-            ROOM_CODE_LUSER
-        FROM fo_room_code
-        LEFT JOIN opener_user
-        ON USER_ADDR2 = ROOM_CODE_CODE
-        and user_use != 0
-        WHERE ROOM_CODE_USE = '1'
-        AND ROOM_CODE_APART = #{hotelCode}
-        AND ROOM_CODE_CODE != '999'
-        AND ROOM_CODE_DCOD = #{dcod}
-        AND USER_KEY IS NULL
-    </select>
-    <select id="room_list_admin">
-        SELECT ROOM_CODE_APART,
-        ROOM_CODE_CODE,
-        ROOM_CODE_NUM,
-        ROOM_CODE_FLOOR,
-        ROOM_CODE_DCOD,
-        ROOM_CODE_STAU,
-        ROOM_CODE_NSOLD,
-        ROOM_CODE_NSALE,
-        ROOM_CODE_VIRTUAL,
-        ROOM_CODE_INTER,
-        ROOM_CODE_RCNT,
-        ROOM_CODE_PCNT,
-        ROOM_CODE_USE,
-        ROOM_CODE_SORT,
-        ROOM_CODE_ACNO,
-        ROOM_CODE_SEQ,
-        ROOM_CODE_FDATE,
-        ROOM_CODE_FUSER,
-        DATE_FORMAT(ROOM_CODE_LDATE, '%Y-%m-%d %H:%i') AS ROOM_CODE_LDATE,
-        ROOM_CODE_LUSER,
-        CODE1.CODE_CONTENT AS DCOD,
-        CODE2.CODE_CONTENT AS STATUS
-    FROM fo_room_code
-    LEFT JOIN opener_code CODE1
-    ON CODE1.CODE_CODE = ROOM_CODE_DCOD
-    LEFT JOIN opener_code CODE2
-    ON CODE2.CODE_CODE = ROOM_CODE_STAU
-    WHERE ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_CODE != '999'
-    <choose>
-        <when test="dcod == ''">
-        </when>
-        <otherwise>
-            AND ROOM_CODE_DCOD = #{dcod}
-        </otherwise>
-    </choose>
-    ORDER BY ROOM_CODE_DCOD,cast(ROOM_CODE_NUM as unsigned)
-    </select>
-
-    <select id="room_select_admin">
-        SELECT ROOM_CODE_APART,
-        ROOM_CODE_CODE,
-        ROOM_CODE_NUM,
-        ROOM_CODE_DCOD,
-        CODE_CONTENT
-    FROM fo_room_code
-    LEFT JOIN opener_code 
-    ON CODE_CODE = ROOM_CODE_DCOD
-    WHERE ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_NUM = #{num}
-    AND ROOM_CODE_DCOD = #{dcod}
-    </select>
-    <select id="empty_room_list">
-    SELECT ROOM_CODE_APART,
-        ROOM_CODE_CODE,
-        ROOM_CODE_NUM,
-        ROOM_CODE_FLOOR,
-        ROOM_CODE_DCOD,
-        ROOM_CODE_STAU,
-        ROOM_CODE_USE,
-        USER_KEY,
-        USER_NAME
-    FROM fo_room_code
-    LEFT JOIN opener_user
-    ON USER_ADDR2 = ROOM_CODE_CODE
-    and user_use != 0
-    WHERE ROOM_CODE_USE = '1'
-    AND ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_DCOD = #{dcod}
-    AND USER_KEY IS NULL
-    </select>
-    <update id="room_update">
-    UPDATE fo_room_code SET
-    ROOM_CODE_NUM = #{addr2}
-    ,ROOM_CODE_FLOOR = #{floor}
-    ,ROOM_CODE_DCOD = #{dcod}
-    ,ROOM_CODE_STAU = #{stau}
-    ,ROOM_CODE_USE = #{ck}
-    ,ROOM_CODE_SORT = ${sort}
-    ,ROOM_CODE_LDATE = SYSDATE()
-    ,ROOM_CODE_LUSER = #{userId}
-    WHERE ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_CODE = #{code}
-    </update>
     <insert id="room_insert">
     INSERT INTO fo_room_code (
     ROOM_CODE_BS
@@ -148,155 +32,54 @@
     ,#{userId}
     )
     </insert>
-    
-    <delete id="room_remove">
-    DELETE FROM FO_ROOM_CODE
-    </delete>
-    <update id="room_auto">
-    ALTER TABLE FO_ROOM_CODE AUTO_INCREMENT = 1;
-    </update>
-
-
-
-
-
-
-
-
-    <!-- 차트 -->
-    <select id = "room_user_chart">
+    <select id="room_main_list">
+        SELECT ROOM_CODE_BS,
+            ROOM_CODE_KEY,
+            ROOM_CODE_NUM,
+            ROOM_CODE_FLOOR,
+            ROOM_CODE_DCOD,
+            ROOM_CODE_HNAM,
+            ROOM_CODE_STATU,
+            ROOM_CODE_USE,
+            ROOM_CODE_SORT,
+            CODE_CONTENT,
+            IFNULL(ROOM_PASS_CLEANER, '') AS ROOM_PASS_CLEANER,
+            IFNULL(ROOM_PASS_MASTER, '') AS ROOM_PASS_MASTER,
+            IFNULL(BRIDGE_TRAN_RSPK, '') AS BRIDGE_TRAN_RSPK,
+            IFNULL(BRIDGE_TRAN_ACNO, '') AS BRIDGE_TRAN_ACNO,
+            IFNULL(BRIDGE_TRAN_IDATE, '') AS BRIDGE_TRAN_IDATE,
+            IFNULL(BRIDGE_TRAN_ODATE, '') AS BRIDGE_TRAN_ODATE
+    FROM fo_room_code ROOM
+    LEFT JOIN BRIDGE_CODE CODE
+    ON CODE.CODE_CODE = ROOM.ROOM_CODE_STATU
+    LEFT JOIN(
     SELECT
-    ROOM_CODE_CODE,
-    ROOM_CODE_NUM,
-    CODE_CONTENT,
-    COUNT(ROOM_CODE_CODE) AS COUNT
-    FROM opener_code 
-    LEFT JOIN fo_room_code ROOM
-    ON ROOM.ROOM_CODE_STAU = CODE_CODE
-    WHERE CODE_CODE LIKE('010%')
-    GROUP BY CODE_CODE
-    </select>
-    <select id="as_type_chart">
-    SELECT
-    CODE_CONTENT,
-    CODE_CODE,
-    IFNULL(MAIN.COUNT, 0) AS COUNT
-    FROM opener_code
-    LEFT JOIN (
-    SELECT CHAT_MAIN_AS,
-        COUNT(*) AS COUNT
-    FROM opener_chat_main
-    WHERE 1=1
-    <choose>
-        <when test="month == '' and year != ''">
-            AND DATE_FORMAT(CHAT_MAIN_FDATE, '%Y') = DATE_FORMAT(#{year}, '%Y')
-        </when>
-        <otherwise>
-            AND DATE_FORMAT(CHAT_MAIN_FDATE, '%Y-%m') = DATE_FORMAT(#{month}, '%Y-%m')
-        </otherwise>
-    </choose>
-    
-    GROUP BY CHAT_MAIN_AS
-    ) MAIN
-    ON MAIN.CHAT_MAIN_AS = CODE_CODE
-    WHERE CODE_CODE LIKE ('004%')
-
-    </select>
-    <select id="as_status_chart">
-    SELECT
-    CODE_CONTENT,
-    CODE_CODE,
-    IFNULL(MAIN.COUNT, 0) AS COUNT
-    FROM opener_code
-    LEFT JOIN (
-    SELECT CHAT_MAIN_STATUS,
-        COUNT(*) AS COUNT
-    FROM opener_chat_main
-    WHERE 1=1
-    
-    GROUP BY CHAT_MAIN_STATUS
-    ) MAIN
-    ON MAIN.CHAT_MAIN_STATUS = CODE_CODE
-    WHERE CODE_CODE LIKE ('005%')
-    </select>
-    <select id="dd_as_chart">
-
-    SELECT
-    ADMIN_NAME,
-    ADMIN_KEY,
-    ADMIN_ID,
-    IFNULL(MAIN.COUNT, '0') AS COUNT,
-    CHAT_MAIN_ADMIN
-    FROM opener_user_admin
+        ROOM_DOOR_BS,
+        ROOM_DOOR_KEY,
+        ROOM_DOOR_RONO,
+        ROOM_PASS_CLEANER,
+        ROOM_PASS_MASTER
+    FROM FO_ROOM_DOOR
+    ) DOOR ON DOOR.ROOM_DOOR_BS = ROOM.ROOM_CODE_BS
+    AND DOOR.ROOM_DOOR_RONO = ROOM.ROOM_CODE_NUM
     LEFT JOIN (
     SELECT
-    CHAT_MAIN_ADMIN,
-    COUNT(CHAT_MAIN_ADMIN) AS COUNT
-    FROM opener_chat_main
-    WHERE 1=1
-    <choose>
-        <when test="month == '' and year != ''">
-            AND DATE_FORMAT(CHAT_MAIN_LDATE, '%Y') = DATE_FORMAT(#{year}, '%Y')
-        </when>
-        <otherwise>
-            AND DATE_FORMAT(CHAT_MAIN_LDATE, '%Y-%m') = DATE_FORMAT(#{month}, '%Y-%m')
-        </otherwise>
-    </choose>
-    GROUP BY CHAT_MAIN_ADMIN) MAIN
-    ON MAIN.chat_main_admin = admin_id
-    WHERE ADMIN_LEVEL != '0010000'
-    GROUP BY ADMIN_KEY
-    ORDER BY ADMIN_KEY
+        BRIDGE_TRAN_RSPK,
+        BRIDGE_TRAN_BS,
+        BRIDGE_TRAN_ACNO,
+        BRIDGE_TRAN_RONO,
+        BRIDGE_TRAN_RTYPE,
+        BRIDGE_TRAN_IDATE,
+        BRIDGE_TRAN_ODATE,
+        BRIDGE_TRAN_KCDA
+    FROM fo_bridge_tran
+    <![CDATA[
+    WHERE BRIDGE_TRAN_IDATE <= NOW()
+    AND BRIDGE_TRAN_ODATE >= NOW()
+    ]]>
+    AND BRIDGE_TRAN_KCDA IS NULL
+    ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
+    AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
+    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
     </select>
-    <select id="pass_select">
-    SELECT
-    ROOM_CODE_CODE,
-    ROOM_CODE_NUM,
-    ROOM_CODE_PASS,
-    ROOM_CODE_DCOD,
-    MQTT.MQTT_LIST_NUM,
-    IFNULL(USER.USER_ID, '') AS USER_ID
-    FROM FO_ROOM_CODE
-    LEFT JOIN OPENER_USER
-    USER ON USER.USER_ADDR2 = ROOM_CODE_CODE 
-    LEFT JOIN (
-    SELECT
-    MQTT_LIST_NUM,
-    MQTT_LIST_DCOD
-    FROM MQTT_LIST
-    WHERE MQTT_LIST_USE = '1'
-    GROUP BY MQTT_LIST_DCOD
-    ) MQTT ON MQTT.MQTT_LIST_DCOD = ROOM_CODE_DCOD
-    WHERE ROOM_CODE_USE = '1'
-    AND ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_NUM = #{num}
-    AND ROOM_CODE_PASS = #{pass}
-    </select>
-    <update id="room_pw_update">
-    UPDATE fo_room_code SET
-    ROOM_CODE_LDATE = SYSDATE()
-    ,ROOM_CODE_LUSER = #{userId}
-    ,ROOM_CODE_PASS = #{pass}
-    WHERE ROOM_CODE_APART = #{hotelCode}
-    AND ROOM_CODE_CODE = #{roomCode}
-    </update>
-    <insert id="pass_log_insert">
-    INSERT INTO opener_pass_log (
-    PASS_LOG_ID
-    ,PASS_LOG_APART
-    ,PASS_LOG_TYPE
-    ,PASS_LOG_DATE
-    ,PASS_LOG_PREV
-    ,PASS_LOG_NEXT
-    ,PASS_LOG_ROOM
-    ) VALUES (
-    #{userId}
-    ,#{hotelCode}
-    ,#{type}
-    ,SYSDATE()
-    ,#{prevPass}
-    ,#{pass}
-    ,#{roomCode}
-    )
-    </insert>
 </mapper>
