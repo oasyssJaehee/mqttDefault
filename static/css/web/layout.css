@@ -337,6 +337,7 @@ background-size:100%; margin: 0 auto; margin-bottom: 4px;}
 .key_tbox.on .view_txt01{color:#ff6066;}
 .view_grp_list.off .key_icon01{background-image: url('/static/img/opener/key_icon_off.png');}
 .key_tbox.off .view_txt01{color:#999;}
+.view_grp_list.off .view_txt01{color:#999;}
 .view_txt01{width:100%; text-align: center; font-weight:700; font-size:13px;}
 
 .key_tbox.on .key_icon02{background-image: url('/static/img/opener/password_icon_on.png');}
