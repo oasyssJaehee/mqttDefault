@@ -169,4 +169,13 @@
     AND BRIDGE_TRAN_BS = #{bcode}
     
     </update>
+    <update id="room_status_update">
+    UPDATE fo_room_code SET
+    ROOM_CODE_STATU = #{status}
+    ,ROOM_CODE_LDATE = SYSDATE()
+    ,ROOM_CODE_LUSER = #{user}
+    WHERE ROOM_CODE_BS = #{bcode}
+    AND ROOM_CODE_NUM = #{rono}
+    AND ROOM_CODE_DCOD = #{rtype}
+    </update>
 </mapper>

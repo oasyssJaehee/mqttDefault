@@ -45,15 +45,7 @@
             $("#connect").removeClass("on");
             $("#connect").addClass("disabled");
             Alert("도어락 연결이 종료 되었습니다.");
-            $.ajax({
-                url:"/bleConnect",
-                data:{
-                    topic: "oasyss32/"+topic,
-                    open: "0110001"
-                },
-                success : function(result){
-                }
-            });
+            
             bleConnect = false;
             $.loading.end();
         }else if(data.msg == "mqttConnect"){
@@ -133,12 +125,12 @@
         mqttInterver = setInterval(function(){
             console.log("힝? " + mqttCount);
             mqttCount++;
-            if(mqttCount > 5){
+            if(mqttCount > 4){
                 clearInterval(mqttInterver);
                 Alert("브릿지 연결을 확인해 주세요.");
                 $.loading.end();
             }
-        }, 1000);
+        }, 2000);
     }
     var acno = "<%=acno%>";
     var hotelCode = "<%=hotelCode%>";
@@ -292,7 +284,7 @@
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
             setTimeout(function(){
-                        $.ajax({
+                $.ajax({
                     url:"/mqttCheck",
                     data:{
                         topic: "oasyss32/"+topic,

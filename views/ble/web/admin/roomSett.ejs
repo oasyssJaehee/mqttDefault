@@ -44,6 +44,7 @@
                             var hnam = rowdata[i].타입한글;
                             var floor = rowdata[i].층;
                             var rono = rowdata[i].객실번호;
+                            var stau = rowdata[i].상태;
 
                             $.ajax({
                                 url:"/mysql/room",
@@ -54,7 +55,8 @@
                                     hnam:hnam,
                                     rono:rono,
                                     bsCode:"<%=bsCode%>",
-                                    userId: "<%=session.id%>"
+                                    userId: "<%=session.id%>",
+                                    stau: stau
                                 }, success: function(res){
                                     ajaxCount++;
                                     if(res.length == 0){

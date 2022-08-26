@@ -6,18 +6,17 @@ const serverPort = 6001;
 var saleType = "jebee";
 var mqttUrl = "mqtt://210.114.18.107";
 var AES_KEY = "ioptoprr89u34547yhdt";
-var httpUrl = "http://bridge.oasyss.co.kr";
+var httpUrl = "http://182.215.211.211:6001";
 
 const mysql = require("./MySQL.js");
 const connection = mysql.connection();
 
-const SMSSTRING = function(data){
-	var bsName = data.BS_NAME;
-	var smsType = data.SMSTYPE;
 
-	
-	return msg;
-}
+
+
+
+
+
 function smsDateFormat(date){
 	var dateStr = "";
 	dateStr += date.substring(0,4);

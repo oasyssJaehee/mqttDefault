@@ -494,6 +494,52 @@ router.post('/apiKeyPlogSearch', function (req, res) {
         });
     });
  });
+ router.post('/roomStatusUpdate', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "room_status_update", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                            // res.write(JSON.stringify(err));
+                            // res.end();
+                        }else{
+                            var jsonObj = new Object();
+                                                            
+                            inputData.res = "101";
+                            jsonObj.data = inputData;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
 
  function apiLog(data, type){
     data.AES_KEY = AppInfo.AES_KEY;

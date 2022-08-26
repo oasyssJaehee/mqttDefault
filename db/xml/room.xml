@@ -126,6 +126,7 @@
     ,ROOM_CODE_FLOOR
     ,ROOM_CODE_DCOD
     ,ROOM_CODE_HNAM
+    ,ROOM_CODE_STATU
     ,ROOM_CODE_USE
     ,ROOM_CODE_SORT
     ,ROOM_CODE_FDATE
@@ -138,6 +139,7 @@
     ,#{floor}
     ,#{dcod}
     ,#{hnam}
+    ,#{stau}
     ,1
     ,1
     ,SYSDATE()
