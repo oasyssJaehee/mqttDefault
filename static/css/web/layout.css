@@ -250,6 +250,10 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 
 .total_numbox{margin-bottom: 12px;}
 .total_num_tit{color:#9ca2a9; font-size: 18px; font-weight: 600;}
+.total_num_tit_sub{color:#9ca2a9; font-size: 15px; font-weight: 600;}
+.total_num_tit_box .total_num_tit{margin-right:8px;}
+.total_num_tit_box .total_num_tit:last-child{margin-right: 0;;}
+
 
 .total_tab_box{}
 .total_tab{font-size:14px; font-weight: 500; margin-right: 8px; padding:4px 12px; background-color:#ddd; border-radius:100px; color:#999; cursor: pointer; transition: 0.3s;}
@@ -259,6 +263,11 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 .total_tab.active.js{background-color:#F4B200;}
 .total_tab.active.gs{background-color:#46589A;}
 .total_tab.active.cl{background-color:#0cd5dc;}
+
+.total_tab_num{display: block; width:17px; height:17px;background-color:#fff; text-align: center; ;line-height: 17px; border-radius: 50%; margin-left:8px;}
+.total_tab.active.js .total_tab_num{color:#F4B200;}
+.total_tab.active.gs .total_tab_num{color:#46589A;}
+.total_tab.active.cl .total_tab_num{color:#0cd5dc;}
 
 
 .room_state_box{position: absolute; top:0 ;left:0;}
@@ -297,7 +306,7 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 .view_grp{width:100%; display: flex; flex-direction: column;}
 
 .view_grp_listbox{ display: flex; flex-direction: row; column-gap: 1%; flex-wrap: wrap;}
-.view_grp_list{width:13.42%; padding:20px; box-sizing: border-box; background-color:#fff; border-radius: 12px; box-shadow: 2px 4px 8px 0px #2934390a; margin-top: 15px;;
+.view_grp_list{width:15.83%; padding:20px; box-sizing: border-box; background-color:#fff; border-radius: 12px; box-shadow: 2px 4px 8px 0px #2934390a; margin-top: 15px;;
 cursor: pointer; transition: 0.3s; position: relative;; padding-top:40px;}
 .view_grp_list.js{border:5px solid #F4B200;}
 .view_grp_list.gs{border:5px solid #46589A;}
@@ -321,14 +330,24 @@ cursor: pointer; transition: 0.3s; position: relative;; padding-top:40px;}
 .key_tbox{width:100%; margin-right:8px; display: flex; flex-direction: column;}
 .key_tbox:last-child{margin-right: 0;}
 
-.key_icon{display: block; width:40px; height:40px;  background-repeat: no-repeat; background-position: center;
+.key_icon{display: block; width:50px; height:50px;  background-repeat: no-repeat; background-position: center;
 background-size:100%; margin: 0 auto; margin-bottom: 4px;}
-.key_tbox.on .key_icon{background-image: url('/static/img/opener/key_icon_on.png');}
-.key_tbox.off .key_icon{background-image: url('/static/img/opener/key_icon_off.png');}
+.key_tbox.on .key_icon01{background-image: url('/static/img/opener/key_icon_on.png');}
+.key_tbox.off .key_icon01{background-image: url('/static/img/opener/key_icon_off.png');}
 .key_tbox.on .view_txt01{color:#ff6066;}
-.view_grp_list.off .key_icon{background-image: url('/static/img/opener/key_icon_off.png');}
+.view_grp_list.off .key_icon01{background-image: url('/static/img/opener/key_icon_off.png');}
 .key_tbox.off .view_txt01{color:#999;}
 .view_txt01{width:100%; text-align: center; font-weight:700; font-size:13px;}
+
+.key_tbox.on .key_icon02{background-image: url('/static/img/opener/password_icon_on.png');}
+.key_tbox.off .key_icon02{background-image: url('/static/img/opener/password_icon_off.png');}
+.view_grp_list.off .key_icon02{background-image: url('/static/img/opener/password_icon_off.png');}
+
+.key_tbox.on .key_icon03{background-image: url('/static/img/opener/password_icon_on.png');}
+.key_tbox.off .key_icon03{background-image: url('/static/img/opener/password_icon_off.png');}
+.view_grp_list.off .key_icon03{background-image: url('/static/img/opener/password_icon_off.png');}
+
+
 
 
 
