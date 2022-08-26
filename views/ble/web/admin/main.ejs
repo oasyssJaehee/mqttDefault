@@ -10,13 +10,17 @@
 <!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+<script type="text/javascript" src="/js/admin/main.js"></script>
 <style>
     .spin{display: none;}
     </style>
 </head>
 <script type="text/javascript">
+    
     $(window).ready(function() {
-        $(".view_grp_listbox").on("click", function(){
+        init();
+        $(".view_grp_listbox li").on("click", function(){
             $("#room_main_pop").css("display","flex");
         });
     });
