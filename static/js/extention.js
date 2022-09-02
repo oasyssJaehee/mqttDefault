@@ -91,9 +91,13 @@ function stringZero(width, n){
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
 }
- function moneyComma(str) {
+function moneyComma(str) {
 	str = String(str);
 	return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+}
+function comma(str) {
+	str = String(str);
+	return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 //바이트 계산
 function byteLength(str){
@@ -216,6 +220,12 @@ function removePad (str) {
 function pad (str, max) {
     str = str.toString();
     return str.length < max ? pad("0" + str, max) : str;
+}
+//연락처 하이픈 추가
+function phoneHipen(str){
+    var hi = str.replace(/(^02.{0}|^01.{1}|[0-9]{3})([0-9]+)([0-9]{4})/,"$1-$2-$3");
+  
+    return hi;
 }
 function setup(base){
 	$("input.phone").on("keyup", function() {

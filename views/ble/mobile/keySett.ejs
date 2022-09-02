@@ -98,7 +98,9 @@
                     url:"/bleConnect",
                     data:{
                         topic: "oasyss32/"+topic,
-                        open: "0110001"
+                        open: "0110001",
+                        userId: acno+"/"+rspk,
+                        rono : pad(rono, 6)
                     },
                     success : function(result){
                         actionCheck(20);
@@ -447,7 +449,7 @@
                     pass: pass
                 },
                 success : function(result){
-                    
+                    actionCheck(10);
                 }
             });
         });

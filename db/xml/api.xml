@@ -122,7 +122,7 @@
         API_LOG_IDATE AS IDATE,
         API_LOG_ODATE AS ODATE,
         API_LOG_GNAME AS GNAME,
-        cast(AES_DECRYPT(API_LOG_PHONE, 'ioptoprr89u34547yhdt') as CHAR) AS PHONE,
+        cast(AES_DECRYPT(API_LOG_PHONE, #{AES_KEY}) as CHAR) AS PHONE,
         API_LOG_URL AS URL,
         API_LOG_ENC AS ENCKEY,
         API_LOG_TYPE AS TYPE,
@@ -169,6 +169,15 @@
     AND BRIDGE_TRAN_BS = #{bcode}
     
     </update>
+    <update id="room_clean_update">
+    UPDATE fo_room_code SET
+    ROOM_CODE_STATU = #{status}
+    ,ROOM_CODE_CLEAN = #{clean}
+    ,ROOM_CODE_LDATE = SYSDATE()
+    ,ROOM_CODE_LUSER = #{user}
+    WHERE ROOM_CODE_BS = #{bcode}
+    AND ROOM_CODE_NUM = #{rono}
+    </update>
     <update id="room_status_update">
     UPDATE fo_room_code SET
     ROOM_CODE_STATU = #{status}
@@ -176,6 +185,403 @@
     ,ROOM_CODE_LUSER = #{user}
     WHERE ROOM_CODE_BS = #{bcode}
     AND ROOM_CODE_NUM = #{rono}
-    AND ROOM_CODE_DCOD = #{rtype}
+    </update>
+    
+    <insert id="cleaner_log_insert">
+    INSERT INTO fo_cleaner_log (
+    CLEANER_LOG_BS
+    ,CLEANER_LOG_NUM
+    ,CLEANER_LOG_ADMIN
+    ,CLEANER_LOG_CLEAN
+    ,CLEANER_LOG_STATU
+    ,CLEANER_LOG_DATE
+    ,CLEANER_LOG_USER
+    ) VALUES (
+    #{bcode}
+    ,#{rono}
+    ,#{admin}
+    ,#{clean}
+    ,#{status}
+    ,SYSDATE()
+    ,#{user}
+    )
+    </insert>
+    <select id="select_user_admin" resultType="casemap">
+    SELECT ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_BS_CODE,
+        ADMIN_FUSER,
+        ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        ADMIN_EDATE,
+        BS_NAME,
+        BS_LOGO,
+        BS_TEL,
+        BS_BLE
+    FROM co_user_admin
+    LEFT JOIN co_bs_code
+    ON BS_CODE = ADMIN_BS_CODE
+    WHERE ADMIN_ID = #{id}
+    AND ADMIN_PASS = PASSWORD(#{pw})
+    AND ADMIN_BS_CODE = #{bcode}
+    AND ADMIN_USE = '1'
+    </select>
+    <select id="room_floor_select">
+    SELECT
+    ROOM_CODE_FLOOR
+    FROM FO_ROOM_CODE
+    WHERE ROOM_CODE_BS = #{bcode}
+    AND ROOM_CODE_USE = '1'
+    GROUP BY ROOM_CODE_FLOOR
+    ORDER BY CAST(ROOM_CODE_FLOOR AS SIGNED)
+    </select>
+    <select id="room_status_code">
+    SELECT
+    CODE_CONTENT,
+    CODE_CODE
+    FROM bridge_code
+    WHERE CODE_CODE IN('0030001','0030004','0030005')
+    </select>
+    <select id="room_main_list">
+        SELECT 
+            (select count(*) from fo_room_code ROOM
+            LEFT JOIN BRIDGE_CODE CODE
+                ON CODE.CODE_CODE = ROOM.ROOM_CODE_STATU
+                LEFT JOIN(
+                SELECT
+                    ROOM_DOOR_BS,
+                    ROOM_DOOR_KEY,
+                    ROOM_DOOR_RONO,
+                    ROOM_PASS_CLEANER,
+                    ROOM_PASS_MASTER
+                FROM FO_ROOM_DOOR
+                ) DOOR ON DOOR.ROOM_DOOR_BS = ROOM.ROOM_CODE_BS
+                AND DOOR.ROOM_DOOR_RONO = ROOM.ROOM_CODE_NUM
+                LEFT JOIN (
+                SELECT
+                    BRIDGE_TRAN_RSPK,
+                    BRIDGE_TRAN_BS,
+                    BRIDGE_TRAN_ACNO,
+                    BRIDGE_TRAN_RONO,
+                    BRIDGE_TRAN_RTYPE,
+                    BRIDGE_TRAN_IDATE,
+                    BRIDGE_TRAN_ODATE,
+                    BRIDGE_TRAN_KCDA
+                FROM fo_bridge_tran
+                <![CDATA[
+                WHERE BRIDGE_TRAN_IDATE <= NOW()
+                AND BRIDGE_TRAN_ODATE >= NOW()
+                ]]>
+                AND BRIDGE_TRAN_KCDA IS NULL
+                ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
+                AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
+                AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
+                WHERE ROOM.ROOM_CODE_BS = #{bsCode}
+                <choose>
+                    <when test="floor == ''">
+                    </when>
+                    <otherwise>
+                        AND ROOM.ROOM_CODE_FLOOR = #{floor}
+                    </otherwise>
+                </choose>
+                <choose>
+                    <when test="statu == ''">
+                    </when>
+                    <otherwise>
+                        <choose>
+                            <when test="statu == '100'">
+                            AND ROOM.ROOM_CODE_CLEAN = '1'
+                            </when>
+                            <otherwise>
+                            AND ROOM.ROOM_CODE_STATU = #{statu}
+                            </otherwise>
+                        </choose>
+                    </otherwise>
+                </choose>
+                <choose>
+                    <when test="roomSearch == ''">
+                    </when>
+                    <otherwise>
+                        AND ROOM.ROOM_CODE_NUM LIKE CONCAT('%', #{roomSearch}, '%')
+                    </otherwise>
+                </choose>
+                ORDER BY CAST(ROOM_CODE_NUM AS SIGNED)
+            ) as counts,
+            ROOM_CODE_BS,
+            ROOM_CODE_KEY,
+            ROOM_CODE_NUM,
+            ROOM_CODE_FLOOR,
+            ROOM_CODE_DCOD,
+            ROOM_CODE_HNAM,
+            ROOM_CODE_STATU,
+            ROOM_CODE_USE,
+            ROOM_CODE_SORT,
+            CODE_CONTENT,
+            IFNULL(BRIDGE_TRAN_RSPK, '') AS BRIDGE_TRAN_RSPK,
+            IFNULL(BRIDGE_TRAN_ACNO, '') AS BRIDGE_TRAN_ACNO,
+            ROOM_CODE_CLEAN
+    FROM fo_room_code ROOM
+    LEFT JOIN BRIDGE_CODE CODE
+    ON CODE.CODE_CODE = ROOM.ROOM_CODE_STATU
+    LEFT JOIN(
+    SELECT
+        ROOM_DOOR_BS,
+        ROOM_DOOR_KEY,
+        ROOM_DOOR_RONO,
+        ROOM_PASS_CLEANER,
+        ROOM_PASS_MASTER
+    FROM FO_ROOM_DOOR
+    ) DOOR ON DOOR.ROOM_DOOR_BS = ROOM.ROOM_CODE_BS
+    AND DOOR.ROOM_DOOR_RONO = ROOM.ROOM_CODE_NUM
+    LEFT JOIN (
+    SELECT
+        BRIDGE_TRAN_RSPK,
+        BRIDGE_TRAN_BS,
+        BRIDGE_TRAN_ACNO,
+        BRIDGE_TRAN_RONO,
+        BRIDGE_TRAN_RTYPE,
+        BRIDGE_TRAN_IDATE,
+        BRIDGE_TRAN_ODATE,
+        BRIDGE_TRAN_KCDA
+    FROM fo_bridge_tran
+    <![CDATA[
+    WHERE BRIDGE_TRAN_IDATE <= NOW()
+    AND BRIDGE_TRAN_ODATE >= NOW()
+    ]]>
+    AND BRIDGE_TRAN_KCDA IS NULL
+    ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
+    AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
+    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
+    WHERE ROOM.ROOM_CODE_BS = #{bsCode}
+    <choose>
+        <when test="floor == ''">
+        </when>
+        <otherwise>
+            AND ROOM.ROOM_CODE_FLOOR = #{floor}
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="statu == ''">
+        </when>
+        <otherwise>
+            <choose>
+                <when test="statu == '100'">
+                AND ROOM.ROOM_CODE_CLEAN = '1'
+                </when>
+                <otherwise>
+                AND ROOM.ROOM_CODE_STATU = #{statu}
+                </otherwise>
+            </choose>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="roomSearch == ''">
+        </when>
+        <otherwise>
+            AND ROOM.ROOM_CODE_NUM LIKE CONCAT('%', #{roomSearch}, '%')
+        </otherwise>
+    </choose>
+    ORDER BY CAST(ROOM_CODE_NUM AS SIGNED)
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="app_cleaner_log">
+    SELECT
+    CLEANER_LOG_BS AS BS,
+    IFNULL(USER.ADMIN_NAME, '') AS USER,
+    CLEANER_LOG_NUM AS RONO,
+    CLEANER_LOG_ADMIN AS STATE,
+    CLEANER_LOG_CLEAN AS CMD,
+    DATE_FORMAT(CLEANER_LOG_DATE, '%y.%m.%d %H:%i') AS DATE,
+    '0' AS DIFF,
+    'CLEAN' AS TYPE
+    FROM FO_CLEANER_LOG
+    LEFT JOIN(
+        SELECT
+        ADMIN_NAME,
+        ADMIN_ID,
+        ADMIN_KEY
+        FROM co_user_admin
+    ) USER
+    ON USER.ADMIN_ID = CLEANER_LOG_USER
+    WHERE CLEANER_LOG_BS = #{bsCode}
+    AND CLEANER_LOG_NUM = #{rono}
+    UNION ALL 
+    SELECT
+    MQTT_ACTION_HOTEL AS BS,
+    IFNULL(
+    CASE
+    WHEN
+    TRAN.BRIDGE_TRAN_ACNO IS NULL
+    THEN
+    USER.ADMIN_NAME
+    ELSE
+    TRAN.BRIDGE_TRAN_GNAME
+    END,''
+    ) AS USER,
+    MQTT_ACTION_NUM AS RONO,
+    MQTT_ACTION_STATE AS STATE,
+    MQTT_ACTION_CMD AS CMD,
+    DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %H:%i') AS DATE,
+    IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+    'ACTION' AS TYPE
+    FROM mqtt_action
+    LEFT JOIN (
+    SELECT
+    BRIDGE_TRAN_ACNO,
+    BRIDGE_TRAN_RSPK,
+    BRIDGE_TRAN_GNAME
+    FROM fo_bridge_tran
+    ) TRAN 
+    ON TRAN.BRIDGE_TRAN_ACNO = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', 1)
+    AND TRAN.BRIDGE_TRAN_RSPK = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', -1)
+    LEFT JOIN(
+    SELECT
+    ADMIN_NAME,
+    ADMIN_ID,
+    ADMIN_KEY
+    FROM co_user_admin
+    ) USER
+    ON USER.ADMIN_ID = MQTT_ACTION_USER
+    WHERE MQTT_ACTION_HOTEL = TRIM(LEADING '0' FROM #{bsCode})
+    AND MQTT_ACTION_NUM = #{rono}
+    <if test="level == '0010002'">
+    AND BRIDGE_TRAN_ACNO IS NULL
+    </if>
+    ORDER BY DATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="app_cleaner_log_total">
+    SELECT
+    CLEANER_LOG_BS AS BS,
+    IFNULL(USER.ADMIN_NAME, '') AS USER,
+    CLEANER_LOG_NUM AS RONO,
+    CLEANER_LOG_ADMIN AS STATE,
+    CLEANER_LOG_CLEAN AS CMD,
+    DATE_FORMAT(CLEANER_LOG_DATE, '%y.%m.%d %H:%i') AS DATE,
+    '0' AS DIFF,
+    'CLEAN' AS TYPE
+    FROM FO_CLEANER_LOG
+    LEFT JOIN(
+        SELECT
+        ADMIN_NAME,
+        ADMIN_ID,
+        ADMIN_KEY
+        FROM co_user_admin
+    ) USER
+    ON USER.ADMIN_ID = CLEANER_LOG_USER
+    WHERE CLEANER_LOG_BS = #{bsCode}
+    AND CLEANER_LOG_NUM = #{rono}
+    UNION ALL 
+    SELECT
+    MQTT_ACTION_HOTEL AS BS,
+    CASE
+    WHEN
+    TRAN.BRIDGE_TRAN_ACNO IS NULL
+    THEN
+    USER.ADMIN_NAME
+    ELSE
+    TRAN.BRIDGE_TRAN_GNAME
+    END  AS USER,
+    MQTT_ACTION_NUM AS RONO,
+    MQTT_ACTION_STATE AS STATE,
+    MQTT_ACTION_CMD AS CMD,
+    DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %H:%i') AS DATE,
+    IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+    'ACTION' AS TYPE
+    FROM mqtt_action
+    LEFT JOIN (
+    SELECT
+    BRIDGE_TRAN_ACNO,
+    BRIDGE_TRAN_RSPK,
+    BRIDGE_TRAN_GNAME
+    FROM fo_bridge_tran
+    ) TRAN 
+    ON TRAN.BRIDGE_TRAN_ACNO = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', 1)
+    AND TRAN.BRIDGE_TRAN_RSPK = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', -1)
+    LEFT JOIN(
+    SELECT
+    ADMIN_NAME,
+    ADMIN_ID,
+    ADMIN_KEY
+    FROM co_user_admin
+    ) USER
+    ON USER.ADMIN_ID = MQTT_ACTION_USER
+    WHERE MQTT_ACTION_HOTEL = TRIM(LEADING '0' FROM #{bsCode})
+    AND MQTT_ACTION_NUM = #{rono}
+    <if test="level == '0010002'">
+    AND BRIDGE_TRAN_ACNO IS NULL
+    </if>
+    ORDER BY DATE DESC
+    </select>
+    <insert id="mqtt_log_insert_api">
+    INSERT INTO mqtt_cmd_log (
+    LOG_CMD_NUM
+    ,LOG_CMD_HOTEL
+    ,LOG_CMD_TIME
+    ,LOG_CMD_STATE
+    ,LOG_CMD_SERIAL
+    ,LOG_CMD_VER
+    ,LOG_CMD_IP
+    ,LOG_CMD_PORT
+    ,LOG_CMD_CMD
+    ,LOG_CMD_TYPE
+    ,LOG_CMD_USER
+    ,LOG_CMD_HD
+    ,LOG_CMD_REC_IP
+    ,LOG_CMD_OPEN
+    ) VALUES (
+    #{num}
+    ,#{hotel}
+    ,SYSDATE()
+    ,#{state}
+    ,#{serial}
+    ,#{ver}
+    ,#{serverip}
+    ,#{port}
+    ,#{cmd}
+    ,#{type}
+    ,#{userId}
+    ,#{hd}
+    ,#{recIp}
+    ,#{open}
+    );
+    </insert>
+    <insert id="mqtt_action_insert_api">
+    INSERT INTO mqtt_action (
+    MQTT_ACTION_NUM
+    ,MQTT_ACTION_HOTEL
+    ,MQTT_ACTION_REQDATE
+    ,MQTT_ACTION_CMD
+    ,MQTT_ACTION_STATE
+    ,MQTT_ACTION_USER
+    ,MQTT_ACTION_LOG
+    ,MQTT_ACTION_OPEN
+    ,MQTT_ACTION_REMARK
+    ) VALUES (
+    #{num}
+    ,#{hotel}
+    ,SYSDATE()
+    ,#{cmd}
+    ,#{state}
+    ,#{userId}
+    ,#{insertId}
+    ,#{open}
+    ,#{remark}
+    )
+    </insert>
+    <update id="mqtt_action_update_api">
+    UPDATE mqtt_action SET
+        MQTT_ACTION_ANSDATE = SYSDATE()
+    WHERE MQTT_ACTION_KEY = #{insertId}
     </update>
 </mapper>

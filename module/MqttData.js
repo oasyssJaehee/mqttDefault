@@ -93,17 +93,17 @@ const mqttCheck = function(){
 
     return data;
 }
-const bleConnect = function(){
+const bleConnect = function(rono){
     var data = new Uint8Array(10); 
     data[0] = 210;
     data[1] = 1;
     data[2] = 1;
-    data[3] = 0;
-    data[4] = 0;
-    data[5] = 0;
-    data[6] = 0;
-    data[7] = 0;
-    data[8] = 0;
+    data[3] = rono.at(0);
+    data[4] = rono.at(1);
+    data[5] = rono.at(2);
+    data[6] = rono.at(3);
+    data[7] = rono.at(4);
+    data[8] = rono.at(5);
     data[9] = 0;
 
     data = checkSum(data);
@@ -224,7 +224,7 @@ const doorPass = function(pass){
 
     return data;
 }
-const doorPassMaster = function(pass1,pass2,pass3,pass4){
+const doorPassMaster = function(pass){
 
     var data = new Uint8Array(10); 
     data[0] = 204;
@@ -232,17 +232,17 @@ const doorPassMaster = function(pass1,pass2,pass3,pass4){
     data[2] = 0;
     data[3] = 0;
     data[4] = 0;
-    data[5] = pass1;
-    data[6] = pass2;
-    data[7] = pass3;
-    data[8] = pass4;
+    data[5] = pass.at(0);
+    data[6] = pass.at(1);
+    data[7] = pass.at(2);
+    data[8] = pass.at(3);
     data[9] = 0;
 
     data = checkSum(data);
 
     return data;
 }
-const doorPassMaid = function(pass1,pass2,pass3,pass4){
+const doorPassMaid = function(pass){
 
     var data = new Uint8Array(10); 
     data[0] = 204;
@@ -250,10 +250,10 @@ const doorPassMaid = function(pass1,pass2,pass3,pass4){
     data[2] = 0;
     data[3] = 0;
     data[4] = 0;
-    data[5] = pass1;
-    data[6] = pass2;
-    data[7] = pass3;
-    data[8] = pass4;
+    data[5] = pass.at(0);
+    data[6] = pass.at(1);
+    data[7] = pass.at(2);
+    data[8] = pass.at(3);
     data[9] = 0;
 
     data = checkSum(data);
@@ -355,6 +355,8 @@ module.exports.relayCheck = relayCheck;
 module.exports.doorTime = doorTime;
 module.exports.doorPassTime = doorPassTime;
 module.exports.doorPass = doorPass;
+module.exports.doorPassMaid = doorPassMaid;
+module.exports.doorPassMaster = doorPassMaster;
 module.exports.doorOpen = doorOpen;
 module.exports.bleConnect = bleConnect;
 module.exports.bleDisConnect = bleDisConnect;

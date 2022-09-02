@@ -37,6 +37,7 @@
         BS_NUM,
         BS_ADDR,
         BS_LOGO,
+        BS_BLE,
         BS_LUSER,
         BS_LDATE,
         BS_USE

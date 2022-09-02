@@ -10,18 +10,363 @@
 <!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script type="text/javascript" src="/js/admin/main.js"></script>
-<style>
-    .spin{display: none;}
-    </style>
 </head>
 <script type="text/javascript">
+    var socket = io();
+    var bsCode = "<%=bsCode%>";
+    var rono;
+    var rtype;
+    var rspk;
+
+    var actionTotal=0;
+    var actionPage = 0;
+    var actionPageSize = 20;
+	var actionTimer;
+	
+    var keyTotal=0;
+    var keyPage = 0;
+    var keyPageSize = 20;
+	var keyTimer;
+
     
+    var bleConnect = false;
+    var actionInterver;
+
+    var mqttInterver;
+    var socketConnect = false;
+    
+    var userId = "<%=session.id%>";
+    var userName = "<%=session.name%>";
+
+    var topic = "";
+
+    var actionCode = "";
+    var mainDcode = "";
+    var mainStatu = "";
+    var mainKeyStatus = "";
+    var mainKeyParty = "";
+    var mainRoomSearch = "";
+
+
+    socket.on("ble", function(data){
+        if(data.msg == "scanstop"){
+            Alert("검색된 도어락이 없습니다.\n관리자에게 문의해 주세요.");
+            $.loading.end();
+        }else if(data.msg == "connect"){
+            clearInterval(actionInterver);
+            $("#connect").removeClass("disabled");
+            $("#connect").addClass("on");
+            Alert("도어락이 연결 되었습니다.");
+            bleConnect = true;
+            $.loading.end();
+            doorStart();
+        }else if(data.msg == "disconnect"){
+            $("#connect").removeClass("on");
+            $("#connect").addClass("disabled");
+            bleConnect = false;
+            $.loading.end();
+            Alert("도어락 연결이 종료 되었습니다.", function(){
+            });
+            
+        }else if(data.msg == "mqttConnect"){
+            clearInterval(mqttInterver);
+            if(data.state == "0"){
+                $.ajax({
+                    url:"/bleConnect",
+                    data:{
+                        topic: "oasyss32/"+topic,
+                        open: "0110001",
+                        userId: userId
+                    },
+                    success : function(result){
+                        actionCheck(20);
+                    }
+                });
+            }else{
+                clearInterval(actionInterver);
+                $("#connect").removeClass("disabled");
+                $("#connect").addClass("on");
+                bleConnect = true;
+                Alert("도어락이 연결 되었습니다.");
+                doorStart();
+                $.loading.end();
+            }
+        }else if(data.msg == "doorTimeSett"){
+            clearInterval(actionInterver);
+            var put ={
+                doorTime:"1",
+                rono:rono,
+                bsCode:pad(bsCode, 7),
+                user: userId
+            };
+            door_sett(put);
+            clearInterval(actionInterver);
+            $.loading.end();
+        }else if(data.msg == "maidPassSett"){
+            clearInterval(actionInterver);
+            $.loading.end();
+            var put ={
+                cleaner:settPass,
+                rono:rono,
+                bsCode:pad(bsCode, 7),
+                user: userId
+            };
+            door_sett(put);
+            Alert("메이드키가 설정 되었습니다.", function(){
+                $("#pop_maid_onoff").removeClass("off");
+                $("#pop_maid_onoff").addClass("on");
+
+                $("#pop_maid_pw").val(settPass);
+                $("#pop_maid_pw").attr("disabled", true);
+            });
+        }else if(data.msg == "masterPassSett"){
+            clearInterval(actionInterver);
+            $.loading.end();
+            var put ={
+                master:settPass,
+                rono:rono,
+                bsCode:pad(bsCode, 7),
+                user: userId
+            };
+            door_sett(put);
+            Alert("마스터키가 설정 되었습니다.", function(){
+                $("#pop_master_onoff").removeClass("off");
+                $("#pop_master_onoff").addClass("on");
+
+                $("#pop_master_pw").val(settPass);
+                $("#pop_master_pw").attr("disabled", true);
+            });
+        }
+    });
+    var settPass = "";
     $(window).ready(function() {
+        socket.emit("joinMain", pad(bsCode), userId, userName);
+
+        $.ajax({
+            url:"/mysql/room",
+            data:{
+                xml: "room_type_select",
+                bsCode:pad(bsCode, 7)
+            }, success: function(res){
+                var item = "";
+                for(var i=0; i<res.length; i++){
+                    item += "<option value='"+res[i].ROOM_CODE_DCOD+"'>"+res[i].ROOM_CODE_HNAM+"</option>";
+                }
+                $("#rtype_select").append(item);
+
+                $("#rtype_select").on("change", function(){
+                    mainDcode = $(this).val();
+                    init();
+                });
+            }
+        });
+
         init();
+
+        $("#searchBtn").on("click", function(){
+            mainRoomSearch = $("#roomKeyword").val();
+            init();
+        });
+        $("#key_status_select").on("change", function(){
+
+            mainKeyStatus = $(this).val();
+            if(mainKeyStatus != ""){
+                if(mainKeyParty == ""){
+                    Alert("발급 구분을 선택해 주세요.");
+                    $("#key_status_select").val("");
+                }else{
+                    init();
+                }
+            }else{
+                $("#key_party_select").val("");
+                mainKeyParty = "";
+                init();
+            }
+        });
+        $("#key_party_select").on("change", function(){
+            mainKeyParty = $(this).val();
+            if(mainKeyParty == ""){
+                mainKeyStatus = "";
+                $("#key_status_select").val("");
+                init();
+            }
+            if(mainKeyStatus != ""){
+                init();
+            }
+        });
+        $("#action_log_div").scroll(function() {
+            var scrollTop = $(this).scrollTop();
+            var innerHeight = $(this).innerHeight();
+            var scrollHeight = $(this).prop('scrollHeight');
+
+            if (scrollTop + innerHeight >= scrollHeight) {
+                clearTimeout( actionTimer );
+                actionTimer = setTimeout( actionScroll(), 150 );
+            }
+        });
+        $("#key_log_div").scroll(function() {
+            var scrollTop = $(this).scrollTop();
+            var innerHeight = $(this).innerHeight();
+            var scrollHeight = $(this).prop('scrollHeight');
+            if (scrollTop + innerHeight >= scrollHeight) {
+                clearTimeout( keyTimer );
+                keyTimer = setTimeout( keyScroll(), 150 );
+            }
+        });
         $(document).on("click", ".view_grp_listbox li", function(){
+            $.loading.start(''); 
             $("#room_main_pop").css("display","flex");
+            rono = $(this).attr("data-rono");
+            rtype = $(this).attr("data-rtype"); 
+            rspk = $(this).attr("data-rspk");
+            topic = removePad(bsCode)+"/"+rono;
+            $("#connect").removeClass("on");
+            $("#connect").addClass("off");
+            socketConnect = false;
+            bleConnect = false;
+            $("#pop_user_onoff").removeClass("on");
+            $("#pop_user_onoff").addClass("off");
+            roomPopup();
+        });
+        $("#pop_confirm_btn").on("click", function(){
+            popReset();
+            $("#room_main_pop").css("display","none");
+            socket.emit("adminRoomDisConnect");
+            socketConnect = false;
+        });
+        $("#pop_close_btn").on("click", function(){
+            popReset();
+            $("#room_main_pop").css("display","none");
+            socket.emit("adminRoomDisConnect");
+            socketConnect = false;
+        });
+        $("#pop_tab_ul li").on("click", function(){
+            $.loading.start('');
+            var tab = $(this).attr("data-tab");
+            popTabClick(tab, $(this));
+        });
+        $("#connect").on("click", function(){
+            if(!socketConnect){
+                userCheck();
+            }else{
+                socketBleConnect();
+            }
+            
+        });
+        $("#pop_maid_pw_div").dblclick(function() {
+            if($("#pop_maid_pw").attr("disabled") == "disabled"){
+                Confirm("메이드키를 수정 하시겠습니가?",function(){
+                    $("#pop_maid_pw").attr("disabled", false);
+                });
+            }
+            
+        });
+        $("#pop_master_pw_div").dblclick(function() {
+            if($("#pop_master_pw").attr("disabled") == "disabled"){
+                Confirm("마스터키를 수정 하시겠습니가?",function(){
+                    $("#pop_master_pw").attr("disabled", false);
+                });
+            }
+            
+        });
+        $("#pop_master_btn").on("click", function(){
+            if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
+            $.ajax({
+                url: "/mysql/mqtt",
+                data :{
+                    xml: "admin_pass_select",
+                    bsCode:bsCode
+                }, success: function(res){
+                    console.log(res);
+                    if(res.length > 0){
+                        var masterPass = "";
+                        if($("#pop_master_pw").attr("disabled") == "disabled"){
+                            masterPass = res[0].PASS_MASTER;
+                        }else{
+                            masterPass = $("#pop_master_pw").val();
+                        }
+                        if(masterPass.length < 4){
+                            Alert("4자리 숫자를 입력해 주세요.");
+                            return;
+                        }
+                        $.loading.start('마스터키를 설정 중 입니다.');
+                        settPass = masterPass;
+                        $.ajax({
+                            url:"/masterPassSett",
+                            data:{
+                                topic: "oasyss32/"+topic,
+                                open: "0110001",
+                                pass: masterPass,
+                                userId: userId
+                            },success: function(){
+                                actionCheck(10);
+                            }
+                        })
+                    }else{
+                        Alert("저장된 비밀번호가 없습니다.");
+                    }
+                }
+            })
+        });
+        $("#pop_maid_btn").on("click", function(){
+            if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
+            $.ajax({
+                url: "/mysql/mqtt",
+                data :{
+                    xml: "admin_pass_select",
+                    bsCode:bsCode
+                }, success: function(res){
+                    console.log(res);
+                    if(res.length > 0){
+                        var maidPass = "";
+                        if($("#pop_maid_pw").attr("disabled") == "disabled"){
+                            maidPass = res[0].PASS_CLEANER;
+                        }else{
+                            maidPass = $("#pop_maid_pw").val();
+                        }
+                        if(maidPass.length < 4){
+                            Alert("4자리 숫자를 입력해 주세요.");
+                            return;
+                        }
+                        $.loading.start('메이드키를 설정 중 입니다.');
+                        settPass = maidPass;
+                        $.ajax({
+                            url:"/maidPassSett",
+                            data:{
+                                topic: "oasyss32/"+topic,
+                                open: "0110001",
+                                pass: maidPass,
+                                userId: userId
+                            },success: function(){
+                                actionCheck(10);
+                            }
+                        })
+                    }else{
+                        Alert("저장된 비밀번호가 없습니다.");
+                    }
+                }
+            })
+        });
+        $("#pop_action_tab div").on("click", function(){
+            $.loading.start(''); 
+            var code = $(this).attr("data-code");
+            $(this).siblings().removeClass("active");
+            $(this).addClass("active");
+            actionCode = code;
+            $("#pop_action_table tbody").empty();
+            actionTotal = 0;
+            actionLog();
+        });
+        $("#room_status_tab div").on("click", function(){
+            var code = $(this).attr("data-code");
+            $(this).siblings().removeClass("active");
+            $(this).addClass("active");
+            mainStatu = code;
+
+            init();
         });
     });
 </script>
@@ -41,216 +386,76 @@
         <div class="wcont_box wcont_box_style01">
             <div class="data_search_box dis_flex_row">
                 <div class="data_search_grp">
-                    <label class="setup_title">날짜</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <input class="inp_style date" type="text">
-                            </div>
-                        </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            ~
-                        </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            <div class="data_search_inpbox">
-                                <input class="inp_style date" type="text">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">구분</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox02">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">상태</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox03">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">분류</label>
+                    <label class="setup_title">타입</label>
                     <div class="inp_moving_widthbox inp_moving_widthbox04">
                         <div class="inp_moving_width inp_moving_width01">
                             <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
+                                <select id="rtype_select" class="sel_style">
+                                    <option value="" selected>전체</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="data_search_grp">
-                    <label class="setup_title">동작</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox05">
+                    <label class="setup_title">발급</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox02">
                         <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
+                            <div  class="data_search_inpbox">
+                                <select id="key_party_select" class="sel_style">
+                                    <option value="" selected>전체</option>
+                                    <option value="key">폰키</option>
+                                    <option value="maid">메이드키</option>
+                                    <option value="master">마스터키</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">발급 상태</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox03">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select id="key_status_select" class="sel_style">
+                                    <option value="" selected>전체</option>
+                                    <option value="1">발급</option>
+                                    <option value="0">미발급</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="data_search_grp">
                     <label class="setup_title">객실 번호</label>
                     <div class="inp_moving_widthbox inp_moving_widthbox06 dis_flex_row">
                         <div class="inp_moving_width inp_moving_width01">
                             <div class="data_search_inpbox">
-                                <input class="inp_style search" type="text">
+                                <input id="roomKeyword" class="inp_style search search_inp" type="text">
                             </div>
                         </div>
                         <div class="inp_moving_width inp_moving_width02">
-                            <button class="default_btn">검색</button>
+                            <button id="searchBtn" class="default_btn search_icon">검색</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="total_numbox dis_flex_row dis_flex_center dis_flex_end">
-            <div class="total_tab_box dis_flex_row dis_flex_center">
-                <div class="total_tab all active">전체</div>
-                <div class="total_tab js">체크인</div>
-                <div class="total_tab gs">공실</div>
-                <div class="total_tab cl">청소 요청</div>
+            <div id="room_status_tab" class="total_tab_box dis_flex_row dis_flex_center">
+                <div data-code="" class="total_tab all active">전체</div>
+                <div data-code="0030001" class="total_tab js">체크인</div>
+                <div data-code="000" class="total_tab gs">공실</div>
+                <div data-code="0030005" class="total_tab cl">청소 요청</div>
             </div>
             <div class="total_num_tit_box dis_flex_row dis_flex_center">
-                <h2 class="total_num_tit">총 3 개</h2>
+                <h2 id="main_tot_txt" class="total_num_tit">총 3 개</h2>
             </div>
         </div>
         <div class="view_grp">
             <ul class="view_grp_listbox">
-                <li class="view_grp_list js on">
-                    <div class="view_tbox view_tbox01">
-                        <!-- 객실번호 -->
-                        <div class="room_state_box">
-                            <span class="room_state js">체크인</span>
-                        </div>
-                        <div class="view_tit_grp">
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit01">201</h2>
-                            </div>
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit02 view_tit_state">Standard</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox03">
-                        <!-- 객실번호 -->
-                        <div class="key_tbox key_tbox01 on">
-                            <div class="key_icon key_icon01"></div>
-                            <p class="view_txt view_txt01">폰키</p>
-                        </div>
-                        <div class="key_tbox key_tbox02 on">
-                            <div class="key_icon key_icon02"></div>
-                            <p class="view_txt view_txt01">메이드키</p>
-                        </div>
-                        <div class="key_tbox key_tbox03 off">
-                            <div class="key_icon key_icon03 "></div>
-                            <p class="view_txt view_txt01">마스터키</p>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox02">
-                        <h2 class="view_tit view_tit03">사용기간</h2>
-                        <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
-                    </div>
-                </li>
-                <li class="view_grp_list gs on">
-                    <div class="view_tbox view_tbox01">
-                        <!-- 객실번호 -->
-                        <div class="room_state_box">
-                            <span class="room_state gs">공실</span>
-                        </div>
-                        <div class="view_tit_grp">
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit01">202</h2>
-                            </div>
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit02 view_tit_state">Standard</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox03">
-                        <!-- 객실번호 -->
-                        <div class="key_tbox key_tbox01 on">
-                            <div class="key_icon key_icon01"></div>
-                            <p class="view_txt view_txt01">폰키</p>
-                        </div>
-                        <div class="key_tbox key_tbox02 off">
-                            <div class="key_icon key_icon02 off"></div>
-                            <p class="view_txt view_txt01">메이드키</p>
-                        </div>
-                        <div class="key_tbox key_tbox03 off">
-                            <div class="key_icon key_icon03"></div>
-                            <p class="view_txt view_txt01">마스터키</p>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox02">
-                        <h2 class="view_tit view_tit03">사용기간</h2>
-                        <p class="view_txt view_txt02">08.22 ~ 08.23</h2>
-                    </div>
-                </li>
-                <li class="view_grp_list cl">
-                    <div class="view_tbox view_tbox01">
-                        <!-- 객실번호 -->
-                        <div class="room_state_box">
-                            <span class="room_state cl">청소 요청</span>
-                        </div>
-                        <div class="view_tit_grp">
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit01">203</h2>
-                            </div>
-                            <div class="view_tit_box">
-                                <h2 class="view_tit view_tit02 view_tit_state">Standard</h2>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox03">
-                        <!-- 객실번호 -->
-                        <div class="key_tbox key_tbox01 off">
-                            <div class="key_icon key_icon01"></div>
-                            <p class="view_txt view_txt01">폰키</p>
-                        </div>
-                        <div class="key_tbox key_tbox02 off">
-                            <div class="key_icon key_icon02 "></div>
-                            <p class="view_txt view_txt01">메이드키</p>
-                        </div>
-                        <div class="key_tbox key_tbox03 on">
-                            <div class="key_icon key_icon03 off"></div>
-                            <p class="view_txt view_txt01">마스터키</p>
-                        </div>
-                    </div>
-                    <div class="view_tbox view_tbox02">
-                        <h2 class="view_tit view_tit03">사용기간</h2>
-                        <p class="view_txt view_txt02">00.00 ~ 00.00</h2>
-                    </div>
-                </li>
+                
             </ul>
         </div>
     </div>
@@ -260,52 +465,52 @@
                 <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
                     <div class="dis_flex_row dis_flex_center">
                         <div class="dis_flex_row dis_flex_center">
-                            <button class="room_link_btn on" id="connect">
+                            <button class="room_link_btn off" id="connect">
                                 <span class="room_link_icon"></span>
                                 연결
                             </button>
-                            <h2 class="popup_title popup_title01">201</h2>
-                            <h2 class="popup_title popup_title02">Standard</h2>
-                            <h2 class="popup_title popup_title03 js">체크인</h2>
-                            <h2 class="popup_title popup_title03 gs">공실</h2>
-                            <h2 class="popup_title popup_title03 cl">청소 요청</h2>
+                            <h2 id="pop_rono" class="popup_title popup_title01">201</h2>
+                            <h2 id="pop_type" class="popup_title popup_title02">Standard</h2>
+                            <h2 style="display:none;" id="pop_js" class="popup_title popup_title03 js">체크인</h2>
+                            <h2 style="display:none;" id="pop_gs" class="popup_title popup_title03 gs">공실</h2>
+                            <h2 style="display:none;" id="pop_cl" class="popup_title popup_title03 cl">청소 요청</h2>
                         </div>
                     </div>
                     <div class="dis_flex_row dis_flex_center">
                         <div class="view_tbox view_tbox03">
                             <!-- 객실번호 -->
-                            <div class="key_tbox key_tbox01 on">
+                            <div id="pop_user_onoff" class="key_tbox key_tbox01 off">
                                 <div class="key_icon key_icon01"></div>
                                 <p class="view_txt view_txt01">폰키</p>
                             </div>
-                            <div class="key_tbox key_tbox02 on">
+                            <div id="pop_maid_onoff" class="key_tbox key_tbox02 off">
                                 <div class="key_icon key_icon02"></div>
                                 <p class="view_txt view_txt01">메이드키</p>
                             </div>
-                            <div class="key_tbox key_tbox03 off">
+                            <div id="pop_master_onoff" class="key_tbox key_tbox03 off">
                                 <div class="key_icon key_icon03 "></div>
                                 <p class="view_txt view_txt01">마스터키</p>
                             </div>
                         </div>
-                        <a class="popup_close"></a>
+                        <a id="pop_close_btn" class="popup_close"></a>
                     </div>
                 </div>
                 <div class="popup_header_tabgrp">
-                    <ul class="popup_header_tab_ul dis_flex_row">
-                        <li class="popup_header_li active">
+                    <ul id="pop_tab_ul" class="popup_header_tab_ul dis_flex_row">
+                        <li class="popup_header_li active" data-tab="info">
                             <a class="popup_header_li_btn">객실 정보</a>
                         </li>
-                        <li class="popup_header_li">
+                        <li class="popup_header_li" data-tab="key_log">
                             <a class="popup_header_li_btn">키 발급 내역</a>
                         </li>
-                        <li class="popup_header_li">
-                            <a class="popup_header_li_btn">객실 출입 내역</a>
+                        <li class="popup_header_li" data-tab="action_log">
+                            <a class="popup_header_li_btn">객실 동작 내역</a>
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="popup_body">
-                <div class="pop_cont_grp pop_cont_grp01" style="display: block;">
+                <div id="pop_info_content" class="pop_cont_grp pop_cont_grp01" style="display: block;">
                     <div class="pop_cont_tbox dis_flex_row dis_flex_center dis_flex_end">
                         <h2 class="pop_cont_tit">상세 정보</h2>
                         <div class="pop_cont_btnbox">
@@ -314,7 +519,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="pop_cont_box pop_cont_box01">
+                    <div style="display:none;" id="pop_key_info" class="pop_cont_box pop_cont_box01">
                         <div class="pop_cont_sub_tbox dis_flex_row dis_flex_center dis_flex_end">
                             <h2 class="pop_cont_sub_tit">고객 정보</h2>
                             <div class="pop_cont_btnbox">
@@ -325,13 +530,13 @@
                             <div class="pop_cont_input_box pop_cont_input_box01">
                                 <label class="setup_title">성명</label>
                                 <div class="data_search_inpbox">
-                                    <input class="inp_style" type="text" value="홍길동" disabled>
+                                    <input id="pop_key_name" class="inp_style" type="text" value="" disabled>
                                 </div>
                             </div>
                             <div class="pop_cont_input_box pop_cont_input_box02">
                                 <label class="setup_title">연락처</label>
                                 <div class="data_search_inpbox">
-                                    <input class="inp_style" type="text" value="010-1234-5678" disabled>
+                                    <input id="pop_key_phone" class="inp_style" type="text" value="" disabled>
                                 </div>
                             </div>
                             <div class="pop_cont_input_box pop_cont_input_box03">
@@ -339,7 +544,7 @@
                                 <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
                                     <div class="inp_moving_width inp_moving_width01">
                                         <div class="data_search_inpbox">
-                                            <input class="inp_style date" type="text" value="2022-08-24" disabled>
+                                            <input id="pop_key_idate" class="inp_style date" type="text" value="" disabled>
                                         </div>
                                     </div>
                                     <div class="inp_moving_width inp_moving_width02">
@@ -347,7 +552,7 @@
                                     </div>
                                     <div class="inp_moving_width inp_moving_width02">
                                         <div class="data_search_inpbox">
-                                            <input class="inp_style date" type="text" value="2022-08-26" disabled>
+                                            <input id="pop_key_odate" class="inp_style date" type="text" value="" disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -355,10 +560,10 @@
                             <div class="pop_cont_input_box pop_cont_input_box04">
                                 <label class="setup_title">비밀번호 설정 여부</label>
                                 <ul class="tab_list_box dis_flex_row">
-                                    <li class="tab_list active">
+                                    <li id="pop_key_sett_on" class="tab_list">
                                         <a class="tab_list_btn">설정 완료</a>
                                     </li>
-                                    <li class="tab_list">
+                                    <li id="pop_key_sett_off" class="tab_list">
                                         <a class="tab_list_btn">미설정</a>
                                     </li>
                                 </ul>
@@ -369,127 +574,132 @@
                         <div class="pop_cont_box pop_cont_box02">
                             <div class="pop_cont_sub_tbox dis_flex_row dis_flex_center dis_flex_end">
                                 <h2 class="pop_cont_sub_tit">메이드키 정보</h2>
-                                <div class="pop_cont_btnbox">
+                                <!-- <div class="pop_cont_btnbox">
                                     <div class="pop_cont_btn_width pop_cont_btn_width01">
                                         <button class="default_btn_sm">메이드키 발급 내역</button>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="pop_cont_input_grp pop_cont_input_grp_key dis_flex_row dis_flex_bottom_end">
                                 <div class="pop_cont_input_box pop_cont_input_box01">
                                     <label class="setup_title">메이드키 비밀번호 설정</label>
                                     <div class="pop_cont_input_widthbox dis_flex_row">
-                                        <div class="pop_cont_input_width pop_cont_input_width01">
-                                            <input class="inp_style" type="text" placeholder="메이드키 비밀번호 입력" value="1234#" disabled> 
+                                        <div  id="pop_maid_pw_div" class="pop_cont_input_width pop_cont_input_width01">
+                                            <input id="pop_maid_pw" class="inp_style door_pass" type="text" placeholder="메이드키 비밀번호" value="" disabled> 
                                         </div>
-                                        <div class="pop_cont_input_width pop_cont_input_width02">
+                                        <!-- <div class="pop_cont_input_width pop_cont_input_width02">
                                             <button class="default_btn_gray">수정</button>
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                                 <div class="pop_cont_input_box pop_cont_input_box02">
-                                    <button class="default_btn">메이드키 발급</button>
+                                    <button id="pop_maid_btn" class="default_btn">메이드키 발급</button>
                                 </div>
                             </div>
                         </div>
                         <div class="pop_cont_box pop_cont_box03">
                             <div class="pop_cont_sub_tbox dis_flex_row dis_flex_center dis_flex_end">
                                 <h2 class="pop_cont_sub_tit">마스터키 정보</h2>
-                                <div class="pop_cont_btnbox">
+                                <!-- <div class="pop_cont_btnbox">
                                     <div class="pop_cont_btn_width pop_cont_btn_width01">
                                         <button class="default_btn_sm">마스터키 발급 내역</button>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="pop_cont_input_grp pop_cont_input_grp_key dis_flex_row dis_flex_bottom_end">
                                 <div class="pop_cont_input_box pop_cont_input_box01">
                                     <label class="setup_title">마스터키 비밀번호 설정</label>
                                     <div class="pop_cont_input_widthbox dis_flex_row">
-                                        <div class="pop_cont_input_width pop_cont_input_width01">
-                                            <input class="inp_style" type="text" placeholder="마스터키 비밀번호 입력" >
+                                        <div id="pop_master_pw_div"class="pop_cont_input_width pop_cont_input_width01">
+                                            <input id="pop_master_pw" class="inp_style door_pass" type="text" placeholder="마스터키 비밀번호" disabled>
                                         </div>
-                                        <div class="pop_cont_input_width pop_cont_input_width02">
+                                        <!-- <div class="pop_cont_input_width pop_cont_input_width02">
                                             <button class="default_btn_gray">저장</button>
-                                        </div>
+                                        </div> -->
                                     </div>
                                 </div>
                                 <div class="pop_cont_input_box pop_cont_input_box02">
-                                    <button class="default_btn">마스터키 발급</button>
+                                    <button id="pop_master_btn" class="default_btn">마스터키 발급</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="pop_cont_grp pop_cont_grp02" style="display:none;">
+                <div id="pop_key_log_content" class="pop_cont_grp pop_cont_grp02" style="display:none;">
                     <div class="pop_total_numbox dis_flex_row dis_flex_center dis_flex_end">
                         <div class=" dis_flex_row dis_flex_center">
                             <h2 class="pop_cont_tit pop_cont_tit_right">키 발급 내역</h2>
-                            <div class="total_tab_box dis_flex_row dis_flex_center">
+                            <!-- <div class="total_tab_box dis_flex_row dis_flex_center">
                                 <div class="total_tab all active">전체</div>
                                 <div class="total_tab">메이드키</div>
                                 <div class="total_tab">마스터키</div>
-                            </div>
+                            </div> -->
                         </div>
-                        <h2 class="total_num_tit">총 3 개</h2>
+                        <h2 id="key_total_h2" class="total_num_tit">총 3 개</h2>
                     </div>
                     <div class="table_over_stylebox pop_table_over_stylebox">
                         <div class="table_contbox table_header">
                             <table class="table_list">
                                 <colgroup>
                                     <col width="20%">
+                                    <col width="15%">
                                     <col width="20%">
-                                    <col width="20%">
-                                    <col width="20%">
+                                    <col width="30%">
+                                    <col width="30%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="30%">
                                     <col width="20%">
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="table_list_th text_left">객실 번호</th>
+                                        <th class="table_list_th text_left">예약번호</th>
+                                        <th class="table_list_th text_left">성명</th>
+                                        <th class="table_list_th text_left">연락처</th>
+                                        <th class="table_list_th text_left">시작 일자</th>
+                                        <th class="table_list_th text_left">종료 일자</th>
                                         <th class="table_list_th text_left">구분</th>
-                                        <th class="table_list_th text_left">발급 날짜</th>
-                                        <th class="table_list_th text_left">발급 상태</th>
+                                        <th class="table_list_th text_left">결과</th>
+                                        <th class="table_list_th text_left">요청 일자</th>
                                         <th class="table_list_th text_left">처리자</th>
                                     </tr>
                                 </thead>
                             </table>
                         </div>
-                        <div class="table_contbox table_body table_body_scroll">
-                            <table class="table_list">
+                        <div id="key_log_div" class="table_contbox table_body table_body_scroll">
+                            <table id="key_log_table" class="table_list">
                                 <colgroup>
                                     <col width="20%">
+                                    <col width="15%">
                                     <col width="20%">
-                                    <col width="20%">
-                                    <col width="20%">
+                                    <col width="30%">
+                                    <col width="30%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="30%">
                                     <col width="20%">
                                 </colgroup>
                                 <tbody>
-                                    <tr>
-                                        <td class="table_list_td text_left">201</td>
-                                        <td class="table_list_td text_left">마스터키</td>
-                                        <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                        <td class="table_list_td text_left">발급</td>
-                                        <td class="table_list_td text_left">admin</td>
-                                    </tr>
+                                    
                                 </tbody>
                             </table>
-                            <div class="empty_txt_box">
+                            <div id="key_log_empty" class="empty_txt_box" style="display:none;">
                                 <p class="table_list_none">조회된 내역이 없습니다.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="pop_cont_grp pop_cont_grp03" style="display:none">
+                <div id="pop_action_log_content" class="pop_cont_grp pop_cont_grp03" style="display:none">
                     <div class="pop_total_numbox dis_flex_row dis_flex_center dis_flex_end">
                         <div class=" dis_flex_row dis_flex_center">
-                            <h2 class="pop_cont_tit pop_cont_tit_right">객실 출입 내역</h2>
-                            <div class="total_tab_box dis_flex_row dis_flex_center">
-                                <div class="total_tab all active">전체</div>
-                                <div class="total_tab">폰키</div>
-                                <div class="total_tab">메이드키</div>
-                                <div class="total_tab">마스터키</div>
+                            <h2 class="pop_cont_tit pop_cont_tit_right">객실 동작 내역</h2>
+                            <div id="pop_action_tab" class="total_tab_box dis_flex_row dis_flex_center">
+                                <div data-code="" class="total_tab all active">전체</div>
+                                <div data-code="0110001" class="total_tab">웹키</div>
+                                <div data-code="0110003" class="total_tab">앱키</div>
                             </div>
                         </div>
-                        <h2 class="total_num_tit">총 3 개</h2>
+                        <h2  id="action_total_h2" class="total_num_tit">총 3 개</h2>
                     </div>
                     <div class="table_over_stylebox pop_table_over_stylebox">
                         <div class="table_contbox table_header">
@@ -503,17 +713,17 @@
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th class="table_list_th text_left">객실 번호</th>
-                                        <th class="table_list_th text_left">객실 상태</th>
-                                        <th class="table_list_th text_left">출입 날짜</th>
-                                        <th class="table_list_th text_left">출입 구분</th>
-                                        <th class="table_list_th text_left">사용자</th>
+                                        <th class="table_list_th text_left">구분</th>
+                                        <th class="table_list_th text_left">지연</th>
+                                        <th class="table_list_th text_left">타입</th>
+                                        <th class="table_list_th text_left">일자</th>
+                                        <th class="table_list_th text_left">처리자</th>
                                     </tr>
                                 </thead>
                             </table>
                         </div>
-                        <div class="table_contbox table_body table_body_scroll">
-                            <table class="table_list">
+                        <div id="action_log_div" class="table_contbox table_body table_body_scroll">
+                            <table id="pop_action_table" class="table_list">
                                 <colgroup>
                                     <col width="20%">
                                     <col width="20%">
@@ -522,16 +732,10 @@
                                     <col width="20%">
                                 </colgroup>
                                 <tbody>
-                                    <tr>
-                                        <td class="table_list_td text_left">201</td>
-                                        <td class="table_list_td text_left">체크인</td>
-                                        <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                        <td class="table_list_td text_left">폰키</td>
-                                        <td class="table_list_td text_left">홍길동</td>
-                                    </tr>
+                                    
                                 </tbody>
                             </table>
-                            <div class="empty_txt_box">
+                            <div id="action_log_empty" style="display:none;" class="empty_txt_box">
                                 <p class="table_list_none">조회된 내역이 없습니다.</p>
                             </div>
                         </div>
@@ -540,11 +744,11 @@
             </div>
             <div class="popup_footer">
                 <div class="popup_btn_grp dis_flex_row dis_flex_center dis_flex_right">
-                    <div class="popup_btn_width popup_btn_width01">
+                    <!-- <div class="popup_btn_width popup_btn_width01">
                         <button class="popup_btn popup_btn01 popup_btn_cancel default_btn_white">취소</button>
-                    </div>
+                    </div> -->
                     <div class="popup_btn_width popup_btn_width02">
-                        <button class="popup_btn popup_btn02 popup_btn_save default_btn_gray">저장</button>
+                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_gray">확인</button>
                     </div>
                 </div>
             </div>

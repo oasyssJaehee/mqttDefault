@@ -10,6 +10,8 @@ const app = require("../app.js");
 const crypto = require('./crypto');
 const AppInfo = require('./AppInfo');
 
+const http = require('http');
+
 const connection = mysql.connection();
 
 //네이버 단축url
@@ -494,7 +496,63 @@ router.post('/apiKeyPlogSearch', function (req, res) {
         });
     });
  });
+ router.post('/roomCleanUpdate', function (req, res) {
+    console.log("roomCleanUpdate===================");
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "room_clean_update", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                            // res.write(JSON.stringify(err));
+                            // res.end();
+                        }else{
+                            var jsonObj = new Object();
+                                                            
+                            inputData.res = "101";
+                            jsonObj.data = inputData;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+
+                            query = mysql.apiMapper().getStatement("api", "cleaner_log_insert", inputData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                }else{
+                                }
+                            });
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
  router.post('/roomStatusUpdate', function (req, res) {
+    console.log("roomStatusUpdate===================");
     var inputData;
     req.on('data', (data) => {
     
@@ -596,111 +654,596 @@ router.post('/apiKeyPlogSearch', function (req, res) {
     });
  });
 //안드로이드
-router.post('/user_face_list', function (req, res) {
-   var inputData;
-   req.on('data', (data) => {
-    inputData = JSON.parse(data);
+router.post('/c_login', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "select_user_admin", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                            // res.write(JSON.stringify(err));
+                            // res.end();
+                        }else{
+                            var jsonObj = new Object();
+                            if(rows.length == 0){
+                                rows.res = "101";
+                            }else{
+                                rows[0].res = "101";
+                            }  
+                            
+                            jsonObj.data = rows;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+router.post('/clean_action_list', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "app_cleaner_log_total", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        
+                        if(err){
+                            console.log("에러닷!!!");
+                            console.log(err);
+                            // res.write(JSON.stringify(err));
+                            // res.end();
+                        }else{
+                                
+                            var counts = rows.length;
+                            query = mysql.apiMapper().getStatement("api", "app_cleaner_log", inputData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                    // res.write(JSON.stringify(err));
+                                    // res.end();
+                                }else{
+                                    var jsonObj = new Object();
+                                    if(rows.length > 0){
+                                        rows[0].counts = counts;
+                                    }
+                                    jsonObj.data = rows;
+                                    var result = JSON.stringify(jsonObj)
+                                    res.send(result);
+                                    res.end();
+                                }
+                            });
+                            
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/room_default', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "room_floor_select", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            jsonObj.floor = rows;
+
+                            query = mysql.apiMapper().getStatement("api", "room_status_code", inputData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                }else{
+                                    jsonObj.status = rows;
+                                    var result = JSON.stringify(jsonObj)
+                                    res.send(result);
+                                    res.end();
+                                }
+                            });
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/room_main_list', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "room_main_list", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            jsonObj.data = rows;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/room_set_stau', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "room_clean_update", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            query = mysql.apiMapper().getStatement("api", "cleaner_log_insert", inputData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                }else{
+                                    var jsonObj = new Object();
+                                    var resData = {};
+                                    resData.res = "101"
+                                    jsonObj.data = resData;
+                                    var result = JSON.stringify(jsonObj)
+                                    res.send(result);
+                                    res.end();
+
+                                    //pms에도 보내줌
+                                    var api_url = AppInfo.pmsUrl+"/api/app/room_set_stau.do";
+                                    var request = require('request');
+                                    var options = {
+                                        url: api_url,
+                                        method:'POST',
+                                        form:inputData
+                                    };
+                                    request.post(options, function (error, response, body) {
+                                        console.log(body);
+                                        if (!error && response.statusCode == 200) {
+                                        } else {
+                                            console.log('error = ' + response.statusCode);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                    
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/door_time_check', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.mqttMapper().getStatement("mqtt", "door_time_check", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            jsonObj.data = rows;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/admin_pass_select', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.mqttMapper().getStatement("mqtt", "admin_pass_select", inputData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            jsonObj.data = rows;
+                            var result = JSON.stringify(jsonObj)
+                            res.send(result);
+                            res.end();
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/app_action_insert', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var formData = appActionDataForm(inputData);
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "mqtt_log_insert_api", formData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            formData.insertId = rows.insertId;
+                            query = mysql.apiMapper().getStatement("api", "mqtt_action_insert_api", formData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                }else{
+
+                                    
+                                    var resData = {};
+                                    resData.insertId = rows.insertId;
+                                    jsonObj.data = rows;
+                                    var result = JSON.stringify(jsonObj)
+                                    res.send(result);
+                                    res.end();
+                                }
+                            });
+                        }
+                    });
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ router.post('/app_action_rec', function (req, res) {
+    var inputData;
+    req.on('data', (data) => {
+    
+        inputData = JSON.parse(data);
+        var format = {language: 'sql', indent: '  '};
+        var query ;
+        query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
+        connection.query(query, function (err, rows, fields) {
+            if(err){
+                console.log(err);
+                // res.write(JSON.stringify(err));
+                // res.end();
+            }else{
+                var formData = appActionDataForm(inputData);
+                var jsonObj = new Object();
+                res.setHeader('Content-Type', 'application/json');
+                //시간설정일때
+                if(formData.cmd == "5"){
+                    doorTimeSett(inputData);
+                }
+                if(formData.cmd == "12"){
+                    doorTimeSett(inputData);
+                }
+                if(rows.length > 0){
+                    query = mysql.apiMapper().getStatement("api", "mqtt_log_insert_api", formData, format);
+                    connection.query(query, function (err, rows, fields) {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            query = mysql.apiMapper().getStatement("api", "mqtt_action_update_api", formData, format);
+                            connection.query(query, function (err, rows, fields) {
+                                if(err){
+                                    console.log(err);
+                                }else{
+                                    jsonObj.data = rows;
+                                    var result = JSON.stringify(jsonObj)
+                                    res.send(result);
+                                    res.end();
+                                }
+                            });
+                        }
+                    });
+                    
+                }else{
+                    var jsonObj = new Object();
+                                        
+                    inputData.res = "112";
+                    jsonObj.data = inputData;
+                    var result = JSON.stringify(jsonObj)
+                    res.send(result);
+                    res.end();
+                }
+            }
+        });
+        
+    });
+ });
+ function doorTimeSett(data){
     var format = {language: 'sql', indent: '  '};
-    var query = mysql.userMapper().getStatement("user", "face_user_list", inputData, format);
+    var query ;
+    console.log("doorTimeSett =============>");
+    var pass = data.pass;
+    var cleaner = data.cleaner;
+    var master = data.master;
+    var doorTime = data.doorTime;
+    var passTime = data.passTime;
+    var user = data.user;
+    var admin = data.admin;
     
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            res.write(JSON.stringify(err));
-            res.end();
-        }else{
-            res.setHeader('Content-Type', 'application/json');
-            if(rows.length > 0){
-                console.log(rows);
-            }
-            var result = JSON.stringify(rows)
-            
-            res.write(result);
-            res.end();
-        }
-    });
-   });
-});
-router.post('/pass_select', function (req, res) {
-   var inputData;
-   console.log("pass_select");
-   req.on('data', (data) => {
-     inputData = JSON.parse(data);
-     console.log(inputData);
-     var format = {language: 'sql', indent: '  '};
-    var query = mysql.userMapper().getStatement("room", "pass_select", inputData, format);
+    if(pass == undefined) pass = "";
+    if(cleaner == undefined) cleaner = "";
+    if(master == undefined) master = "";
+    if(doorTime == undefined){
+      doorTime = "";
+    }
+    if(passTime == undefined){
+      passTime = "";
+    }
+    if(user == undefined) user = "";
+    if(admin == undefined) admin = "";
     
-    connection.query(query, function (err, rows, fields) {
+    var input = {};
+    input = {
+      pass: pass,
+      cleaner: cleaner,
+      master: master,
+      doorTime: doorTime,
+      passTime: passTime,
+      user: user,
+      admin: admin,
+      rono: data.rono,
+      bsCode: data.bsCode,
+      rono : data.rono
+    }
+    
+    var query = mysql.mqttMapper().getStatement("mqtt", "door_time_check", input, format);
+    
+      connection.query(query, function (err, rows, fields) {
         if(err){
-            res.write(JSON.stringify(err));
-            res.end();
+          console.log(err);
         }else{
-            res.setHeader('Content-Type', 'application/json');
             if(rows.length > 0){
-                console.log(rows);
+              query = mysql.mqttMapper().getStatement("mqtt", "door_sett_update", input, format);
+              connection.query(query, function (err, rows, fields) {
+                if(err){
+                  console.log(err);
+                }else{
+                }
+              });
+            }else{
+              
+              query = mysql.mqttMapper().getStatement("mqtt", "door_sett_insert", input, format);
+              connection.query(query, function (err, rows, fields) {
+                if(err){
+                  console.log(err);
+                }else{
+                }
+              });
             }
-            var result = JSON.stringify(rows)
-            
-            res.write(result);
-            res.end();
         }
-    });
-   });
-});
+      });
+ }
+ function appActionDataForm(jsonData){
+    
+    var actionKey = undefined;
 
-router.post('/mqtt_on', function (req, res) {
-    console.log('who get in here post /users');
-   var inputData;
-   req.on('data', (data) => {
-     inputData = JSON.parse(data);
-    app.appRelayOn(inputData)
-     res.setHeader('Content-Type', 'application/json');
+    var hotel = jsonData.hotel;
+    var num = jsonData.num;
+    var state = jsonData.state;
+    var ver = jsonData.ver;
+    var serverip = jsonData.serverip;
+    var port = jsonData.port;
+    var cmd = jsonData.cmd;
+    var type = jsonData.type;
+    var serial = jsonData.serial;
+    var userId = jsonData.userId;
+    var hd = jsonData.hd;
+    var recIp = jsonData.recIp;
+    var open = jsonData.open;
+    var remark = jsonData.remark;
+    var insertId = jsonData.insertId;
 
-     var result = JSON.stringify(inputData)
-     
-     res.write(result);
-     res.end();
-   });
-});
-router.post('/user_login_app', function (req, res) {
-    var inputData;
-    req.on('data', (data) => {
-      inputData = JSON.parse(data);
-      var format = {language: 'sql', indent: '  '};
-     var query = mysql.userMapper().getStatement("user", "user_login_app", inputData, format);
-     
-     connection.query(query, function (err, rows, fields) {
-         if(err){
-             res.write(JSON.stringify(err));
-             res.end();
-         }else{
-             res.setHeader('Content-Type', 'application/json');
-             var result = JSON.stringify(rows)
-             
-             res.write(result);
-             res.end();
-         }
-     });
-    });
- });
- router.post('/user_login_app_auto', function (req, res) {
-    var inputData;
-    req.on('data', (data) => {
-      inputData = JSON.parse(data);
-      var format = {language: 'sql', indent: '  '};
-     var query = mysql.userMapper().getStatement("user", "user_login_app_auto", inputData, format);
-     
-     connection.query(query, function (err, rows, fields) {
-         if(err){
-             res.write(JSON.stringify(err));
-             res.end();
-         }else{
-             res.setHeader('Content-Type', 'application/json');
-             var result = JSON.stringify(rows)
-             
-             res.write(result);
-             res.end();
-         }
-     });
-    });
- });
+    if(hotel == undefined) hotel = "";
+    if(num == undefined) num = "";
+    if(state == undefined) state = "";
+    if(ver == undefined) ver = "";
+    if(serverip == undefined) serverip = "";
+    if(port == undefined) port = "";
+    if(cmd == undefined) cmd = "";
+    if(type == undefined) type = "";
+    if(serial == undefined) serial = "";
+    if(insertId == undefined) insertId = 0;
+    if(userId == undefined) userId = "auto";
+    if(recIp == undefined) recIp = "";
+    if(open == undefined) open = "";
+    if(remark == undefined) remark = "";
+
+    var data = {};
+
+    data = {
+        hotel: hotel,
+        num : num,
+        state: state,
+        serial: serial,
+        ver: ver,
+        serverip: serverip,
+        port: port,
+        cmd: cmd,
+        type : type,
+        state: state,
+        insertId: insertId,
+        userId : userId,
+        hd : hd,
+        recIp: recIp,
+        open: open,
+        remark: remark
+    };
+    return data;
+ }
 module.exports = router;

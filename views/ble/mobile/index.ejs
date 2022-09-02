@@ -56,7 +56,9 @@
                     url:"/bleConnect",
                     data:{
                         topic: "oasyss32/"+topic,
-                        open: "0110001"
+                        open: "0110001",
+                        userId: acno+"/"+rspk,
+                        rono : pad(rono, 6)
                     },
                     success : function(result){
                         actionCheck(20);
@@ -215,7 +217,13 @@
                     
                 }else{
                     socketConnect = false;
-                    Alert("현재 사용중인 폰키 입니다.");
+                    console.log(res);
+                    if(res.admin == "1"){
+                        Alert("현재 관리자 설정 중입니다.\n잠시 후 다시 시도하세요.");
+                    }else{
+                        Alert("현재 사용중인 폰키 입니다.");
+                    }
+                    
                 }
             }
         });
@@ -256,19 +264,23 @@
                         var hours = date.substring(8,10);
                         var minutes = date.substring(10,12);
                         oneOdate = year+""+month+""+toDate+""+hours+""+minutes;
+                        
                         if(setEdate != oneOdate){
-                            $.loading.start('도어락 기초 설정 중 입니다.');
-                            $.ajax({
-                                url:"/passTimeSett",
-                                data:{
-                                    userId: acno+"/"+rspk,
-                                    open: "0110001",
-                                    topic: "oasyss32/"+topic,
-                                    date: odate
-                                }, success:function(res){
-                                    actionCheck(10);
-                                }
-                            });
+                            if(oneOdate > setEdate){
+                                $.loading.start('도어락 기초 설정 중 입니다.');
+                                $.ajax({
+                                    url:"/passTimeSett",
+                                    data:{
+                                        userId: acno+"/"+rspk,
+                                        open: "0110001",
+                                        topic: "oasyss32/"+topic,
+                                        date: odate
+                                    }, success:function(res){
+                                        actionCheck(10);
+                                    }
+                                });
+                            }
+                            
                         }
                     }
                     defaultTime = 0;

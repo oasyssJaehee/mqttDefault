@@ -7,13 +7,16 @@ var saleType = "jebee";
 var mqttUrl = "mqtt://210.114.18.107";
 var AES_KEY = "ioptoprr89u34547yhdt";
 var httpUrl = "http://182.215.211.211:6001";
+var pmsUrl = "http://182.215.211.211:8080";
 
 const mysql = require("./MySQL.js");
 const connection = mysql.connection();
 
 
 
-
+var roomArray = new Array();
+var adminRoomArray = new Array();
+var adminSocketArray = new Array();
 
 
 
@@ -122,6 +125,10 @@ module.exports = {
 	saleType,
 	mqttUrl,
 	AES_KEY,
-	httpUrl
+	httpUrl,
+	roomArray,
+	adminRoomArray,
+	adminSocketArray,
+	pmsUrl
 }
 module.exports.sendSms = sendSms

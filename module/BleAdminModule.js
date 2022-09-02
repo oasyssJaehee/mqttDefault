@@ -28,7 +28,8 @@ router.get('/main', function (req, res) {
             session: req.session.admin,
             title:req.session.admin.bsTitle,
             bsCode: req.session.admin.bsCode,
-            logoName: req.session.admin.bsLogo
+            logoName: req.session.admin.bsLogo,
+            AES_KEY: AppInfo.AES_KEY
         })
     }else{
         res.redirect("/ble/admin/login");
@@ -97,6 +98,131 @@ router.get('/mysql/admin_login', function (req, res) {
       }
     });
   });
+  router.get('/doorSett', function (req, res) {
+    var uri = req.url;
+  var data = url.parse(uri, true).query;
+  var format = {language: 'sql', indent: '  '};
+  
+  var pass = data.pass;
+  var cleaner = data.cleaner;
+  var master = data.master;
+  var doorTime = data.doorTime;
+  var passTime = data.passTime;
+  var user = data.user;
+  var admin = data.admin;
+  
+  if(pass == undefined) pass = "";
+  if(cleaner == undefined) cleaner = "";
+  if(master == undefined) master = "";
+  if(doorTime == undefined){
+    doorTime = "";
+  }else{
+    let today = new Date();   
+    let year = today.getFullYear(); // 년도
+    let month = today.getMonth() + 1;  // 월
+    let date = today.getDate();  // 날짜
+    let hours = today.getHours(); // 시
+    let minutes = today.getMinutes();  // 분
+    
+    year = String(year).substr(0,4);
+    if(month < 10){
+      month = "0"+month;
+    }
+    if(date < 10){
+      date = "0"+date;
+    }
+    if(hours < 10){
+      hours = "0"+hours;
+    }
+    if(minutes < 10){
+      minutes = "0"+minutes;
+    }
+    doorTime = year+""+month+""+date+""+hours+""+minutes;
+  }
+  if(passTime == undefined){
+    passTime = "";
+  }else{
+    var date = passTime;
+    date = date.replace(/-/gi, "");
+    date = date.replace(/ /gi, "");
+    date = date.replace(/PM/gi, "");
+    date = date.replace(/AM/gi, "");
+    date = date.replace(/:/gi, "");
+  
+    var year = date.substring(0,4);
+    var month = date.substring(4,6);
+    var toDate = date.substring(6,8);
+    var hours = date.substring(8,10);
+    var minutes = date.substring(10,12);
+    passTime = year+""+month+""+toDate+""+hours+""+minutes;
+  } 
+  if(user == undefined) user = "";
+  if(admin == undefined) admin = "";
+  
+  var input = {};
+  input = {
+    pass: pass,
+    cleaner: cleaner,
+    master: master,
+    doorTime: doorTime,
+    passTime: passTime,
+    user: user,
+    admin: admin,
+    rono: data.rono,
+    bsCode: data.bsCode
+  }
+  
+  var query = mysql.mqttMapper().getStatement("mqtt", "door_time_check", input, format);
+  
+    connection.query(query, function (err, rows, fields) {
+      if(err){
+        console.log(err);
+          res.setHeader('Content-Type', 'application/json');
+          res.send(JSON.stringify(err));
+          res.end();
+      }else{
+          res.setHeader('Content-Type', 'application/json');
+          if(rows.length > 0){
+            query = mysql.mqttMapper().getStatement("mqtt", "door_sett_update", input, format);
+            connection.query(query, function (err, rows, fields) {
+              if(err){
+                console.log(err);
+                  res.setHeader('Content-Type', 'application/json');
+                  res.send(JSON.stringify(err));
+                  res.end();
+              }else{
+                  res.setHeader('Content-Type', 'application/json');
+                  if(rows.length > 0){
+                    console.log(rows);
+                  }
+                  var result = JSON.stringify(rows)
+                  res.send(result);
+                  res.end();
+              }
+            });
+          }else{
+            
+            query = mysql.mqttMapper().getStatement("mqtt", "door_sett_insert", input, format);
+            connection.query(query, function (err, rows, fields) {
+              if(err){
+                console.log(err);
+                  res.setHeader('Content-Type', 'application/json');
+                  res.send(JSON.stringify(err));
+                  res.end();
+              }else{
+                  res.setHeader('Content-Type', 'application/json');
+                  if(rows.length > 0){
+                    console.log(rows);
+                  }
+                  var result = JSON.stringify(rows)
+                  res.send(result);
+                  res.end();
+              }
+            });
+          }
+      }
+    });
+  });
   //로그아웃
   router.get('/user_log_out', function (req, res) {
     var session = req.session
@@ -115,4 +241,5 @@ router.get('/mysql/admin_login', function (req, res) {
       console.log(e);
     }
   });
+
 module.exports = router;

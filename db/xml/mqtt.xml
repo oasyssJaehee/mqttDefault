@@ -581,6 +581,18 @@ LEFT JOIN opener_code CODE1
     ORDER BY MQTT_ACTION_ANSDATE DESC
     LIMIT 1
     </select>
+    <select id="admin_pass_select">
+    SELECT PASS_KEY,
+        PASS_BSCODE,
+        PASS_MASTER,
+        PASS_CLEANER,
+        PASS_USER,
+        PASS_DATE
+    FROM fo_admin_pass
+    WHERE PASS_BSCODE = #{bsCode}
+    ORDER BY PASS_KEY DESC
+    LIMIT 1
+    </select>
 </mapper>
 
 

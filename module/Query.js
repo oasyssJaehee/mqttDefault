@@ -71,13 +71,19 @@ function insertMqttLog(jsonData){
             if((data.cmd != "1" && data.cmd != "255") && (data.type != "rec" || data.type != "auto")){
                 data.insertId = rows.insertId;
                 //릴레이 On
-                if(data.cmd == "204" && data.type != "rec"){
+                if(
+                    (data.cmd == "204" ||  data.cmd == "210")
+                    && data.type != "rec"){
                     insertAction(data);
                 }else if((data.cmd == "204"
-                || data.cmd == "81"
+                || data.cmd == "129"
                 || data.cmd == "5"
                 || data.cmd == "12"
-                || data.cmd == "15") && data.type == "rec"){
+                || data.cmd == "15"
+                || data.cmd == "23"
+                || data.cmd == "24") && data.type == "rec"){
+                    updateAction(actionKey);
+                }else if((data.cmd == "210") && data.type == "rec" && data.state != "2"){
                     updateAction(actionKey);
                 }
                 // updateCmdLog(insertId);
