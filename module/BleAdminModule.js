@@ -98,6 +98,112 @@ router.get('/mysql/admin_login', function (req, res) {
       }
     });
   });
+  //객실 동기화
+  router.get('/room_remove', function (req, res) {
+    var uri = req.url;
+    var data = url.parse(uri, true).query;
+    var format = {language: 'sql', indent: '  '};
+    var result="";
+    var resData = {};
+    var query = mysql.userMapper().getStatement("room", "room_sync_log_insert", data, format);
+      
+      connection.query(query, function (err, rows, fields) {
+        if(err){
+          console.log(err);
+            res.setHeader('Content-Type', 'application/json');
+            result = JSON.stringify(resData)
+            res.send(result);
+            res.end();
+        }else{
+            res.setHeader('Content-Type', 'application/json');
+            query = mysql.userMapper().getStatement("room", "room_sync_delete", data, format);
+            connection.query(query, function (err, rows, fields) {
+              if(err){
+                  res.setHeader('Content-Type', 'application/json');
+                  res.send(JSON.stringify(err));
+                  res.end();
+              }else{
+                  resData.res = "101";
+                  result = JSON.stringify(resData)
+                  res.send(result);
+                  res.end();
+              }
+            });
+            
+        }
+      });
+    });
+router.get('/room_sync_check', function (req, res) {
+  var uri = req.url;
+  var data = url.parse(uri, true).query;
+  var format = {language: 'sql', indent: '  '};
+  var query = mysql.userMapper().getStatement("room", "room_sync_select", data, format);
+      console.log("여기타잖아??1");
+    connection.query(query, function (err, rows, fields) {
+      if(err){
+          res.setHeader('Content-Type', 'application/json');
+          res.send(JSON.stringify(err));
+          res.end();
+      }else{
+          res.setHeader('Content-Type', 'application/json');
+          var originList = rows;
+
+          var headersOpt = {  
+              "content-type": "application/json",
+              "Accept":"text/html"
+          };
+          var api_url = AppInfo.pmsUrl+"/api/app/room_sync_check.do";
+            var request = require('request');
+            var options = {
+                url: api_url,
+                method:'POST',
+                headers: headersOpt,
+                json:true
+                
+            };
+            request.post(options, function (error, response, body) {
+                
+                if (!error && response.statusCode == 200) {
+                  var updateArray = new Array();
+                  var insertArray = new Array();
+
+                  var newList = body.data;
+                  
+                  for(var i=0; i<newList.length; i++){
+                    var rono;
+                    for(var j=0; j<originList.length; j++){
+                      if(newList[i].rono == originList[j].RONO){
+                        rono = newList[i].rono;
+                        
+                        if(newList[i].floor != originList[j].FLOOR){
+                          newList[i].diffe = "floor";
+                        }else if(newList[i].rtype != originList[j].RTYPE){
+                          newList[i].diffe = "rtype";
+                        }else{
+                          newList[i].diffe = "";
+                        }
+                        updateArray.push(newList[i]);
+                      }
+                    }
+                    if(rono != newList[i].rono){
+                      newList[i].diffe = "new";
+                      insertArray.push(newList[i]);
+                    }
+                  }
+                  var jsonObject = new Object();
+                  jsonObject.insert = insertArray;
+                  jsonObject.update = updateArray;
+                  var result = JSON.stringify(jsonObject)
+                    res.send(result);
+                    res.end();
+                } else {
+                    console.log('error = ' + response.statusCode);
+                }
+            });
+      }
+    });
+  });
+  
   router.get('/doorSett', function (req, res) {
     var uri = req.url;
   var data = url.parse(uri, true).query;

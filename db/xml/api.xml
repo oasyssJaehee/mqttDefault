@@ -13,8 +13,6 @@
     ,BRIDGE_TRAN_BS
     ,BRIDGE_TRAN_ACNO
     ,BRIDGE_TRAN_RONO
-    ,BRIDGE_TRAN_RTYPE
-    ,BRIDGE_TRAN_RNAME
     ,BRIDGE_TRAN_IDATE
     ,BRIDGE_TRAN_ODATE
     ,BRIDGE_TRAN_GNAME
@@ -29,8 +27,6 @@
     ,#{bcode}
     ,#{acno}
     ,#{rono}
-    ,#{rtype}
-    ,#{rname}
     ,#{idate}
     ,#{odate}
     ,#{gname}
@@ -47,7 +43,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_GNAME,
@@ -73,8 +68,6 @@
     ,API_LOG_BS
     ,API_LOG_ACNO
     ,API_LOG_RONO
-    ,API_LOG_RTYPE
-    ,API_LOG_RNAME
     ,API_LOG_IDATE
     ,API_LOG_ODATE
     ,API_LOG_GNAME
@@ -91,8 +84,6 @@
     ,#{bcode}
     ,#{acno}
     ,#{rono}
-    ,#{rtype}
-    ,#{rname}
     ,#{idate}
     ,#{odate}
     ,#{gname}
@@ -117,8 +108,6 @@
         CAST(API_LOG_SEQ AS unsigned) AS SEQ,
         API_LOG_ACNO AS ACNO,
         API_LOG_RONO AS RONO,
-        API_LOG_RTYPE AS RTYPE,
-        API_LOG_RNAME AS RNAME,
         API_LOG_IDATE AS IDATE,
         API_LOG_ODATE AS ODATE,
         API_LOG_GNAME AS GNAME,
@@ -273,7 +262,6 @@
                     BRIDGE_TRAN_BS,
                     BRIDGE_TRAN_ACNO,
                     BRIDGE_TRAN_RONO,
-                    BRIDGE_TRAN_RTYPE,
                     BRIDGE_TRAN_IDATE,
                     BRIDGE_TRAN_ODATE,
                     BRIDGE_TRAN_KCDA
@@ -285,7 +273,6 @@
                 AND BRIDGE_TRAN_KCDA IS NULL
                 ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
                 AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
-                AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
                 WHERE ROOM.ROOM_CODE_BS = #{bsCode}
                 <choose>
                     <when test="floor == ''">
@@ -349,7 +336,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_KCDA
@@ -361,7 +347,6 @@
     AND BRIDGE_TRAN_KCDA IS NULL
     ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
     AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
-    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
     WHERE ROOM.ROOM_CODE_BS = #{bsCode}
     <choose>
         <when test="floor == ''">

@@ -21,9 +21,9 @@
     #{bsCode}
     ,#{rono}
     ,#{floor}
-    ,#{dcod}
-    ,#{hnam}
-    ,#{stau}
+    ,#{rtype}
+    ,#{rname}
+    ,#{status}
     ,1
     ,1
     ,SYSDATE()
@@ -53,7 +53,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_KCDA
@@ -65,7 +64,6 @@
     AND BRIDGE_TRAN_KCDA IS NULL
     ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
     AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
-    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
     WHERE ROOM.ROOM_CODE_BS = #{bsCode}
     <if test="party != ''">
         <choose>
@@ -161,7 +159,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_KCDA
@@ -173,7 +170,6 @@
     AND BRIDGE_TRAN_KCDA IS NULL
     ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
     AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
-    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
     WHERE ROOM.ROOM_CODE_BS = #{bsCode}
     <if test="party != ''">
         <choose>
@@ -274,7 +270,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         BRIDGE_TRAN_IDATE,
         BRIDGE_TRAN_ODATE,
         BRIDGE_TRAN_KCDA,
@@ -284,11 +279,9 @@
     WHERE BRIDGE_TRAN_RSPK = #{rspk}
     ) BRIDGE ON BRIDGE.BRIDGE_TRAN_RONO = ROOM.ROOM_CODE_NUM
     AND BRIDGE.BRIDGE_TRAN_BS = ROOM.ROOM_CODE_BS
-    AND BRIDGE.BRIDGE_TRAN_RTYPE = ROOM.ROOM_CODE_DCOD
     WHERE ROOM.ROOM_CODE_BS = #{bsCode}
     
     AND ROOM.ROOM_CODE_NUM = #{rono}
-    AND ROOM.ROOM_CODE_DCOD = #{rtype}
     </select>
     <select id="key_log_select">
     SELECT
@@ -312,7 +305,7 @@
     FROM fo_api_log
     WHERE API_LOG_BS = #{bsCode}
     AND API_LOG_RONO = #{rono}
-    ORDER BY API_LOG_DATE DESC
+    ORDER BY API_LOG_DATE DESC, API_LOG_KEY DESC
     LIMIT ${page},${pageSize}
     </select>
     <select id="action_log_select">
@@ -415,4 +408,31 @@
     AND ROOM_CODE_BS = #{bsCode}
     GROUP BY ROOM_CODE_DCOD
     </select>
+    <select id="room_sync_select">
+    SELECT
+    ROOM_CODE_NUM AS RONO,
+    ROOM_CODE_FLOOR AS FLOOR,
+    ROOM_CODE_DCOD AS RTYPE,
+    ROOM_CODE_HNAM AS RNAME
+    FROM fo_room_code
+    ORDER BY CAST(ROOM_CODE_NUM AS SIGNED);
+    </select>
+    <insert id="room_sync_log_insert">
+    INSERT INTO fo_sync_log (
+    SYNC_LOG_BS
+    ,SYNC_LOG_RONO
+    ,SYNC_LOG_MSG
+    ,SYNC_LOG_DATE
+    ,SYNC_LOG_USER
+    ) VALUES (
+    #{bsCode}
+    ,#{rono}
+    ,#{msg}
+    ,SYSDATE()
+    ,#{userId}
+    )
+    </insert>
+    <delete id="room_sync_delete">
+    DELETE FROM FO_ROOM_CODE WHERE ROOM_CODE_BS = #{bsCode}
+    </delete>
 </mapper>

@@ -8,7 +8,6 @@
         BRIDGE_TRAN_BS,
         BRIDGE_TRAN_ACNO,
         BRIDGE_TRAN_RONO,
-        BRIDGE_TRAN_RTYPE,
         DATE_FORMAT(BRIDGE_TRAN_IDATE, '%Y-%m-%d %p %H:%i') AS BRIDGE_TRAN_IDATE,
         DATE_FORMAT(BRIDGE_TRAN_ODATE, '%Y-%m-%d %p %H:%i') AS BRIDGE_TRAN_ODATE,
         CASE

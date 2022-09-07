@@ -16,12 +16,169 @@
 <style>
 </style>
 <script type="text/javascript">
+    var bsCode = "<%=bsCode%>";
     var level = "<%=session.level%>"
+    var mainDcode = "";
+    function init(){
+        $.ajax({
+            url:"/mysql/room",
+            data:{
+                xml:"room_main_list",
+                bsCode: pad(bsCode, 7),
+                dcod: mainDcode,
+                statu:"",
+                roomSearch: "",
+                party:"",
+                keyStatus:""
+            },success:function(res){
+                console.log(res);
+                var item ="";
+                for(var i=0; i<res.length; i++){
+
+                }
+            }
+        });
+    }
     $(window).ready(function() {
+        init();
         $("#upload_btn").on("click", function(){
             $("#id_file_upload").click();
         });
-        
+        $("#sync_btn").on("click", function(){
+            $.ajax({
+                url:"./room_sync_check",
+                data:{
+                    bsCode:pad(bsCode, 7)
+                }, success:function(res){
+                    console.log(res);
+                    if(res != null){
+                        var insert = res.insert;
+                        var update = res.update;
+
+                        var logRono="";
+                        var logMsg="";
+
+                        var msg = "";
+                        if(insert.length > 0){
+                            msg += "[추가]\n";
+                            for(var i=0; i<insert.length; i++){
+                                msg += insert[i].rono+",";
+                                logRono += insert[i].rono+",";
+                            }
+                            msg = msg.slice(0, -1);
+                            msg += "\n";
+
+                            if(insert.length > 10){
+                                msg = msg.substring(0,40) + "..등 "+comma(insert.length)+"개\n";
+                            }
+                        }
+                        if(update.length > 0){
+                            msg += "[변경내역]\n";
+                            for(var i=0; i<update.length; i++){
+                                logRono += update[i].rono+",";
+                                if(update[i].diffe != ""){
+                                    if(update[i].diffe == "rtype"){
+                                        msg += update[i].rono +"/타입";
+                                    }else if(update[i].diffe == "floor"){
+                                        msg += update[i].rono +"/층";
+                                    }
+                                    
+                                    msg += "\n";
+                                }
+                            }
+                        }
+                        logMsg = msg;
+                        
+
+                        
+                        Confirm(msg+"동기화 하시겠습니까?\n기존 객실자료는 지워집니다.", function(){
+                            var data = {};
+                            var saveData = true;
+                            var dataArray = [];
+                            var ajaxCount = 1;
+                            $.ajax({
+                                url : "./room_remove",
+                                data:{
+                                    rono:logRono,
+                                    msg: logMsg,
+                                    bsCode:"<%=bsCode%>",
+                                    userId: "<%=session.id%>"
+                                }, success:function(re){
+                                    $.loading.start('Loading...');
+                                    if(re.res == "101"){
+                                        for(var i=0; i<insert.length; i++){
+                                            dataArray.push({
+                                                rono : insert[i].rono,
+                                                floor : insert[i].floor,
+                                                rname : insert[i].rname,
+                                                rtype : insert[i].rtype,
+                                                status : insert[i].status
+                                            });
+                                        }
+                                        
+                                        
+                                        for(var i=0; i<update.length; i++){
+                                            dataArray.push({
+                                                rono : update[i].rono,
+                                                floor : update[i].floor,
+                                                rname : update[i].rname,
+                                                rtype : update[i].rtype,
+                                                status : update[i].status
+                                            });
+                                        }
+                                        for(var i=0; i<dataArray.length; i++){
+                                            var rtype = dataArray[i].rtype;
+                                            var rname = dataArray[i].rname;
+                                            var floor = dataArray[i].floor;
+                                            var rono = dataArray[i].rono;
+                                            var status = dataArray[i].status;
+
+                                            $.ajax({
+                                                url:"/mysql/room",
+                                                data:{
+                                                    xml: "room_insert",
+                                                    rtype:rtype,
+                                                    floor:floor,
+                                                    rname:rname,
+                                                    rono:rono,
+                                                    bsCode:"<%=bsCode%>",
+                                                    userId: "<%=session.id%>",
+                                                    status: status
+                                                }, success: function(res){
+                                                    ajaxCount++;
+                                                    if(res.length == 0){
+                                                        saveData = false;
+                                                        msg = rono+"추가중 오류가 발생했습니다.";
+                                                    }else{
+                                                        if(ajaxCount == dataArray.length){
+                                                            $.loading.end();
+                                                            if(!saveData){
+                                                                Alert(msg, function(){
+                                                                    location.reload();
+                                                                });
+                                                            }else{
+                                                                Alert("저장 되었습니다.", function(){
+                                                                    location.reload();
+                                                                });
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }else{
+                                        Alert("객실 저장에 실패했습니다.");
+                                    }
+                                    
+                                }
+                            });
+                            
+                        });
+                    }
+                    
+                }
+            })
+        });
     });
     function upload(event){
         var ajaxCount = 1;
@@ -39,46 +196,61 @@
                     
                     $.loading.start('Loading...');
                     setTimeout(function() {
-                        for(var i=0; i<rowdata.length; i++){
-                            var dcod = rowdata[i].타입;
-                            var hnam = rowdata[i].타입한글;
-                            var floor = rowdata[i].층;
-                            var rono = rowdata[i].객실번호;
-                            var stau = rowdata[i].상태;
+                        $.ajax({
+                            url : "./room_remove",
+                            data:{
+                                rono:logRono,
+                                msg: logMsg,
+                                bsCode:"<%=bsCode%>",
+                                userId: "<%=session.id%>"
+                            }, success:function(re){
+                                if(re.res == "101"){
+                                    for(var i=0; i<rowdata.length; i++){
+                                        var rtype = rowdata[i].타입;
+                                        var rname = rowdata[i].타입명;
+                                        var floor = rowdata[i].층;
+                                        var rono = rowdata[i].객실번호;
+                                        var status = rowdata[i].상태;
 
-                            $.ajax({
-                                url:"/mysql/room",
-                                data:{
-                                    xml: "room_insert",
-                                    dcod:dcod,
-                                    floor:floor,
-                                    hnam:hnam,
-                                    rono:rono,
-                                    bsCode:"<%=bsCode%>",
-                                    userId: "<%=session.id%>",
-                                    stau: stau
-                                }, success: function(res){
-                                    ajaxCount++;
-                                    if(res.length == 0){
-                                        saveData = false;
-                                        msg = rono+"추가중 오류가 발생했습니다.";
-                                    }else{
-                                        if(ajaxCount == rowdata.length){
-                                            $.loading.end();
-                                            if(!saveData){
-                                                Alert(msg, function(){
-                                                    location.reload();
-                                                });
-                                            }else{
-                                                Alert("저장 되었습니다.", function(){
-                                                    location.reload();
-                                                });
+                                        $.ajax({
+                                            url:"/mysql/room",
+                                            data:{
+                                                xml: "room_insert",
+                                                rtype:rtype,
+                                                floor:floor,
+                                                rname:rname,
+                                                rono:rono,
+                                                bsCode:"<%=bsCode%>",
+                                                userId: "<%=session.id%>",
+                                                status: status
+                                            }, success: function(res){
+                                                ajaxCount++;
+                                                if(res.length == 0){
+                                                    saveData = false;
+                                                    msg = rono+"추가중 오류가 발생했습니다.";
+                                                }else{
+                                                    if(ajaxCount == rowdata.length){
+                                                        $.loading.end();
+                                                        if(!saveData){
+                                                            Alert(msg, function(){
+                                                                location.reload();
+                                                            });
+                                                        }else{
+                                                            Alert("저장 되었습니다.", function(){
+                                                                location.reload();
+                                                            });
+                                                        }
+                                                    }
+                                                }
                                             }
-                                        }
+                                        });
                                     }
+                                }else{
+                                    Alert("객실 저장에 실패했습니다.");
                                 }
-                            });
-                        }
+                            }
+                        });
+                        
                         
                     }, 1000);
                 });
@@ -94,6 +266,9 @@
         <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
             <h2 class="main_cont_tit">객실 설정</h2>
             <div class="main_cont_btn_grp dis_flex_row dis_flex_center">
+                <div class="main_cont_width main_cont_width01">
+                    <button id="sync_btn" class="icon_btn_txt_left excel">객실 동기화</button>
+                </div>
                 <div class="main_cont_width main_cont_width01">
                     <button id="upload_btn" class="icon_btn_txt_left excel">엑셀 업로드</button>
                 </div>
@@ -197,7 +372,7 @@
                 </div>
             </div>
             <div class="total_numbox">
-                <h2 class="total_num_tit">총 3 개</h2>
+                <h2 id="tot_h2"class="total_num_tit">총 3 개</h2>
             </div>
             <div class="table_over_stylebox">
                 <div class="table_contbox table_header">
