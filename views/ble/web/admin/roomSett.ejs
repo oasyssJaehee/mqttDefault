@@ -267,7 +267,7 @@
             <h2 class="main_cont_tit">객실 설정</h2>
             <div class="main_cont_btn_grp dis_flex_row dis_flex_center">
                 <div class="main_cont_width main_cont_width01">
-                    <button id="sync_btn" class="icon_btn_txt_left excel">객실 동기화</button>
+                    <button id="sync_btn" class="icon_btn_txt_left refresh">객실 동기화</button>
                 </div>
                 <div class="main_cont_width main_cont_width01">
                     <button id="upload_btn" class="icon_btn_txt_left excel">엑셀 업로드</button>
@@ -400,7 +400,7 @@
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table class="table_list">
+                    <table class="table_list hover_table">
                         <colgroup>
                             <col width="200px">
                             <col width="200px">
@@ -446,6 +446,63 @@
                     <a class="pagebtn num">4</a>
                     <a class="pagebtn num">5</a>
                     <a class="pagebtn next"></a>
+                </div>
+            </div>
+        </div>
+        <div id="room_main_pop" class="popup_wrap" style="display:flex;">
+            <div class="popup_contbox">
+                <div class="popup_header_grp">
+                    <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
+                        <div class="dis_flex_row dis_flex_center">
+                            <div class="dis_flex_row dis_flex_center">
+                                <h2 id="pop_rono" class="popup_title popup_title01">상세 내역</h2>
+                            </div>
+                        </div>
+                        <div class="dis_flex_row dis_flex_center">
+                            <a id="pop_close_btn" class="popup_close"></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup_body">
+                    <div class="pop_table_widthbox dis_flex_row">
+                        <div class="pop_table_width pop_table_width01">
+                            <div class="pop_cont_tbox" style="margin-bottom: 0;">
+                                <div class="dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
+                                    <h2 class="pop_cont_tit">추가 객실</h2>
+                                    <h2 id="tot_h2" class="total_num_tit">총 3 개</h2>
+                                </div>
+                                <div class="pop_table_contbox">
+                                    <div class="pop_table_cont_tbox">
+                                        <p class="pop_table_cont_txt">201,202,203,204</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pop_table_width pop_table_width02">
+                            <div class="pop_cont_tbox" style="margin-bottom: 0;">
+                                <div class="dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
+                                    <h2 class="pop_cont_tit">변경 객실</h2>
+                                    <h2 id="tot_h2" class="total_num_tit">총 3 개</h2>
+                                </div>
+                               
+                                <div class="pop_table_contbox">
+                                    <div class="pop_table_cont_tbox">
+                                        <p class="pop_table_cont_txt">201,202,203,204</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="popup_footer">
+                    <div class="popup_btn_grp dis_flex_row dis_flex_center dis_flex_right">
+                        <!-- <div class="popup_btn_width popup_btn_width01">
+                            <button class="popup_btn popup_btn01 popup_btn_cancel default_btn_white">취소</button>
+                        </div> -->
+                        <div class="popup_btn_width popup_btn_width02">
+                            <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_gray">확인</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
