@@ -23,7 +23,7 @@
         $.ajax({
             url:"/mysql/room",
             data:{
-                xml:"room_main_list",
+                xml:"sync_log_list",
                 bsCode: pad(bsCode, 7),
                 dcod: mainDcode,
                 statu:"",
@@ -34,8 +34,32 @@
                 console.log(res);
                 var item ="";
                 for(var i=0; i<res.length; i++){
+                    var type = "";
+                    var change = "";
+                    change = res[i].SYNC_LOG_ORIGIN + " -> " + res[i].SYNC_LOG_CHANGE;
+                    if(res[i].SYNC_LOG_TYPE == "api"){
+                        type = "API";
+                    }else{
+                        type = "엑셀";
+                    }
 
+                    item += "<tr>"
+                          + "<td class='table_list_td text_left'>"
+                          + type
+                          + "</td>"
+                          + "<td class='table_list_td text_left'>"
+                          + change
+                          + "</td>"
+                          + "<td class='table_list_td text_left'>"
+                          + res[i].ADMIN_NAME
+                          + "</td>"
+                          + "<td class='table_list_td text_left'>"
+                          + res[i].SYNC_LOG_DATE
+                          + "</td>"
+                          + "</tr>";
                 }
+                $("#log_table tbody").empty();
+                $("#log_table tbody").append(item);
             }
         });
     }
@@ -50,15 +74,49 @@
                 data:{
                     bsCode:pad(bsCode, 7)
                 }, success:function(res){
-                    console.log(res);
                     if(res != null){
                         var insert = res.insert;
                         var update = res.update;
-
+                        var origin = res.origin;
+                        var originLength = res.origin.length;
                         var logRono="";
                         var logMsg="";
 
                         var msg = "";
+                        var totalLength = insert.length+update.length;
+                        if(origin.length > totalLength){
+                            for(var i=0; i<origin.length; i++){
+                                for(var j=0; j<insert.length; j++){
+                                    if(origin[i].RONO == insert[j].rono){
+                                        origin = origin.splice(i, 1);
+                                    }
+                                }
+                                for(var j=0; j<update.length; j++){
+                                    if(origin[i].RONO == update[j].rono){
+                                        console.log(origin[i].RONO);
+                                        origin.splice(i, 1);
+                                    }
+                                }
+                                
+                            }
+                            if(origin.length > 0){
+                                for(var i=0; i<origin.length; i++){
+                                    msg += "[삭제]\n";
+                                    for(var i=0; i<origin.length; i++){
+                                        msg += origin[i].RONO+",";
+                                        logRono += origin[i].RONO+",";
+                                    }
+                                }
+                                msg = msg.slice(0, -1);
+                                msg += "\n";
+                                msg += "=============================\n";
+                                if(origin.length > 10){
+                                    msg = msg.substring(0,40) + "..등 "+comma(origin.length)+"개\n";
+                                }
+                            }
+                        }
+                        
+                        
                         if(insert.length > 0){
                             msg += "[추가]\n";
                             for(var i=0; i<insert.length; i++){
@@ -66,14 +124,17 @@
                                 logRono += insert[i].rono+",";
                             }
                             msg = msg.slice(0, -1);
-                            msg += "\n";
-
                             if(insert.length > 10){
                                 msg = msg.substring(0,40) + "..등 "+comma(insert.length)+"개\n";
+                            }else{
+                                msg += "\n";
                             }
+                            msg += "=============================\n";
                         }
+                        var updateDiffCount = 0;
                         if(update.length > 0){
                             msg += "[변경내역]\n";
+                            var updateCount = 0;
                             for(var i=0; i<update.length; i++){
                                 logRono += update[i].rono+",";
                                 if(update[i].diffe != ""){
@@ -81,11 +142,24 @@
                                         msg += update[i].rono +"/타입";
                                     }else if(update[i].diffe == "floor"){
                                         msg += update[i].rono +"/층";
+                                    }else if(update[i].diffe == "clean"){
+                                        msg += update[i].rono +"/청소상태";
                                     }
-                                    
-                                    msg += "\n";
+                                    msg += ",";
+                                    updateCount++;
+                                }else{
+                                    updateDiffCount++;
                                 }
                             }
+                            msg = msg.slice(0, -1);
+                            msg+="\n";
+                            if(updateDiffCount != update.length){
+                                msg += "=============================\n";
+                            }
+                            
+                        }
+                        if(updateDiffCount == update.length){
+                            msg = replaceAll(msg, "[변경내역]\n", "");
                         }
                         logMsg = msg;
                         
@@ -102,7 +176,10 @@
                                     rono:logRono,
                                     msg: logMsg,
                                     bsCode:"<%=bsCode%>",
-                                    userId: "<%=session.id%>"
+                                    userId: "<%=session.id%>",
+                                    change: totalLength,
+                                    origin: originLength,
+                                    type:"api"
                                 }, success:function(re){
                                     $.loading.start('Loading...');
                                     if(re.res == "101"){
@@ -112,7 +189,8 @@
                                                 floor : insert[i].floor,
                                                 rname : insert[i].rname,
                                                 rtype : insert[i].rtype,
-                                                status : insert[i].status
+                                                status : insert[i].status,
+                                                clean : insert[i].clean
                                             });
                                         }
                                         
@@ -123,7 +201,8 @@
                                                 floor : update[i].floor,
                                                 rname : update[i].rname,
                                                 rtype : update[i].rtype,
-                                                status : update[i].status
+                                                status : update[i].status,
+                                                clean: update[i].clean
                                             });
                                         }
                                         for(var i=0; i<dataArray.length; i++){
@@ -132,6 +211,7 @@
                                             var floor = dataArray[i].floor;
                                             var rono = dataArray[i].rono;
                                             var status = dataArray[i].status;
+                                            var clean = dataArray[i].clean;
 
                                             $.ajax({
                                                 url:"/mysql/room",
@@ -143,7 +223,8 @@
                                                     rono:rono,
                                                     bsCode:"<%=bsCode%>",
                                                     userId: "<%=session.id%>",
-                                                    status: status
+                                                    status: status,
+                                                    clean: clean
                                                 }, success: function(res){
                                                     ajaxCount++;
                                                     if(res.length == 0){
@@ -184,80 +265,247 @@
         var ajaxCount = 1;
          var input = event.target;
         var reader = new FileReader();
-        reader.onload = function(){
-            var fdata = reader.result;
-            var read_buffer = XLSX.read(fdata, {type : 'binary'});
-            read_buffer.SheetNames.forEach(function(sheetName){
-                var rowdata =XLSX.utils.sheet_to_json(read_buffer.Sheets[sheetName]);
-                var saveData = true;
-                
-                Confirm("["+rowdata.length+"개] 객실을 추가 하시겠습니까?\n*기존 데이터는 초기화 됩니다.", function(){
-                    // room_reset();
-                    
-                    $.loading.start('Loading...');
-                    setTimeout(function() {
-                        $.ajax({
-                            url : "./room_remove",
-                            data:{
-                                rono:logRono,
-                                msg: logMsg,
-                                bsCode:"<%=bsCode%>",
-                                userId: "<%=session.id%>"
-                            }, success:function(re){
-                                if(re.res == "101"){
-                                    for(var i=0; i<rowdata.length; i++){
-                                        var rtype = rowdata[i].타입;
-                                        var rname = rowdata[i].타입명;
-                                        var floor = rowdata[i].층;
-                                        var rono = rowdata[i].객실번호;
-                                        var status = rowdata[i].상태;
+        $.ajax({
+            url: "./room_sync_check_excel",
+            data: {
+                bsCode:bsCode
+            }, success:function(res2){
+                console.log(res2);
+                var originList = res2;
+                var origin = originList;
 
-                                        $.ajax({
-                                            url:"/mysql/room",
-                                            data:{
-                                                xml: "room_insert",
-                                                rtype:rtype,
-                                                floor:floor,
-                                                rname:rname,
-                                                rono:rono,
-                                                bsCode:"<%=bsCode%>",
-                                                userId: "<%=session.id%>",
-                                                status: status
-                                            }, success: function(res){
-                                                ajaxCount++;
-                                                if(res.length == 0){
-                                                    saveData = false;
-                                                    msg = rono+"추가중 오류가 발생했습니다.";
-                                                }else{
-                                                    if(ajaxCount == rowdata.length){
-                                                        $.loading.end();
-                                                        if(!saveData){
-                                                            Alert(msg, function(){
-                                                                location.reload();
-                                                            });
-                                                        }else{
-                                                            Alert("저장 되었습니다.", function(){
-                                                                location.reload();
-                                                            });
+                reader.onload = function(){
+                var fdata = reader.result;
+                var read_buffer = XLSX.read(fdata, {type : 'binary'});
+                read_buffer.SheetNames.forEach(function(sheetName){
+                    var rowdata =XLSX.utils.sheet_to_json(read_buffer.Sheets[sheetName]);
+                    var saveData = true;
+                    
+                    var updateArray = new Array();
+                    var insertArray = new Array();
+                    var newList = [];
+                    if(typeof rowdata[0].객실번호 == "undefined"){
+                        Alert("엑셀 파일을 확인해 주세요.");
+                        return;
+                    }
+                    for(var i=0; i<rowdata.length; i++){
+                        newList.push({
+                            rono : rowdata[i].객실번호,
+                            floor : rowdata[i].층,
+                            rname : rowdata[i].타입한글,
+                            rtype : rowdata[i].타입,
+                            status : rowdata[i].상태,
+                            clean : rowdata[i].청소
+                        });
+                    }
+                    for(var i=0; i<newList.length; i++){
+                        var rono;
+                        for(var j=0; j<originList.length; j++){
+                        if(newList[i].rono == originList[j].RONO){
+                            rono = newList[i].rono;
+                            
+                            if(newList[i].floor != originList[j].FLOOR){
+                            newList[i].diffe = "floor";
+                            }else if(newList[i].rtype != originList[j].RTYPE){
+                            newList[i].diffe = "rtype";
+                            }else if(newList[i].clean != originList[j].CLEAN){
+                            newList[i].diffe = "clean";
+                            }else{
+                            newList[i].diffe = "";
+                            }
+                            updateArray.push(newList[i]);
+                        }
+                        }
+                        if(rono != newList[i].rono){
+                        newList[i].diffe = "new";
+                        insertArray.push(newList[i]);
+                        }
+                    }
+
+                    var insert = insertArray;
+                    var update = updateArray;
+
+                    var logRono="";
+                    var logMsg="";
+                    var msg = "";
+
+                    var totalLength = insert.length+update.length;
+                    if(origin.length > totalLength){
+                        for(var i=0; i<origin.length; i++){
+                            for(var j=0; j<insert.length; j++){
+                                if(origin[i].RONO == insert[j].rono){
+                                    origin = origin.splice(i, 1);
+                                }
+                            }
+                            for(var j=0; j<update.length; j++){
+                                if(origin[i].RONO == update[j].rono){
+                                    origin.splice(i, 1);
+                                }
+                            }
+                            
+                        }
+                        if(origin.length > 0){
+                            for(var i=0; i<origin.length; i++){
+                                msg += "[삭제]\n";
+                                for(var i=0; i<origin.length; i++){
+                                    msg += origin[i].RONO+",";
+                                    logRono += origin[i].RONO+",";
+                                }
+                            }
+                            msg = msg.slice(0, -1);
+                            
+                            if(origin.length > 10){
+                                msg = msg.substring(0,40) + "..등 "+comma(origin.length)+"개\n";
+                            }
+                            msg += "\n";
+                            msg += "=============================\n";
+                        }
+                    }
+                    
+                    
+                    if(insert.length > 0){
+                        msg += "[추가]\n";
+                        for(var i=0; i<insert.length; i++){
+                            msg += insert[i].rono+",";
+                            logRono += insert[i].rono+",";
+                        }
+                        msg = msg.slice(0, -1);
+                        if(insert.length > 10){
+                            msg = msg.substring(0,40) + "..등 "+comma(insert.length)+"개\n";
+                        }else{
+                            msg += "\n";
+                        }
+                        msg += "=============================\n";
+                    }
+                    var updateDiffCount = 0;
+                    if(update.length > 0){
+                        msg += "[변경내역]\n";
+                        var updateCount = 0;
+                        for(var i=0; i<update.length; i++){
+                            logRono += update[i].rono+",";
+                            if(update[i].diffe != ""){
+                                if(update[i].diffe == "rtype"){
+                                    msg += update[i].rono +"/타입";
+                                }else if(update[i].diffe == "floor"){
+                                    msg += update[i].rono +"/층";
+                                }else if(update[i].diffe == "clean"){
+                                    msg += update[i].rono +"/청소상태";
+                                }
+                                msg += ",";
+                                updateCount++;
+                            }else{
+                                updateDiffCount++;
+                            }
+                        }
+                        msg = msg.slice(0, -1);
+                        msg += "\n";
+                        if(updateDiffCount != update.length){
+                            msg += "=============================\n";
+                        }
+                    }
+                    if(updateDiffCount == update.length){
+                        msg = replaceAll(msg, "[변경내역]\n", "");
+                    }
+                    
+                    logMsg = msg;
+                    Confirm(msg+"업로드 하시겠습니까?\n기존 객실자료는 지워집니다.", function(){
+                        // room_reset();
+                        
+                        $.loading.start('Loading...');
+                        setTimeout(function() {
+                           var dataArray = [];
+                            $.ajax({
+                                url : "./room_remove",
+                                data:{
+                                    rono:logRono,
+                                    msg: logMsg,
+                                    bsCode:"<%=bsCode%>",
+                                    userId: "<%=session.id%>",
+                                    change: totalLength,
+                                    origin: originList.length,
+                                    type:"excel"
+                                }, success:function(re){
+                                    if(re.res == "101"){
+                                        for(var i=0; i<insert.length; i++){
+                                            dataArray.push({
+                                                rono : insert[i].rono,
+                                                floor : insert[i].floor,
+                                                rname : insert[i].rname,
+                                                rtype : insert[i].rtype,
+                                                status : insert[i].status,
+                                                clean : insert[i].clean
+                                            });
+                                        }
+                                        
+                                        
+                                        for(var i=0; i<update.length; i++){
+                                            dataArray.push({
+                                                rono : update[i].rono,
+                                                floor : update[i].floor,
+                                                rname : update[i].rname,
+                                                rtype : update[i].rtype,
+                                                status : update[i].status,
+                                                clean: update[i].clean
+                                            });
+                                        }
+                                        for(var i=0; i<dataArray.length; i++){
+                                            var rtype = dataArray[i].rtype;
+                                            var rname = dataArray[i].rname;
+                                            var floor = dataArray[i].floor;
+                                            var rono = dataArray[i].rono;
+                                            var status = dataArray[i].status;
+                                            var clean = dataArray[i].clean;
+
+                                            $.ajax({
+                                                url:"/mysql/room",
+                                                data:{
+                                                    xml: "room_insert",
+                                                    rtype:rtype,
+                                                    floor:floor,
+                                                    rname:rname,
+                                                    rono:rono,
+                                                    bsCode:"<%=bsCode%>",
+                                                    userId: "<%=session.id%>",
+                                                    status: status,
+                                                    clean: clean
+                                                }, success: function(res){
+                                                    ajaxCount++;
+                                                    if(res.length == 0){
+                                                        saveData = false;
+                                                        msg = rono+"추가중 오류가 발생했습니다.";
+                                                    }else{
+                                                        if(ajaxCount == dataArray.length){
+                                                            $.loading.end();
+                                                            if(!saveData){
+                                                                Alert(msg, function(){
+                                                                    location.reload();
+                                                                });
+                                                            }else{
+                                                                Alert("저장 되었습니다.", function(){
+                                                                    location.reload();
+                                                                });
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        });
+                                            });
+                                        }
+                                    }else{
+                                        Alert("객실 저장에 실패했습니다.");
                                     }
-                                }else{
-                                    Alert("객실 저장에 실패했습니다.");
                                 }
-                            }
-                        });
-                        
-                        
-                    }, 1000);
+                            });
+                            
+                            
+                        }, 1000);
+                    });
+                    
                 });
-                
-            });
-        };
-        reader.readAsBinaryString(input.files[0]);
+            };
+            reader.readAsBinaryString(input.files[0]);
+            }
+        });
+        
     }
 </script>
 <body>
@@ -382,32 +630,23 @@
                             <col width="200px">
                             <col width="200px">
                             <col width="200px">
-                            <col width="200px">
-                            <col width="100%">
-                            <col width="200px">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th class="table_list_th text_left">객실 번호</th>
                                 <th class="table_list_th text_left">구분</th>
-                                <th class="table_list_th text_left">분류</th>
-                                <th class="table_list_th text_left">동작</th>
-                                <th class="table_list_th text_left">상태</th>
-                                <th class="table_list_th text_left">동작 날짜</th>
-                                <th class="table_list_th text_left">지연 시간</th>
+                                <th class="table_list_th text_left">변경</th>
+                                <th class="table_list_th text_left">처리자</th>
+                                <th class="table_list_th text_left">처리 날짜</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table class="table_list">
+                    <table id="log_table" class="table_list">
                         <colgroup>
                             <col width="200px">
                             <col width="200px">
                             <col width="200px">
-                            <col width="200px">
-                            <col width="200px">
-                            <col width="100%">
                             <col width="200px">
                         </colgroup>
                         <tbody>

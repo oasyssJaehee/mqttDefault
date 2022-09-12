@@ -756,7 +756,7 @@ app.get('/masterPassSett', function(request, response) {
 })
 
 app.get('/mqttCheck', function(request, response) {
-  
+    console.log("mqttCheck");
     var uri = request.url;
     var query = url.parse(uri, true).query;
 

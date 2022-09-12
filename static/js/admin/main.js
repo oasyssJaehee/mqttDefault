@@ -429,6 +429,7 @@ function socketBleConnect(){
     $.loading.start('도어락 연결 중입니다.');
         
     setTimeout(function(){
+        
         $.ajax({
             url:"/mqttCheck",
             data:{
@@ -452,7 +453,6 @@ function userCheck(){
                 socketConnect = true;
                 socket.emit("joinAdmin", removePad(bsCode)+"_"+rono, userId, "1");
                 $.loading.start('도어락 연결 중입니다.');
-        
                 setTimeout(function(){
                     $.ajax({
                         url:"/mqttCheck",

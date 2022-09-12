@@ -138,7 +138,6 @@ router.get('/room_sync_check', function (req, res) {
   var data = url.parse(uri, true).query;
   var format = {language: 'sql', indent: '  '};
   var query = mysql.userMapper().getStatement("room", "room_sync_select", data, format);
-      console.log("여기타잖아??1");
     connection.query(query, function (err, rows, fields) {
       if(err){
           res.setHeader('Content-Type', 'application/json');
@@ -179,6 +178,8 @@ router.get('/room_sync_check', function (req, res) {
                           newList[i].diffe = "floor";
                         }else if(newList[i].rtype != originList[j].RTYPE){
                           newList[i].diffe = "rtype";
+                        }else if(newList[i].clean != originList[j].CLEAN){
+                          newList[i].diffe = "clean";
                         }else{
                           newList[i].diffe = "";
                         }
@@ -193,6 +194,7 @@ router.get('/room_sync_check', function (req, res) {
                   var jsonObject = new Object();
                   jsonObject.insert = insertArray;
                   jsonObject.update = updateArray;
+                  jsonObject.origin = rows;
                   var result = JSON.stringify(jsonObject)
                     res.send(result);
                     res.end();
@@ -203,7 +205,23 @@ router.get('/room_sync_check', function (req, res) {
       }
     });
   });
-  
+  router.get('/room_sync_check_excel', function (req, res) {
+    var uri = req.url;
+    var data = url.parse(uri, true).query;
+    var format = {language: 'sql', indent: '  '};
+    var query = mysql.userMapper().getStatement("room", "room_sync_select", data, format);
+      connection.query(query, function (err, rows, fields) {
+        if(err){
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(err));
+            res.end();
+        }else{
+          res.setHeader('Content-Type', 'application/json');
+          res.send(JSON.stringify(rows));
+          res.end();
+        }
+      });
+    });
   router.get('/doorSett', function (req, res) {
     var uri = req.url;
   var data = url.parse(uri, true).query;

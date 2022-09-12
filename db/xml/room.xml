@@ -17,6 +17,7 @@
     ,ROOM_CODE_FUSER
     ,ROOM_CODE_LDATE
     ,ROOM_CODE_LUSER
+    ,ROOM_CODE_CLEAN
     ) VALUES (
     #{bsCode}
     ,#{rono}
@@ -30,6 +31,7 @@
     ,#{userId}
     ,SYSDATE()
     ,#{userId}
+    ,#{clean}
     )
     </insert>
     <select id="room_main_list">
@@ -413,7 +415,8 @@
     ROOM_CODE_NUM AS RONO,
     ROOM_CODE_FLOOR AS FLOOR,
     ROOM_CODE_DCOD AS RTYPE,
-    ROOM_CODE_HNAM AS RNAME
+    ROOM_CODE_HNAM AS RNAME,
+    ROOM_CODE_CLEAN AS CLEAN
     FROM fo_room_code
     ORDER BY CAST(ROOM_CODE_NUM AS SIGNED);
     </select>
@@ -422,17 +425,46 @@
     SYNC_LOG_BS
     ,SYNC_LOG_RONO
     ,SYNC_LOG_MSG
+    ,SYNC_LOG_ORIGIN
+    ,SYNC_LOG_CHANGE
     ,SYNC_LOG_DATE
     ,SYNC_LOG_USER
+    ,SYNC_LOG_TYPE
     ) VALUES (
     #{bsCode}
     ,#{rono}
     ,#{msg}
+    ,#{origin}
+    ,#{change}
     ,SYSDATE()
     ,#{userId}
+    ,#{type}
     )
     </insert>
     <delete id="room_sync_delete">
     DELETE FROM FO_ROOM_CODE WHERE ROOM_CODE_BS = #{bsCode}
     </delete>
+    <select id="sync_log_list">
+    SELECT 
+        (select count(*) FROM fo_sync_log
+    LEFT JOIN co_user_admin
+    ON ADMIN_ID = SYNC_LOG_USER
+    WHERE SYNC_LOG_BS = #{bsCode}
+    ) as counts,
+        SYNC_LOG_KEY,
+       SYNC_LOG_BS,
+       SYNC_LOG_RONO,
+       SYNC_LOG_MSG,
+       SYNC_LOG_DATE,
+       SYNC_LOG_USER,
+       SYNC_LOG_TYPE,SYNC_LOG_ORIGIN
+    ,SYNC_LOG_CHANGE
+    ,ADMIN_NAME
+    FROM fo_sync_log
+    LEFT JOIN co_user_admin
+    ON ADMIN_ID = SYNC_LOG_USER
+    WHERE SYNC_LOG_BS = #{bsCode}
+    order by sync_log_key desc
+    LIMIT ${page},${pageSize}
+    </select>
 </mapper>
