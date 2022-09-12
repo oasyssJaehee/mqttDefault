@@ -133,6 +133,7 @@ button{box-sizing: border-box; outline: none;  border:0;}
 
 .margin_top_20{margin-top: 20px;}
 .margin_top_8{margin-top: 8px;}
+.margin_bottom_12{margin-bottom: 12px;}
 .margin_bottom_16{margin-bottom: 16px;}
 .margin_bottom_20{margin-bottom: 20px;}
 .dis_flex_row{display: flex; flex-direction: row;}
@@ -207,7 +208,11 @@ select:focus{border-color: #ffacaf;}
     padding: 0 8px; box-sizing: border-box; transition: 0.3s;}
 .default_btn_white:hover{background-color: #eee;}
 
-.default_btn_white:disabled{background-color:#ccc; color:#666;}
+.default_btn_clean{display: block; border-radius: 8px; border: 0; height:40px; text-align: center; background-color:#0cd5dc; color:#fff; font-weight:600; width:100% ; 
+    padding: 0 14px; box-sizing: border-box; transition: 0.3s;}
+.default_btn_clean:hover{background-color: #0ab3b9;}
+
+.default_btn_clean:disabled{background-color:#ccc; color:#666;}
 
 .default_btn_sm{display: block; border-radius: 6px; border: 0; height:30px; text-align: center; background-color:#f3f5f6; color:#424a4d; font-weight:600; width:100% ; 
     padding: 0 12px; box-sizing: border-box; transition: 0.3s; border:0;}
@@ -223,6 +228,7 @@ select:focus{border-color: #ffacaf;}
    box-sizing: border-box; transition: 0.3s; border:1px solid #ddd; }
 .icon_btn_txt_left.excel{background-image:url('/static/img/opener/excel_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
 .icon_btn_txt_left.download{background-image:url('/static/img/opener/download_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
+.icon_btn_txt_left.refresh{background-image:url('/static/img/opener/refresh_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
 .icon_btn_txt_left:hover{background-color:#f6f6f6;}
 
 
@@ -263,11 +269,14 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 .total_tab.active.js{background-color:#F4B200;}
 .total_tab.active.gs{background-color:#46589A;}
 .total_tab.active.cl{background-color:#0cd5dc;}
+.total_tab.active.dt{background-color:#10b120;}
+
 
 .total_tab_num{display: block; width:17px; height:17px;background-color:#fff; text-align: center; ;line-height: 17px; border-radius: 50%; margin-left:8px;}
 .total_tab.active.js .total_tab_num{color:#F4B200;}
 .total_tab.active.gs .total_tab_num{color:#46589A;}
 .total_tab.active.cl .total_tab_num{color:#0cd5dc;}
+.total_tab.active.cl .total_tab_num{color:#10b120;}
 
 
 .room_state_box{position: absolute; top:0 ;left:0;}
@@ -275,10 +284,11 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 .room_state.js{background-color:#F4B200;}
 .room_state.gs{background-color:#46589A;}
 .room_state.cl{background-color:#0cd5dc;}
+.room_state.dt{background-color:#10b120;}
 
 
 .wcont_box{width:100%; padding:30px; box-sizing: border-box; border-radius: 12px; box-shadow: 2px 4px 8px 0px #2934390A; background-color:#fff;}
-.table_over_stylebox{border:1px solid #f6f6f6; box-shadow: 2px 4px 8px 0px #2934390A; border-radius:12px;}
+.table_over_stylebox{border:1px solid #f6f6f6; box-shadow: 2px 4px 8px 0px #2934390A; border-radius:12px; overflow: hidden;}
 
 .table_header{position: relative; z-index: 1; width:100%; box-shadow: 2px 4px 8px 0px #2934390A;}
 
@@ -311,6 +321,7 @@ cursor: pointer; transition: 0.3s; position: relative;; padding-top:40px;}
 .view_grp_list.js{border:5px solid #F4B200;}
 .view_grp_list.gs{border:5px solid #46589A;}
 .view_grp_list.cl{border:5px solid #0cd5dc;}
+.view_grp_list.dt{border:5px solid #10b120;}
 
 .view_grp_list:hover{box-shadow: 2px 4px 8px 0px #2934394a;}
 .view_tit_grp{width: 100%; display:flex; flex-direction: row; align-items: center; justify-content: space-between;}
@@ -377,7 +388,8 @@ font-weight:600;}
 .pagebtn:last-child{margin-right:0}
 
 
-.popup_wrap{width:100%; height:100%; position:fixed; top:0; left:0; background-color:rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center;}
+.popup_wrap{width:100%; height:100%; position:fixed; top:0; left:0; background-color:rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; 
+    justify-content: center; z-index: 9;}
 .popup_contbox{min-width: 880px; max-width: 1280px; border-radius: 12px; background-color:#fff;box-shadow: 2px 4px 8px 0px #29343926;}
 .popup_header_grp{border-bottom: 1px solid #eee;;}
 .popup_header{padding:20px 30px; box-sizing: border-box; }
@@ -413,6 +425,8 @@ font-weight:600;}
 .popup_title03.js{background-color:#F4B200;}
 .popup_title03.gs{background-color:#46589A;}
 .popup_title03.cl{background-color:#0cd5dc;}
+.popup_title03.dt{background-color:#10b120;}
+
 
 
 .popup_close{width: 40px; height:40px; display:block; background-image: url('/static/img/opener/cancel_icon.png'); background-repeat: no-repeat ; background-position: center;
@@ -458,3 +472,16 @@ font-weight:600;}
 
 .empty_txt_box{width:100%; padding:50px 0;}
 .empty_txt_box .table_list_none{text-align: center; font-size:14px; color:#9ca2a9;}
+
+
+.pop_table_widthbox{width:100%;}
+.pop_table_width{width:50%; margin-right: 20px;}
+.pop_table_width:last-child{margin-right: 0;;}
+
+.memo_tr_tbox td{background-color:#dadde1;}
+.memo_tr_tbox td h2{}
+.memo_tr_tbox td p{font-size: 14px;font-weight: 500; color:#666;word-wrap:break-word;}
+
+.pop_table_contbox{padding:16px; width:100%; box-sizing: border-box; border-radius: 12px;box-shadow: 2px 4px 8px 0px #2934390a; background-color:#fff;}
+.pop_table_cont_tbox{padding:12px; border:1px solid #dbdbdb;border-radius: 8px; min-height: 180px;max-height: 180px; overflow-y: auto; box-sizing: border-box;}
+.pop_table_cont_tbox .pop_table_cont_txt{font-size: 14px;font-weight: 500; color:#ff0000;word-wrap:break-word;}
