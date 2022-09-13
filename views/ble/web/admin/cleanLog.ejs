@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title></title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=medium-dpi" />
+<meta name="format-detection" content="telephone=no" />
+<!-- <script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script> -->
+<!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+</head>
+<style>
+.spin{display: none;}
+</style>
+<script type="text/javascript">
+    var level = "<%=session.level%>"
+    $(window).ready(function() {
+        
+    });
+</script>
+<body>
+    <div class="right_contbox">
+        <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
+            <h2 class="main_cont_tit">관리자 객실제어</h2>
+            <div class="main_cont_btn_grp">
+                <div calss="main_cont_width main_cont_width01">
+                    <button class="icon_btn excel"></button>
+                </div>
+            </div>
+        </div>
+        <div class="wcont_box wcont_box_style01">
+            <div class="data_search_box dis_flex_row margin_bottom_16">
+                <div class="data_search_grp">
+                    <label class="setup_title">구분</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox02">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">상태</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox03">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">분류</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox04">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">동작</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox05">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <select class="sel_style">
+                                    <option selected>전체</option>
+                                    <option>구분1</option>
+                                    <option>구분2</option>
+                                    <option>구분3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="data_search_grp">
+                    <label class="setup_title">객실 번호</label>
+                    <div class="inp_moving_widthbox inp_moving_widthbox06 dis_flex_row">
+                        <div class="inp_moving_width inp_moving_width01">
+                            <div class="data_search_inpbox">
+                                <input class="inp_style search" type="text">
+                            </div>
+                        </div>
+                        <div class="inp_moving_width inp_moving_width02">
+                            <button class="default_btn">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="total_numbox">
+                <h2 class="total_num_tit">총 3 개</h2>
+            </div>
+            <div class="table_over_stylebox">
+                <div class="table_contbox table_header">
+                    <table class="table_list">
+                        <colgroup>
+                            <col width="120px">
+                            <col width="120px">
+                            <col width="140px">
+                            <col width="140px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="140px">
+                            <col width="200px">
+                            <col width="120px">
+                            <col width="160px">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th class="table_list_th text_left">객실 번호</th>
+                                <th class="table_list_th text_left">도어락 번호</th>
+                                <th class="table_list_th text_left">청소키 사용 여부</th>
+                                <th class="table_list_th text_left">마스터키 사용 여부</th>
+                                <th class="table_list_th text_left">청소 키</th>
+                                <th class="table_list_th text_left">마스터 키</th>
+                                <th class="table_list_th text_left">변경자</th>
+                                <th class="table_list_th text_left">변경 날짜</th>
+                                <th class="table_list_th text_left">변경</th>
+                                <th class="table_list_th text_left">도어 오픈</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div class="table_contbox table_body">
+                    <table class="table_list table_list_inp_style">
+                        <colgroup>
+                            <col width="120px">
+                            <col width="120px">
+                            <col width="140px">
+                            <col width="140px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="140px">
+                            <col width="200px">
+                            <col width="120px">
+                            <col width="160px">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td class="table_list_td text_left">101</td>
+                                <td class="table_list_td text_left">000401</td>
+                                <td class="table_list_td text_left">
+                                    <p class="table_list_td_ok">ON</p>
+                                </td>
+                                <td class="table_list_td text_left">
+                                    <p class="table_list_td_no">OFF</p>
+                                </td>
+                                <td class="table_list_td text_left">
+                                    <input class="inp_style" type="text">
+                                </td>
+                                <td class="table_list_td text_left">
+                                    <input class="inp_style" type="text">
+                                </td>
+                                <td class="table_list_td text_left">관리자</td>
+                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
+                                <td class="table_list_td text_left">00:00:01</td>
+                                <td class="table_list_td text_left">
+                                    <button class="">asd</button>
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="pagebtn_grp_box">
+                <div class="pagebtn_grp dis_flex_center dis_flex_row">
+                    <a class="pagebtn prev"></a>
+                    <a class="pagebtn num active">1</a>
+                    <a class="pagebtn num">2</a>
+                    <a class="pagebtn num">3</a>
+                    <a class="pagebtn num">4</a>
+                    <a class="pagebtn num">5</a>
+                    <a class="pagebtn next"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

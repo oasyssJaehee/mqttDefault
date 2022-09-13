@@ -49,6 +49,19 @@ router.get('/roomSett', function (req, res) {
       res.redirect("/ble/admin/login");
   }
 });
+router.get('/cleanLog', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/cleanLog",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
 router.get('/index3', function (req, res) {
   
   res.render("ble/web/admin/index3",{
@@ -222,6 +235,60 @@ router.get('/room_sync_check', function (req, res) {
         }
       });
     });
+    router.get('/room_set_stau', function (req, res) {
+      var uri = req.url;
+      var inputData = url.parse(uri, true).query;
+      if(inputData.stau_oo != "Repair" && inputData.stau_oo != "Check In"){
+        if(inputData.clean == "0"){
+          inputData.status = "0030004";
+        }
+        if(inputData.clean == "1"){
+          inputData.status = "0030005";
+        }
+      }
+      var format = {language: 'sql', indent: '  '};
+      var query ;
+      var jsonObj = new Object();
+      res.setHeader('Content-Type', 'application/json');
+      query = mysql.apiMapper().getStatement("api", "room_clean_update", inputData, format);
+      connection.query(query, function (err, rows, fields) {
+          if(err){
+              console.log(err);
+          }else{
+            
+              query = mysql.apiMapper().getStatement("api", "cleaner_log_insert", inputData, format);
+              connection.query(query, function (err, rows, fields) {
+                  if(err){
+                      console.log(err);
+                  }else{
+                      var jsonObj = new Object();
+                      var resData = {};
+                      resData.res = "101"
+                      jsonObj.data = resData;
+                      var result = JSON.stringify(jsonObj)
+                      res.send(result);
+                      res.end();
+
+                      //pms에도 보내줌
+                      var api_url = AppInfo.pmsUrl+"/api/app/room_set_stau.do";
+                      var request = require('request');
+                      var options = {
+                          url: api_url,
+                          method:'POST',
+                          form:inputData
+                      };
+                      request.post(options, function (error, response, body) {
+                          console.log(body);
+                          if (!error && response.statusCode == 200) {
+                          } else {
+                              console.log('error = ' + response.statusCode);
+                          }
+                      });
+                  }
+              });
+          }
+      });
+   });
   router.get('/doorSett', function (req, res) {
     var uri = req.url;
   var data = url.parse(uri, true).query;

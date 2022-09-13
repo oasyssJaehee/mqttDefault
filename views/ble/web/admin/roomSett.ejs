@@ -19,6 +19,12 @@
     var bsCode = "<%=bsCode%>";
     var level = "<%=session.level%>"
     var mainDcode = "";
+    var logPage = 0;
+    var pageSize = 10;
+    var pageTotal = 0;
+    var selectPage = 1;
+    var sdate="";
+    var edate="";
     function init(){
         $.ajax({
             url:"/mysql/room",
@@ -26,38 +32,47 @@
                 xml:"sync_log_list",
                 bsCode: pad(bsCode, 7),
                 dcod: mainDcode,
-                statu:"",
-                roomSearch: "",
-                party:"",
-                keyStatus:""
+                sdate:sdate,
+                edate:edate,
+                page:logPage,
+                pageSize:pageSize
             },success:function(res){
                 console.log(res);
-                var item ="";
-                for(var i=0; i<res.length; i++){
-                    var type = "";
-                    var change = "";
-                    change = res[i].SYNC_LOG_ORIGIN + " -> " + res[i].SYNC_LOG_CHANGE;
-                    if(res[i].SYNC_LOG_TYPE == "api"){
-                        type = "API";
-                    }else{
-                        type = "엑셀";
-                    }
+                if(res.length > 0){
+                    pageTotal = res[0].counts;
+                    var item ="";
+                    
+                    for(var i=0; i<res.length; i++){
+                        var type = "";
+                        var change = "";
+                        change = res[i].SYNC_LOG_ORIGIN + " -> " + res[i].SYNC_LOG_CHANGE;
+                        if(res[i].SYNC_LOG_TYPE == "api"){
+                            type = "API";
+                        }else{
+                            type = "엑셀";
+                        }
 
-                    item += "<tr>"
-                          + "<td class='table_list_td text_left'>"
-                          + type
-                          + "</td>"
-                          + "<td class='table_list_td text_left'>"
-                          + change
-                          + "</td>"
-                          + "<td class='table_list_td text_left'>"
-                          + res[i].ADMIN_NAME
-                          + "</td>"
-                          + "<td class='table_list_td text_left'>"
-                          + res[i].SYNC_LOG_DATE
-                          + "</td>"
-                          + "</tr>";
+                        item += "<tr data-key='"+res[i].SYNC_LOG_KEY+"'>"
+                            + "<td class='table_list_td text_left'>"
+                            + type
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + change
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_NAME
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].SYNC_LOG_DATE
+                            + "</td>"
+                            + "</tr>";
+                    }
+                }else{
+                    pageTotal = 0;
+                    selectPage = 1;
+                    logPage = 0;
                 }
+                paging(pageTotal, pageSize, selectPage);
                 $("#log_table tbody").empty();
                 $("#log_table tbody").append(item);
             }
@@ -65,6 +80,54 @@
     }
     $(window).ready(function() {
         init();
+        var myCal = bulmaCalendar.attach('.date_default_inp', {
+            isRange: true,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd'
+        });
+        $("#search_btn").on("click", function(){
+            if($("input[name='dateSelect']").val() != ""){
+                var dateInput = $("input[name='dateSelect']").val();
+                dateInput = dateInput.split(" ~ ");
+                sdate = dateInput[0];
+                edate = dateInput[1];
+                init();
+            }
+            
+        });
+        $(document).on("click", "#foot_page a", function(){
+            var page = $(this).attr("data-page");
+            var currentpage = page - 1;
+            currentpage = currentpage == 0 ? currentpage : currentpage*pageSize;
+            selectPage = page;
+            logPage = currentpage;
+
+            init();
+        });
+        $("#pop_close_btn").on("click", function(){
+            $("#log_pop").css("display", "none");
+        });
+        $("#pop_confirm_btn").on("click", function(){
+            $("#log_pop").css("display", "none");
+        });
+        $(document).on("click", "#log_table tbody tr", function(){
+            var key = $(this).attr("data-key");
+            $.ajax({
+                url:"/mysql/room",
+                data:{
+                    xml:"room_sync_log_select",
+                    key:key,
+                    bsCode:bsCode
+                }, success:function(res){
+                    $("#pop_title").text(res[0].SYNC_LOG_MSG);
+                    $("#pop_cont").text(res[0].SYNC_LOG_RONO.slice(0, -1));
+                    $("#tot_origin").text(comma(res[0].SYNC_LOG_ORIGIN));
+                    $("#tot_change").text(comma(res[0].SYNC_LOG_CHANGE));
+                }
+            });
+            $("#log_pop").css("display", "flex");
+        });
         $("#upload_btn").on("click", function(){
             $("#id_file_upload").click();
         });
@@ -532,89 +595,11 @@
                     <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
                         <div class="inp_moving_width inp_moving_width01">
                             <div class="data_search_inpbox">
-                                <input class="inp_style date" type="text">
+                                <input name="dateSelect" class="inp_style date_default_inp date date_inp" type="text" placeholder="날짜를 선택해주세요.">
                             </div>
                         </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            ~
-                        </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            <div class="data_search_inpbox">
-                                <input class="inp_style date" type="text">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">구분</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox02">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">상태</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox03">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">분류</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox04">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">동작</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox05">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">객실 번호</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox06 dis_flex_row">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <input class="inp_style search" type="text">
-                            </div>
-                        </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            <button class="default_btn">검색</button>
+                        <div style="width:60px;" class="inp_moving_width inp_moving_width02">
+                            <button id="search_btn" class="default_btn">검색</button>
                         </div>
                     </div>
                 </div>
@@ -642,7 +627,7 @@
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table class="table_list hover_table">
+                    <table id="log_table" class="table_list hover_table">
                         <colgroup>
                             <col width="200px">
                             <col width="200px">
@@ -677,7 +662,7 @@
                 </div>
             </div>
             <div class="pagebtn_grp_box">
-                <div class="pagebtn_grp dis_flex_center dis_flex_row">
+                <div id="foot_page"class="pagebtn_grp dis_flex_center dis_flex_row">
                     <a class="pagebtn prev"></a>
                     <a class="pagebtn num active">1</a>
                     <a class="pagebtn num">2</a>
@@ -688,7 +673,7 @@
                 </div>
             </div>
         </div>
-        <div id="room_main_pop" class="popup_wrap" style="display:flex;">
+        <div id="log_pop" class="popup_wrap" style="display:none;">
             <div class="popup_contbox">
                 <div class="popup_header_grp">
                     <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
@@ -703,12 +688,11 @@
                     </div>
                 </div>
                 <div class="popup_body">
-                    <div class="pop_table_widthbox dis_flex_row">
-                        <div class="pop_table_width pop_table_width01">
+                    <!-- <div class="pop_table_widthbox dis_flex_row">
+                        <div style="width:100%;" class="pop_table_width pop_table_width01">
                             <div class="pop_cont_tbox" style="margin-bottom: 0;">
                                 <div class="dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
-                                    <h2 class="pop_cont_tit">추가 객실</h2>
-                                    <h2 id="tot_h2" class="total_num_tit">총 3 개</h2>
+                                    <h2 class="pop_cont_tit">변경 문자</h2>
                                 </div>
                                 <div class="pop_table_contbox">
                                     <div class="pop_table_cont_tbox">
@@ -717,16 +701,31 @@
                                 </div>
                             </div>
                         </div>
+                    </div> -->
+                    <div class="pop_table_widthbox dis_flex_row">
+                        <div class="pop_table_width pop_table_width01">
+                            <div class="pop_cont_tbox" style="margin-bottom: 0;">
+                                <div class="dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
+                                    <h2 class="pop_cont_tit">기존 객실</h2>
+                                    <h2 id="tot_origin" class="total_num_tit">총 3 개</h2>
+                                </div>
+                                <div class="pop_table_contbox">
+                                    <div class="pop_table_cont_tbox">
+                                        <p id="pop_title" class="pop_table_cont_txt">201,202,203,204</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="pop_table_width pop_table_width02">
                             <div class="pop_cont_tbox" style="margin-bottom: 0;">
                                 <div class="dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
                                     <h2 class="pop_cont_tit">변경 객실</h2>
-                                    <h2 id="tot_h2" class="total_num_tit">총 3 개</h2>
+                                    <h2 id="tot_change" class="total_num_tit">총 3 개</h2>
                                 </div>
                                
                                 <div class="pop_table_contbox">
                                     <div class="pop_table_cont_tbox">
-                                        <p class="pop_table_cont_txt">201,202,203,204</p>
+                                        <p  id="pop_cont" class="pop_table_cont_txt">201,202,203,204</p>
                                     </div>
                                 </div>
                             </div>

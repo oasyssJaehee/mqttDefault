@@ -14,6 +14,7 @@ const http = require('http');
 
 const connection = mysql.connection();
 
+
 //네이버 단축url
 var client_id = 'Enf1AXBGHTvc10FPuAeM';//개발자센터에서 발급받은 Client ID
 var client_secret = 'w86vBqAr4O'; //개발자센터에서 발급받은 Client Secret
@@ -130,7 +131,15 @@ router.post('/apiKeyCreate', function (req, res) {
                                                                     }catch(ex){
                                                                         console.log(ex);
                                                                     }
-
+                                                                    for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                                                        var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                                                        const io = req.app.get("io");
+                                                                        var socketTypeMsg = "";
+                                                                        io.to("admin_"+bsCode).emit("refresh",{
+                                                                            type:"apiCreate",
+                                                                            rono:inputData.rono
+                                                                        });
+                                                                    }
                                                                     var jsonObj = new Object();
                                                             
                                                                     resData.res = "101";
@@ -248,7 +257,15 @@ router.post('/apiKeyCreate', function (req, res) {
                                                             }catch(ex){
                                                                 console.log(ex);
                                                             }
-
+                                                            for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                                                var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                                                const io = req.app.get("io");
+                                                                var socketTypeMsg = "";
+                                                                io.to("admin_"+bsCode).emit("refresh",{
+                                                                    type:"apiCreate",
+                                                                    rono:inputData.rono
+                                                                });
+                                                            }
                                                             var jsonObj = new Object();
                                                     
                                                             resData.res = "101";
@@ -344,6 +361,16 @@ router.post('/apiKeyUpdate', function (req, res) {
                                             res.write(result);
                                             res.end();
                                             apiLog(resData, "update");
+
+                                            for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                                var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                                const io = req.app.get("io");
+                                                var socketTypeMsg = "";
+                                                io.to("admin_"+bsCode).emit("refresh",{
+                                                    type:"apiUpdate",
+                                                    rono:inputData.rono
+                                                });
+                                            }
                                         }else{
                                             resData.tf = "F";
                                             resData.res = "113";
@@ -429,7 +456,15 @@ router.post('/apiKeyUpdate', function (req, res) {
                                             res.write(result);
                                             res.end();
                                             apiLog(resData, "delete");
-                                            
+                                            for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                                var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                                const io = req.app.get("io");
+                                                var socketTypeMsg = "";
+                                                io.to("admin_"+bsCode).emit("refresh",{
+                                                    type:"apiDelete",
+                                                    rono:inputData.rono
+                                                });
+                                            }
                                         }else{
                                             resData.tf = "F";
                                             resData.res = "113";
@@ -527,7 +562,20 @@ router.post('/apiKeyPlogSearch', function (req, res) {
                             var result = JSON.stringify(jsonObj)
                             res.send(result);
                             res.end();
-
+                            for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                const io = req.app.get("io");
+                                var socketTypeMsg = "";
+                                if(inputData.clean == "1"){
+                                    socketTypeMsg = "pmsClean1"
+                                }else{
+                                    socketTypeMsg = "pmsClean0"
+                                }
+                                io.to("admin_"+bsCode).emit("refresh",{
+                                    type:socketTypeMsg,
+                                    rono:inputData.rono
+                                });
+                            }
                             query = mysql.apiMapper().getStatement("api", "cleaner_log_insert", inputData, format);
                             connection.query(query, function (err, rows, fields) {
                                 if(err){
@@ -575,6 +623,14 @@ router.post('/apiKeyPlogSearch', function (req, res) {
                             // res.write(JSON.stringify(err));
                             // res.end();
                         }else{
+                            for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                const io = req.app.get("io");
+                                io.to("admin_"+bsCode).emit("refresh",{
+                                    type:"pmsStatus",
+                                    rono:inputData.rono
+                                });
+                            }
                             var jsonObj = new Object();
                                                             
                             inputData.res = "101";
@@ -863,6 +919,14 @@ router.post('/clean_action_list', function (req, res) {
     req.on('data', (data) => {
     
         inputData = JSON.parse(data);
+        if(inputData.stau_oo != "Repair" && inputData.stau_oo != "Check In"){
+            if(inputData.clean == "0"){
+                inputData.status = "0030004";
+            }
+            if(inputData.clean == "1"){
+                inputData.status = "0030005";
+            }
+        }
         var format = {language: 'sql', indent: '  '};
         var query ;
         query = mysql.coMapper().getStatement("co", "bs_select", inputData, format);
@@ -892,7 +956,21 @@ router.post('/clean_action_list', function (req, res) {
                                     var result = JSON.stringify(jsonObj)
                                     res.send(result);
                                     res.end();
-
+                                    
+                                    for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                                        var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                                        const io = req.app.get("io");
+                                        var socketTypeMsg = "";
+                                        if(inputData.clean == "1"){
+                                            socketTypeMsg = "appClean1"
+                                        }else{
+                                            socketTypeMsg = "appClean0"
+                                        }
+                                        io.to("admin_"+bsCode).emit("refresh",{
+                                            type:socketTypeMsg,
+                                            rono:inputData.rono
+                                        });
+                                    }
                                     //pms에도 보내줌
                                     var api_url = AppInfo.pmsUrl+"/api/app/room_set_stau.do";
                                     var request = require('request');
@@ -1080,7 +1158,10 @@ router.post('/clean_action_list', function (req, res) {
                 // res.write(JSON.stringify(err));
                 // res.end();
             }else{
+                inputData.BS_NAME = rows[0].BS_NAME;
+                inputData.sendTel = rows[0].BS_SEND_TEL;
                 var formData = appActionDataForm(inputData);
+                console.log(formData);
                 var jsonObj = new Object();
                 res.setHeader('Content-Type', 'application/json');
                 //시간설정일때
@@ -1088,6 +1169,9 @@ router.post('/clean_action_list', function (req, res) {
                     doorTimeSett(inputData);
                 }
                 if(formData.cmd == "12"){
+                    doorTimeSett(inputData);
+                }
+                if(formData.cmd == "15"){
                     doorTimeSett(inputData);
                 }
                 if(rows.length > 0){
@@ -1101,10 +1185,28 @@ router.post('/clean_action_list', function (req, res) {
                                 if(err){
                                     console.log(err);
                                 }else{
+                                    
                                     jsonObj.data = rows;
                                     var result = JSON.stringify(jsonObj)
                                     res.send(result);
                                     res.end();
+
+                                    if(formData.cmd == "15"){
+                                        inputData.AES_KEY = AppInfo.AES_KEY;
+                                        query = mysql.apiMapper().getStatement("api", "bridge_tran_user_select", inputData, format);
+                                        connection.query(query, function (err, rows, fields) {
+                                            if(err){
+                                                console.log(err);
+                                            }else{
+                                                if(rows.length > 0){
+                                                    inputData.phone = rows[0].BRIDGE_TRAN_PHONE;
+                                                    inputData.url = rows[0].BRIDGE_TRAN_URL;
+                                                    inputData.gname = rows[0].BRIDGE_TRAN_GNAME;
+                                                    AppInfo.sendSms(inputData, 4);
+                                                }
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         }

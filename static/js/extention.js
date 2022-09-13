@@ -150,29 +150,29 @@ function paging(total, size, page){
     }
     var prevItem = "";
     var prevData =  startPage == 1 ? 1 : (startPage-1);
-    prevItem += "<li data-page='"+prevData+"' id='prev_page_btn' class='numbtn_list_li'>"
-            + "<button class='button_num_btn button_num_btn_arr pagebtn_hover_style'>처음 페이지</button>"
-            + "</li>";
+    if(page != prevData){
+        prevData = Number(page)-1;
+    }
+    prevItem += "<a data-page='"+prevData+"' id='prev_page_btn' class='pagebtn prev'></a>";
+    
     var item = "";
     for(var i=startPage; i<=endPage; i++){
         var active = "";
         if(page == i){
             active = "active";
         }
-        item += "<li data-page='"+i+"' class='numbtn_list_li'>"
-              + "<button class='button_num_btn "+active+" pagebtn_hover_style'>"
-              + "<p class='button_02_bold gray_darken_3_font'>"+i+"</p>"
-              + "<button>"
-              + "</li>";
+        item += "<a data-page='"+i+"' class='pagebtn num "+active+"'>"+i+"</a>";
+        
     }
     var nextItem = "";
     var nextData = endPage == pageCnt ? endPage : (endPage+1);
-    nextItem += "<li data-page='"+nextData+"' id='next_page_btn' class='numbtn_list_li'>"
-              + "<button class='button_num_btn button_num_btn_arr pagebtn_hover_style'>마지막 페이지</button>"
-              + "</li>";
+    if(page != nextData){
+        nextData = Number(page)+1;
+    }
+    nextItem += "<a data-page='"+nextData+"' id='next_page_btn' class='pagebtn next'></a>";
     var totalItem = prevItem+item+nextItem;
-    $("#foot_page ul").empty();
-    $("#foot_page ul").append(totalItem);
+    $("#foot_page").empty();
+    $("#foot_page").append(totalItem);
 }
 function curDate(sep){
 

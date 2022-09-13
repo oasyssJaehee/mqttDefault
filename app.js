@@ -11,6 +11,7 @@ const fs = require('fs')
 
 const server = http.createServer(app)
 const io = socket(server)
+app.set("io", io);
 const path = require('path');
 
 var cookieParser = require('cookie-parser')
@@ -473,6 +474,7 @@ io.sockets.on("connection", function(socket){
         obj.userId = userId;
         obj.userName = userName;
         obj.bsCode = bsCode;
+        obj.rm = "admin_"+bsCode;
 
         AppInfo.adminSocketArray.push(obj);
     });

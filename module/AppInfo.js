@@ -7,7 +7,8 @@ var saleType = "jebee";
 var mqttUrl = "mqtt://210.114.18.107";
 var AES_KEY = "ioptoprr89u34547yhdt";
 // var httpUrl = "http://192.168.10.152:6001";
-var pmsUrl = "http://192.168.10.152:8080";
+var pmsUrl = "http://182.215.211.211:8080";
+// var pmsUrl = "http://192.168.10.152:8080";
 var httpUrl = "http://bridge.oasyss.co.kr";
 // var pmsUrl = "http://pms.oasyss.co.kr";
 
@@ -74,6 +75,18 @@ const sendSms = function(data, smsType){
 		msg += "\t\n";
 		msg += "*객실번호:"+data.rono;
 		msg += "\t\n\t\n폰키가 취소 되었습니다.";
+	}else if(smsType == 4){
+		data.stype = 4;
+		title = "["+data.BS_NAME+" 비밀번호 변경 안내]"; 
+		msg += "["+data.BS_NAME+" 비밀번호 변경 안내]";
+		msg += "\t\n";
+		msg += "*객실번호:"+data.rono;
+		msg += "\t\n";
+		msg += "객실 비밀번호가 변경 되었습니다. 아래 URL에서 확인해 주세요."
+		msg += "\t\n";
+		msg += "\t\n";
+		msg += "[URL]\t\n";
+		msg += data.url;
 	}
 	data.title = title;
 	data.msg = msg;

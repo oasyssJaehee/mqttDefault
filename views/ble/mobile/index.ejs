@@ -125,7 +125,6 @@
     function mqttCheck(){
         var mqttCount = 0;
         mqttInterver = setInterval(function(){
-            console.log("힝? " + mqttCount);
             mqttCount++;
             if(mqttCount > 4){
                 clearInterval(mqttInterver);
@@ -200,29 +199,28 @@
                     socketConnect = true;
                     socket.emit("joinRoom", roomName, gname, "0");
 
-                    $.loading.start('도어락 연결 중입니다.');
+                    // $.loading.start('도어락 연결 중입니다.');
         
-                    setTimeout(function(){
-                        $.ajax({
-                            url:"/mqttCheck",
-                            data:{
-                                topic: "oasyss32/"+topic,
-                                userId: acno+"/"+rspk
-                            },
-                            success : function(result){
-                                mqttCheck();
-                            }
-                        });  
-                    },1000);
+                    // setTimeout(function(){
+                    //     $.ajax({
+                    //         url:"/mqttCheck",
+                    //         data:{
+                    //             topic: "oasyss32/"+topic,
+                    //             userId: acno+"/"+rspk
+                    //         },
+                    //         success : function(result){
+                    //             mqttCheck();
+                    //         }
+                    //     });  
+                    // },1000);
                     
                 }else{
                     socketConnect = false;
-                    console.log(res);
-                    if(res.admin == "1"){
-                        Alert("현재 관리자 설정 중입니다.\n잠시 후 다시 시도하세요.");
-                    }else{
-                        Alert("현재 사용중인 폰키 입니다.");
-                    }
+                    // if(res.admin == "1"){
+                    //     Alert("현재 관리자 설정 중입니다.\n잠시 후 다시 시도하세요.");
+                    // }else{
+                    //     Alert("현재 사용중인 폰키 입니다.");
+                    // }
                     
                 }
             }

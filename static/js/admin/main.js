@@ -22,6 +22,7 @@ function init(){
             for(var i=0;i<res.length;i++){
                 var stateStr = "";
                 var stateClass = "";
+                var lineStateClass = "";
                 var userKey="off";
                 var maidKey="off";
                 var masterKey="off";
@@ -30,15 +31,19 @@ function init(){
                 if(res[i].ROOM_CODE_STATU == "0030001"){
                     stateStr = "체크인";
                     stateClass = "js";
+                    lineStateClass = "js";
                 }else if(res[i].ROOM_CODE_STATU == "0030006"){
                     stateStr = "체크인";
                     stateClass = "js";
+                    lineStateClass = "js";
                 }else if(res[i].ROOM_CODE_STATU == "0030005"){
-                    stateStr = "청소 요청";
-                    stateClass = "cl";
+                    stateStr = "더티";
+                    stateClass = "dt";
+                    lineStateClass = "dt";
                 }else{
                     stateStr = "공실";
                     stateClass = "gs";
+                    lineStateClass = "gs";
                 }
                 if(res[i].BRIDGE_TRAN_RSPK != ''){
                     userKey = "on"
@@ -54,10 +59,13 @@ function init(){
                 if(res[i].ROOM_PASS_MASTER != ''){
                     masterKey = "on"
                 }
-                item += "<li data-rono='"+res[i].ROOM_CODE_NUM+"' data-rtype='"+res[i].ROOM_CODE_DCOD+"' data-rspk='"+res[i].BRIDGE_TRAN_RSPK+"' class='view_grp_list "+stateClass+" on'>"
+                if(res[i].ROOM_CODE_CLEAN == "1"){
+                    lineStateClass = "cl";
+                }
+                item += "<li data-rono='"+res[i].ROOM_CODE_NUM+"' data-rtype='"+res[i].ROOM_CODE_DCOD+"' data-rspk='"+res[i].BRIDGE_TRAN_RSPK+"' class='view_grp_list "+lineStateClass+" on'>"
                       + "<div class='view_tbox view_tbox01'>"
                       + "<div class='room_state_box'>"
-                      + "<span class='room_state "+stateClass+"'>"+stateStr+"</span>"
+                      + "<span class='room_state "+lineStateClass+"'>"+stateStr+"</span>"
                       + "</div>"
                       + "<div class='view_tit_grp'>"
                       + "<div class='view_tit_box'>"
@@ -104,6 +112,7 @@ function roomPopup(){
     $("#pop_js").css("display","none");
     $("#pop_cl").css("display","none");
     $("#pop_gs").css("display","none");
+    $("#pop_dt").css("display","none");
     $("#pop_rono").text("");
     $("#pop_type").text("");
     roomInfo();
@@ -119,10 +128,20 @@ function roomInfo(){
             bsCode: pad(bsCode, 7)
         },success:function(res){
             console.log(res);
+            cleanRono = res[0].ROOM_CODE_NUM;
+            cleanStatus = res[0].ROOM_CODE_STATU;
+            cleanStatu_oo = res[0].CODE_CONTENT;
+            cleanAcno = res[0].BRIDGE_TRAN_ACNO;
+
+            if(res[0].ROOM_CODE_CLEAN == "1"){
+                $("#pop_clean_btn").css("display","block");
+            }else{
+                $("#pop_clean_req_btn").css("display","block");
+            }
             if(res[0].ROOM_CODE_STATU == "0030001"){
                 $("#pop_js").css("display","block");
             }else if(res[0].ROOM_CODE_STATU == "0030005"){
-                $("#pop_cl").css("display","block");
+                $("#pop_dt").css("display","block");
             }else{
                 $("#pop_gs").css("display","block");
             }
@@ -158,9 +177,14 @@ function roomInfo(){
                 $("#pop_key_odate").val(res[0].BRIDGE_TRAN_ODATE);
                 if(res[0].ROOM_PASS_USER != ""){
                     $("#pop_key_sett_on").addClass("active");
+                    $("#pop_key_sett_off").removeClass("active");
                 }else{
+                    $("#pop_key_sett_on").removeClass("active");
                     $("#pop_key_sett_off").addClass("active");
+                    
                 }
+            }else{
+                $("#pop_key_info").css("display","none");
             }
             $.loading.end();
         }
@@ -347,6 +371,8 @@ function popReset(){
     $("#pop_key_idate").val("");
     $("#pop_key_odate").val("");
     $("#key_log_empty").css("display","none");
+    $("#pop_clean_btn").css("display","none");
+    $("#pop_clean_req_btn").css("display","none");
 }
 
 function actionCheck(limit){

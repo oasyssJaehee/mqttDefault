@@ -50,6 +50,39 @@
     var mainKeyParty = "";
     var mainRoomSearch = "";
 
+    var cleanBcode = pad(bsCode, 7);
+    var cleanUser = userId;
+    var cleanAdmin = "1";
+    var cleanRono = "";
+    var cleanStatus = "";
+    var cleanStatu_oo = "";
+    var cleanAcno = "";
+    socket.on("refresh", function(data){
+        var msg = "";
+        if(data.type == "pmsStatus"){
+            msg = "[PMS/"+data.rono+"호] 상태값이 변경 되었습니다.";
+        }else if(data.type == "appClean1"){
+            msg = "[APP/"+data.rono+"호] 청소 요청 되었습니다.";
+        }else if(data.type == "appClean0"){
+            msg = "[APP/"+data.rono+"호] 청소 완료 되었습니다.";
+        }else if(data.type == "pmsClean0"){
+            msg = "[PMS/"+data.rono+"호] 청소 완료 되었습니다.";
+        }else if(data.type == "pmsClean1"){
+            msg = "[PMS/"+data.rono+"호] 청소 요청 되었습니다.";
+        }else if(data.type == "apiCreate"){
+            msg = "[PMS/"+data.rono+"호] 폰키 발급 되었습니다.";
+        }else if(data.type == "apiUpdate"){
+            msg = "[PMS/"+data.rono+"호] 폰키 재발급 되었습니다.";
+        }else if(data.type == "apiDelete"){
+            msg = "[PMS/"+data.rono+"호] 폰키 취소 되었습니다.";
+        }
+        if($("#room_main_pop").css("display") == "none"){
+            init();
+        }else{
+            Alert(msg);
+        }
+        
+    });
 
     socket.on("ble", function(data){
         if(data.msg == "scanstop"){
@@ -80,7 +113,7 @@
                         topic: "oasyss32/"+topic,
                         open: "0110001",
                         userId: userId,
-                        rono:rono
+                        rono:pad(rono, 6)
                     },
                     success : function(result){
                         actionCheck(20);
@@ -144,6 +177,68 @@
     });
     var settPass = "";
     $(window).ready(function() {
+        $("#pop_clean_btn").on("click", function(){
+            Confirm("청소 완료 하시겠습니까?", function(){
+                $.ajax({
+                    url:"./room_set_stau",
+                    data:{
+                        bcode:cleanBcode,
+                        user:cleanUser,
+                        admin:cleanAdmin,
+                        clean:"0",
+                        rono:cleanRono,
+                        acno:cleanAcno,
+                        status:cleanStatus,
+                        stau_oo:cleanStatu_oo
+                    },success:function(res){
+                        if(res.data.res == "101"){
+                            Alert("완료 되었습니다.",function(){
+                                $("#room_main_pop").css("display","block");
+                                popReset();
+                                $("#room_main_pop").css("display","none");
+                                socket.emit("adminRoomDisConnect");
+                                socketConnect = false;
+                                init();
+                            });
+                        }else{
+                            Alert("실패 하였습니다.");
+                        }
+                    }
+                });
+            });
+            
+        });
+        $("#pop_clean_req_btn").on("click", function(){
+            Confirm("청소 요청 하시겠습니까?", function(){
+                $.ajax({
+                    url:"./room_set_stau",
+                    data:{
+                        bcode:cleanBcode,
+                        user:cleanUser,
+                        admin:cleanAdmin,
+                        clean:"1",
+                        rono:cleanRono,
+                        acno:cleanAcno,
+                        status:cleanStatus,
+                        stau_oo:cleanStatu_oo
+                    },success:function(res){
+                        if(res.data.res == "101"){
+                            Alert("요청 되었습니다.",function(){
+                                $("#room_main_pop").css("display","block");
+                                popReset();
+                                $("#room_main_pop").css("display","none");
+                                socket.emit("adminRoomDisConnect");
+                                socketConnect = false;
+                                init();
+                            });
+                        }else{
+                            Alert("실패 하였습니다.");
+                        }
+                    }
+                });
+            });
+            
+        });
         socket.emit("joinMain", pad(bsCode), userId, userName);
 
         $.ajax({
@@ -237,12 +332,14 @@
             $("#room_main_pop").css("display","none");
             socket.emit("adminRoomDisConnect");
             socketConnect = false;
+            init();
         });
         $("#pop_close_btn").on("click", function(){
             popReset();
             $("#room_main_pop").css("display","none");
             socket.emit("adminRoomDisConnect");
             socketConnect = false;
+            init();
         });
         $("#pop_tab_ul li").on("click", function(){
             $.loading.start('');
@@ -290,22 +387,31 @@
                             masterPass = $("#pop_master_pw").val();
                         }
                         if(masterPass.length < 4){
+                            if(masterPass == ""){
+                                masterPass = res[0].PASS_CLEANER
+                            }else{
+                                Alert("4자리 숫자를 입력해 주세요.");
+                                return;
+                            }
                             Alert("4자리 숫자를 입력해 주세요.");
                             return;
                         }
-                        $.loading.start('마스터키를 설정 중 입니다.');
-                        settPass = masterPass;
-                        $.ajax({
-                            url:"/masterPassSett",
-                            data:{
-                                topic: "oasyss32/"+topic,
-                                open: "0110001",
-                                pass: masterPass,
-                                userId: userId
-                            },success: function(){
-                                actionCheck(10);
-                            }
-                        })
+                        Confirm("["+masterPass+"] 비밀번호가 설정 됩니다.", function(){
+                            $.loading.start('마스터키를 설정 중 입니다.');
+                            settPass = masterPass;
+                            $.ajax({
+                                url:"/masterPassSett",
+                                data:{
+                                    topic: "oasyss32/"+topic,
+                                    open: "0110001",
+                                    pass: masterPass,
+                                    userId: userId
+                                },success: function(){
+                                    actionCheck(10);
+                                }
+                            })
+                        });
+                        
                     }else{
                         Alert("저장된 비밀번호가 없습니다.");
                     }
@@ -329,22 +435,30 @@
                             maidPass = $("#pop_maid_pw").val();
                         }
                         if(maidPass.length < 4){
-                            Alert("4자리 숫자를 입력해 주세요.");
-                            return;
-                        }
-                        $.loading.start('메이드키를 설정 중 입니다.');
-                        settPass = maidPass;
-                        $.ajax({
-                            url:"/maidPassSett",
-                            data:{
-                                topic: "oasyss32/"+topic,
-                                open: "0110001",
-                                pass: maidPass,
-                                userId: userId
-                            },success: function(){
-                                actionCheck(10);
+                            if(maidPass == ""){
+                                maidPass = res[0].PASS_CLEANER
+                            }else{
+                                Alert("4자리 숫자를 입력해 주세요.");
+                                return;
                             }
-                        })
+                            
+                        }
+                        Confirm("["+maidPass+"] 비밀번호가 설정 됩니다.", function(){
+                            $.loading.start('메이드키를 설정 중 입니다.');
+                            settPass = maidPass;
+                            $.ajax({
+                                url:"/maidPassSett",
+                                data:{
+                                    topic: "oasyss32/"+topic,
+                                    open: "0110001",
+                                    pass: maidPass,
+                                    userId: userId
+                                },success: function(){
+                                    actionCheck(10);
+                                }
+                            })
+                        });
+                        
                     }else{
                         Alert("저장된 비밀번호가 없습니다.");
                     }
@@ -448,7 +562,9 @@
                 <div data-code="" class="total_tab all active">전체</div>
                 <div data-code="0030001" class="total_tab js">체크인</div>
                 <div data-code="000" class="total_tab gs">공실</div>
-                <div data-code="0030005" class="total_tab cl">청소 요청</div>
+                <div data-code="0030005" class="total_tab dt">더티</div>
+                <div data-code="cl" class="total_tab cl">청소 요청</div>
+                
             </div>
             <div class="total_num_tit_box dis_flex_row dis_flex_center">
                 <h2 id="main_tot_txt" class="total_num_tit">총 3 개</h2>
@@ -475,6 +591,7 @@
                             <h2 style="display:none;" id="pop_js" class="popup_title popup_title03 js">체크인</h2>
                             <h2 style="display:none;" id="pop_gs" class="popup_title popup_title03 gs">공실</h2>
                             <h2 style="display:none;" id="pop_cl" class="popup_title popup_title03 cl">청소 요청</h2>
+                            <h2 style="display:none;" id="pop_dt" class="popup_title popup_title03 dt">더티</h2>
                         </div>
                     </div>
                     <div class="dis_flex_row dis_flex_center">
@@ -745,7 +862,10 @@
             </div>
             <div class="popup_footer">
                 <div class="popup_btn_grp dis_flex_row dis_flex_center dis_flex_right">
-                    <div class="popup_btn_width popup_btn_width01">
+                    <div id ="pop_clean_req_btn" class="popup_btn_width popup_btn_width01">
+                        <button style="background-color: #ff6066;"  class="popup_btn popup_btn01 default_btn_clean">청소 요청</button>
+                    </div>
+                    <div id ="pop_clean_btn" class="popup_btn_width popup_btn_width01">
                         <button class="popup_btn popup_btn01 default_btn_clean">청소 완료</button>
                     </div>
                     <div class="popup_btn_width popup_btn_width02">
