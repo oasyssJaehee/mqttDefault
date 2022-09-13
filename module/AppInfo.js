@@ -6,11 +6,12 @@ const serverPort = 6001;
 var saleType = "jebee";
 var mqttUrl = "mqtt://210.114.18.107";
 var AES_KEY = "ioptoprr89u34547yhdt";
+// var httpUrl = "http://182.215.211.211:6001";
+// var pmsUrl = "http://182.215.211.211:8080";
 // var httpUrl = "http://192.168.10.152:6001";
-var pmsUrl = "http://182.215.211.211:8080";
 // var pmsUrl = "http://192.168.10.152:8080";
 var httpUrl = "http://bridge.oasyss.co.kr";
-// var pmsUrl = "http://pms.oasyss.co.kr";
+var pmsUrl = "http://pms.oasyss.co.kr";
 
 const mysql = require("./MySQL.js");
 const connection = mysql.connection();
