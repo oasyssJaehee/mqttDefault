@@ -485,3 +485,21 @@ font-weight:600;}
 .pop_table_contbox{padding:16px; width:100%; box-sizing: border-box; border-radius: 12px;box-shadow: 2px 4px 8px 0px #2934390a; background-color:#fff;}
 .pop_table_cont_tbox{padding:12px; border:1px solid #dbdbdb;border-radius: 8px; min-height: 180px;max-height: 180px; overflow-y: auto; box-sizing: border-box;}
 .pop_table_cont_tbox .pop_table_cont_txt{font-size: 14px;font-weight: 500; color:#ff0000;word-wrap:break-word;}
+
+
+
+
+
+
+.main_cont_width_inpgrp {margin-right:20px;}
+.main_cont_width_inpgrp:last-child{margin-right: 0;}
+
+.main_cont_width_inptit{font-weight: 700; font-size: 14px;}
+
+.main_cont_width_inp{margin-right: 8px;}
+.main_cont_width_inp:last-child{margin-right: 0;}
+
+.main_cont_width_inp03 {width: 60px;}
+.main_cont_width_inp03 button{width: 100%;;}
+
+.max_width_200{max-width: 200px;}
