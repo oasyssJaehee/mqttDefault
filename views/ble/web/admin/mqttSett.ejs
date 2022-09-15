@@ -39,13 +39,16 @@
             },success:function(res){
                 var item = "";
                 var count = 0;
+                var connectCount = 0;
+                var notConnectCount = 0;
                 for(var i=0; i<res.length; i++){
 
                     if(diff == "0"){
-                        
+                        $("#connect_h2").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) < 600){
                             if(res[i].CONNECT_DIFF != null){
                                 count++;
+                                notConnectCount++;
                                 item += "<tr>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
@@ -53,13 +56,18 @@
                                 + "<td class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
                                 + "<td class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
                                 + "</tr>";
+                            }else{
+                                connectCount++;
                             }
                             
                         }
                         
                     }else if(diff == "1"){
+                        $("#connect_h2").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
                             count++;
+                            
+                            notConnectCount++;
                             item += "<tr>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
@@ -67,9 +75,18 @@
                                 + "<td class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
                                 + "<td class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
                                 + "</tr>";
+                        }else{
+                            connectCount++;
                         }
                     }else if(diff == ""){
+                        $("#connect_h2").css("display", "block");
                         count++;
+                        if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
+                            notConnectCount++;
+                        }else{
+                            connectCount++;
+                            
+                        }
                         item += "<tr>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
                                 + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
@@ -80,6 +97,7 @@
                     }
                 }
                 $("#tot_h2").text("총 "+comma(count)+"개");
+                $("#connect_h2").text("-연결: "+comma(connectCount)+"개 -끊김: "+comma(notConnectCount));
                 $("#mqtt_table tbody").empty();
                 $("#mqtt_table tbody").append(item);
                 $.loading.end(); 
@@ -115,7 +133,7 @@
     <input style="display: none;" type="file" id="id_file_upload" onchange="upload(event)"/>
     <div class="right_contbox">
         <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
-            <h2 class="main_cont_tit">브릿지 설정</h2>
+            <h2 class="main_cont_tit">연결 현황</h2>
             <!-- <div class="main_cont_btn_grp dis_flex_row dis_flex_center">
                 <div class="main_cont_width main_cont_width01">
                     <button id="sync_btn" class="icon_btn_txt_left refresh">동기화</button>
@@ -159,6 +177,7 @@
             </div>
             <div class="total_numbox">
                 <h2 id="tot_h2"class="total_num_tit">총 3 개</h2>
+                <h2 id="connect_h2"class="total_num_tit"></h2>
             </div>
             <div class="table_over_stylebox">
                 <div class="table_contbox table_header">
