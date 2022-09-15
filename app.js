@@ -119,7 +119,7 @@ client.on("message", function(topic, message){
     }else if(ms.state == false){
         ms.state = "0";
     }
-    if(ms.cmd != "211" && ms.cmd != "204" && ms.cmd != "210"){
+    if(ms.cmd != "211" && ms.cmd != "204" && ms.cmd != "210" && ms.cmd != "255"){
         var hex = ms.cmd;
         console.log(ms.cmd + " / " + parseInt(hex, 16));
         ms.cmd = String(parseInt(hex, 16));

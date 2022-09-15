@@ -49,6 +49,19 @@ router.get('/roomSett', function (req, res) {
       res.redirect("/ble/admin/login");
   }
 });
+router.get('/mqttSett', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/mqttSett",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
 router.get('/cleanLog', function (req, res) {
   
   if(req.session.admin){

@@ -156,6 +156,7 @@ function paging(total, size, page){
     prevItem += "<a data-page='"+prevData+"' id='prev_page_btn' class='pagebtn prev'></a>";
     
     var item = "";
+    console.log(startPage+"/"+endPage+"/"+pageCnt);
     for(var i=startPage; i<=endPage; i++){
         var active = "";
         if(page == i){

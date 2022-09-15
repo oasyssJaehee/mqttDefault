@@ -17,8 +17,117 @@
 </style>
 <script type="text/javascript">
     var level = "<%=session.level%>"
+    var logPage = 0;
+    var pageSize = 10;
+    var pageTotal = 0;
+    var selectPage = 1;
+    var bsCode = "<%=bsCode%>";
+    var dcod ="";
+    var sdate="";
+    var edate="";
+    function init(){
+        $.ajax({
+            url: "/mysql/room",
+            data:{
+                xml:"clean_log_list",
+                bsCode: pad(bsCode, 7),
+                dcod: dcod,
+                sdate:sdate,
+                edate:edate,
+                page:logPage,
+                pageSize:pageSize
+            }, success:function(res){
+                console.log(res);
+                if(res.length > 0){
+                    pageTotal = res[0].counts;
+                    var item ="";
+                    
+                    for(var i=0; i<res.length; i++){
+                        var type = "";
+                        var clean = "";
+
+                        if(res[i].CLEANER_LOG_CLEAN == "1"){
+                            clean = "요청";
+                        }else{
+                            clean = "완료";
+                        }
+
+                        item += "<tr data-key='"+res[i].SYNC_LOG_KEY+"'>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].CLEANER_LOG_NUM
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ROOM_CODE_FLOOR
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ROOM_CODE_HNAM
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + clean
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].CLEANER_LOG_USER
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].CLEANER_LOG_DATE
+                            + "</td>"
+                            + "</tr>";
+                    }
+                }else{
+                    pageTotal = 0;
+                    selectPage = 1;
+                    logPage = 0;
+                }
+                paging(pageTotal, pageSize, selectPage);
+                $("#log_table tbody").empty();
+                $("#log_table tbody").append(item);
+            }
+        })
+    }
     $(window).ready(function() {
-        
+        init();
+        var myCal = bulmaCalendar.attach('.date_default_inp', {
+            isRange: true,
+            type: 'date',
+            showFooter: false,
+            dateFormat: 'yyyy-MM-dd'
+        });
+        $("#search_btn").on("click", function(){
+            if($("input[name='dateSelect']").val() != ""){
+                var dateInput = $("input[name='dateSelect']").val();
+                dateInput = dateInput.split(" ~ ");
+                sdate = dateInput[0];
+                edate = dateInput[1];
+                init();
+            }
+            
+        });
+        $.ajax({
+            url:"/mysql/room",
+            data:{
+                xml: "room_type_select",
+                bsCode:pad(bsCode, 7)
+            }, success: function(res){
+                var item = "";
+                for(var i=0; i<res.length; i++){
+                    item += "<option value='"+res[i].ROOM_CODE_DCOD+"'>"+res[i].ROOM_CODE_HNAM+"</option>";
+                }
+                $("#rtype_select").append(item);
+            }
+        });
+        $("#rtype_select").on("change", function(){
+            dcod = $(this).val();
+            init();
+        });
+        $(document).on("click", "#foot_page a", function(){
+            var page = $(this).attr("data-page");
+            var currentpage = page - 1;
+            currentpage = currentpage == 0 ? currentpage : currentpage*pageSize;
+            selectPage = page;
+            logPage = currentpage;
+
+            init();
+        });
     });
 </script>
 <body>
@@ -33,76 +142,30 @@
         </div>
         <div class="wcont_box wcont_box_style01">
             <div class="data_search_box dis_flex_row margin_bottom_16">
-                <div class="data_search_grp">
-                    <label class="setup_title">구분</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox02">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
+                <div class="data_search_box dis_flex_row margin_bottom_16">
+                    <div class="data_search_grp">
+                        <label class="setup_title">타입</label>
+                        <div class="inp_moving_widthbox inp_moving_widthbox02">
+                            <div class="inp_moving_width inp_moving_width01">
+                                <div class="data_search_inpbox">
+                                    <select id="rtype_select" class="sel_style">
+                                        <option value="" selected>전체</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">상태</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox03">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
+                    <div class="data_search_grp">
+                        <label class="setup_title">날짜</label>
+                        <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
+                            <div class="inp_moving_width inp_moving_width01">
+                                <div class="data_search_inpbox">
+                                    <input name="dateSelect" class="inp_style date_default_inp date date_inp" type="text" placeholder="날짜를 선택해주세요.">
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">분류</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox04">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
+                            <div style="width:60px;" class="inp_moving_width inp_moving_width02">
+                                <button id="search_btn" class="default_btn">검색</button>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">동작</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox05">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <select class="sel_style">
-                                    <option selected>전체</option>
-                                    <option>구분1</option>
-                                    <option>구분2</option>
-                                    <option>구분3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="data_search_grp">
-                    <label class="setup_title">객실 번호</label>
-                    <div class="inp_moving_widthbox inp_moving_widthbox06 dis_flex_row">
-                        <div class="inp_moving_width inp_moving_width01">
-                            <div class="data_search_inpbox">
-                                <input class="inp_style search" type="text">
-                            </div>
-                        </div>
-                        <div class="inp_moving_width inp_moving_width02">
-                            <button class="default_btn">검색</button>
                         </div>
                     </div>
                 </div>
@@ -114,77 +177,64 @@
                 <div class="table_contbox table_header">
                     <table class="table_list">
                         <colgroup>
-                            <col width="120px">
-                            <col width="120px">
-                            <col width="140px">
-                            <col width="140px">
                             <col width="200px">
                             <col width="200px">
-                            <col width="140px">
                             <col width="200px">
-                            <col width="120px">
-                            <col width="160px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th class="table_list_th text_left">객실 번호</th>
-                                <th class="table_list_th text_left">도어락 번호</th>
-                                <th class="table_list_th text_left">청소키 사용 여부</th>
-                                <th class="table_list_th text_left">마스터키 사용 여부</th>
-                                <th class="table_list_th text_left">청소 키</th>
-                                <th class="table_list_th text_left">마스터 키</th>
-                                <th class="table_list_th text_left">변경자</th>
-                                <th class="table_list_th text_left">변경 날짜</th>
-                                <th class="table_list_th text_left">변경</th>
-                                <th class="table_list_th text_left">도어 오픈</th>
+                                <th class="table_list_th text_left">객실</th>
+                                <th class="table_list_th text_left">층</th>
+                                <th class="table_list_th text_left">타입</th>
+                                <th class="table_list_th text_left">청소 여부</th>
+                                <th class="table_list_th text_left">처리자</th>
+                                <th class="table_list_th text_left">처리 날짜</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table class="table_list table_list_inp_style">
+                    <table id="log_table" class="table_list hover_table">
                         <colgroup>
-                            <col width="120px">
-                            <col width="120px">
-                            <col width="140px">
-                            <col width="140px">
                             <col width="200px">
                             <col width="200px">
-                            <col width="140px">
                             <col width="200px">
-                            <col width="120px">
-                            <col width="160px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
                         </colgroup>
                         <tbody>
                             <tr>
-                                <td class="table_list_td text_left">101</td>
-                                <td class="table_list_td text_left">000401</td>
+                                <td class="table_list_td text_left">로비</td>
+                                <td class="table_list_td text_left">BLE</td>
+                                <td class="table_list_td text_left">BOARD 제어</td>
+                                <td class="table_list_td text_left">BOARD ON/OFF</td>
                                 <td class="table_list_td text_left">
-                                    <p class="table_list_td_ok">ON</p>
+                                    <p class="table_list_td_ok">정상</p>
                                 </td>
-                                <td class="table_list_td text_left">
-                                    <p class="table_list_td_no">OFF</p>
-                                </td>
-                                <td class="table_list_td text_left">
-                                    <input class="inp_style" type="text">
-                                </td>
-                                <td class="table_list_td text_left">
-                                    <input class="inp_style" type="text">
-                                </td>
-                                <td class="table_list_td text_left">관리자</td>
                                 <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
                                 <td class="table_list_td text_left">00:00:01</td>
-                                <td class="table_list_td text_left">
-                                    <button class="">asd</button>
-                                </td>
                             </tr>
-                            
+                            <tr>
+                                <td class="table_list_td text_left">로비</td>
+                                <td class="table_list_td text_left">BLE</td>
+                                <td class="table_list_td text_left">BOARD 제어</td>
+                                <td class="table_list_td text_left">BOARD ON/OFF</td>
+                                <td class="table_list_td text_left">
+                                    <p class="table_list_td_no">지연</p>
+                                </td>
+                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
+                                <td class="table_list_td text_left">00:00:01</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="pagebtn_grp_box">
-                <div class="pagebtn_grp dis_flex_center dis_flex_row">
+                <div  id="foot_page" class="pagebtn_grp dis_flex_center dis_flex_row">
                     <a class="pagebtn prev"></a>
                     <a class="pagebtn num active">1</a>
                     <a class="pagebtn num">2</a>

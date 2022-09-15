@@ -3,28 +3,29 @@
 
 <mapper namespace="mqtt">
     <select id="mqtt_list" >
-        SELECT MQTT_LIST_KEY,
-            MQTT_LIST_APART,
-            MQTT_LIST_DCOD,
-            IFNULL(MQTT_LIST_FLOOR,'') AS MQTT_LIST_FLOOR,
-            IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
-            MQTT_LIST_NAME,
-            MQTT_LIST_NUM,
-            MQTT_LIST_USE,
-            CODE.CODE_CONTENT,
-            IFNULL(DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), '')  AS START_TIME,
-            <!-- IFNULL(DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), '')  AS CONNECT_TIME -->
-            <![CDATA[IFNULL(IF(CONNECT.LOG_CMD_TIME < CTIME.LOG_CMD_TIME, DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i')), '') AS CONNECT_TIME]]>
-        FROM mqtt_list
-        <if test="level == '0010004'">
-            RIGHT JOIN OPENER_USER_ADDR
-            ON MQTT_LIST_DCOD = USER_ADDR
-            AND USER_ID = #{userID}
-        </if>
-        LEFT JOIN opener_code CODE
-        ON CODE.CODE_CODE = MQTT_LIST_DCOD
-        LEFT JOIN opener_code CODE2
-        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+        SELECT
+        ROOM_CODE_BS,
+        ROOM_CODE_KEY,
+        ROOM_CODE_NUM,
+        ROOM_CODE_HNAM,
+        ROOM_CODE_FLOOR,
+        IFNULL(ROOM_PASS_CLEANER, '') AS ROOM_PASS_CLEANER,
+        IFNULL(ROOM_PASS_MASTER, '') AS ROOM_PASS_MASTER,
+        IFNULL(DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), '')  AS START_TIME,
+        <![CDATA[IFNULL(IF(CONNECT.LOG_CMD_TIME < CTIME.LOG_CMD_TIME, DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i')), '') AS CONNECT_TIME]]>,
+        CASE
+        WHEN
+        <![CDATA[CONNECT.LOG_CMD_TIME < CTIME.LOG_CMD_TIME]]>
+        THEN
+        TIMESTAMPDIFF(SECOND, DATE_FORMAT(CTIME.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), NOW())
+        ELSE
+        TIMESTAMPDIFF(SECOND, DATE_FORMAT(CONNECT.LOG_CMD_TIME, '%Y-%m-%d %H:%i'), NOW())
+        END
+        AS CONNECT_DIFF
+        FROM fo_room_code
+        LEFT JOIN fo_room_door DOOR
+        ON DOOR.ROOM_DOOR_BS = ROOM_CODE_BS
+        AND DOOR.ROOM_DOOR_RONO = ROOM_CODE_NUM
         LEFT JOIN (
             SELECT
             LOG_CMD_NUM,
@@ -38,9 +39,10 @@
             where LOG_CMD_CMD = '255'
             group by LOG_CMD_NUM
             )
+            AND LOG_CMD_HOTEL = #{hotel}
             group by LOG_CMD_TIME
             ORDER BY LOG_CMD_KEY DESC
-        ) CTIME ON CTIME.LOG_CMD_NUM = MQTT_LIST_NUM
+        ) CTIME ON CTIME.LOG_CMD_NUM = ROOM_CODE_NUM 
         LEFT JOIN (
             SELECT
             LOG_CMD_NUM,
@@ -53,29 +55,21 @@
             where LOG_CMD_CMD = '1'
             group by LOG_CMD_NUM
             )
+            AND LOG_CMD_HOTEL = #{hotel}
             group by LOG_CMD_TIME
             ORDER BY LOG_CMD_KEY DESC
-        ) CONNECT ON CONNECT.LOG_CMD_NUM = MQTT_LIST_NUM
-        WHERE 1=1
-        AND MQTT_LIST_APART = #{hotelCode}
+        ) CONNECT ON CONNECT.LOG_CMD_NUM = ROOM_CODE_NUM
+        WHERE ROOM_CODE_USE = '1'
+        AND ROOM_CODE_BS = #{bsCode}
+        <choose>
+        <when test="dcod != ''">AND ROOM_CODE_DCOD = #{dcod}</when>
+        <otherwise></otherwise>
+        </choose>
         
-        <choose>
-            <when test="dcod == ''">
-            </when>
-            <otherwise>
-                AND MQTT_LIST_DCOD = #{dcod}
-            </otherwise>
-        </choose>
-        <choose>
-            <when test="floor == ''">
-            </when>
-            <otherwise>
-                AND MQTT_LIST_FLOOR = #{floor}
-            </otherwise>
-        </choose>
-        <!-- <if test="isControl == 'T'"> -->
-            order by MQTT_LIST_DCOD,MQTT_LIST_FLOOR,MQTT_LIST_KEY
-        <!-- </if> -->
+        
+        
+       
+        ORDER BY CAST(ROOM_CODE_NUM AS SIGNED);
     </select>
     <select id="select_mqtt_list_floor" >
     SELECT MQTT_LIST_KEY,

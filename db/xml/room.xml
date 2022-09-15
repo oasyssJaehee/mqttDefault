@@ -501,4 +501,41 @@
     WHERE SYNC_LOG_BS = #{bsCode}
     AND SYNC_LOG_KEY = #{key}
     </select>
+    <select id="clean_log_list">
+    SELECT
+        (select count(*) from fo_cleaner_log
+        WHERE CLEANER_LOG_BS = #{bsCode}
+    order by CLEANER_LOG_KEY desc
+        ) as counts,
+        CLEANER_LOG_BS,
+        CLEANER_LOG_KEY,
+        CLEANER_LOG_NUM,
+        ROOM_CODE_FLOOR,
+        ROOM_CODE_HNAM,
+        CLEANER_LOG_ADMIN,
+        CLEANER_LOG_CLEAN,
+        CLEANER_LOG_STATU,
+        DATE_FORMAT(CLEANER_LOG_DATE, '%Y-%m-%d %p %H:%i') AS CLEANER_LOG_DATE,
+        CLEANER_LOG_USER
+    FROM fo_cleaner_log
+    LEFT JOIN FO_ROOM_CODE
+    ON ROOM_CODE_NUM = CLEANER_LOG_NUM
+    WHERE CLEANER_LOG_BS = #{bsCode}
+    <choose>
+        <when test="dcod != ''">
+            ROOM_CODE_DCOD = #{dcod}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(CLEANER_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    order by CLEANER_LOG_KEY desc
+    LIMIT ${page},${pageSize}
+    </select>
 </mapper>
