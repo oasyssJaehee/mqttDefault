@@ -240,7 +240,51 @@
             
         });
         socket.emit("joinMain", pad(bsCode), userId, userName);
-
+        $.ajax({
+            url:"/mysql/mqtt",
+            data:{
+                xml:"admin_pass_select",
+                bsCode:pad(bsCode, 7)
+            }, success:function(res){
+                if(res.length > 0){
+                    $("#main_maid_pass").val(res[0].PASS_CLEANER);
+                    $("#main_master_pass").val(res[0].PASS_MASTER);
+                }
+            }
+        });
+        $("#admin_pass_btn").on("click", function(){
+            if($("#main_maid_pass").val() == ""){
+                Alert("메이드키를 설정해 주세요.",function(){
+                    $("#main_maid_pass").focus();
+                    
+                });
+                return;
+            }
+            if($("#main_master_pass").val() == ""){
+                Alert("마스터키를 설정해 주세요.",function(){
+                    $("#main_master_pass").focus();
+                    
+                });
+                return;
+            }
+            $.ajax({
+                url:"/mysql/mqtt",
+                data:{
+                    xml:"admin_pass_insert",
+                    maid:$("#main_maid_pass").val(),
+                    master:$("#main_master_pass").val(),
+                    bsCode:pad(bsCode, 7),
+                    userId:userId
+                }, success:function(res){
+                    console.log(res);
+                    if(res != null){
+                        Alert("저장 되었습니다.", function(){
+                            location.reload();
+                        });
+                    }
+                }
+            })
+        });
         $.ajax({
             url:"/mysql/room",
             data:{
@@ -499,10 +543,7 @@
                             <label class="main_cont_width_inptit">메이드키 설정</label>
                         </div>
                         <div class="main_cont_width_inp main_cont_width_inp02">
-                            <input id="" class="inp_style" type="text" placeholder="공통 메이드키 비밀번호 입력">
-                        </div>
-                        <div class="main_cont_width_inp main_cont_width_inp03">
-                            <button id="" class="default_btn">적용</button>
+                            <input id="main_maid_pass" class="inp_style" type="text" placeholder="공통 메이드키 비밀번호 입력">
                         </div>
                     </div>
                     <div class="main_cont_width_inpgrp main_cont_width_inpgrp01 dis_flex_row dis_flex_center">
@@ -510,10 +551,10 @@
                             <label class="main_cont_width_inptit">마스터키 설정</label>
                         </div>
                         <div class="main_cont_width_inp main_cont_width_inp02">
-                            <input id="" class="inp_style" type="text" placeholder="공통 마스터키 비밀번호 입력">
+                            <input id="main_master_pass" class="inp_style" type="text" placeholder="공통 마스터키 비밀번호 입력">
                         </div>
                         <div class="main_cont_width_inp main_cont_width_inp03">
-                            <button id="" class="default_btn">적용</button>
+                            <button id="admin_pass_btn" class="default_btn">적용</button>
                         </div>
                     </div>
                 </div>

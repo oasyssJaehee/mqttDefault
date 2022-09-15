@@ -587,6 +587,21 @@ LEFT JOIN opener_code CODE1
     ORDER BY PASS_KEY DESC
     LIMIT 1
     </select>
+    <insert id="admin_pass_insert">
+    INSERT INTO fo_admin_pass (
+    PASS_BSCODE
+    <if test="master != ''">,PASS_MASTER</if>
+    <if test="maid != ''">,PASS_CLEANER</if>
+    ,PASS_USER
+    ,PASS_DATE
+    ) VALUES (
+    #{bsCode}
+    <if test="master != ''">,#{master}</if>
+    <if test="maid != ''">,#{maid}</if>
+    ,#{userId}
+    ,SYSDATE()
+    )
+    </insert>
 </mapper>
 
 
