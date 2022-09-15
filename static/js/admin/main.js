@@ -389,7 +389,9 @@ function actionCheck(limit){
         }
     }, 1000);
 }
+
 function mqttCheck(){
+    bleConnectTimerText();
     var mqttCount = 0;
     mqttInterver = setInterval(function(){
         mqttCount++;

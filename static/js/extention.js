@@ -212,6 +212,18 @@ function addDate(date,sep,flag,addNumber){
         return "";
     }
 }
+//도어락 연결시 시간초 추가
+function bleConnectTimerText(){
+    var interver;
+    var count = 21;
+    interver = setInterval(function(){
+        count--;
+        $(".spin-spinning").find(".tips").text("도어락 연결 중입니다..."+"("+count+")");
+        if(count == 0){
+            clearInterval(interver);
+        }
+    }, 1000);
+}
 //앞에 0 제거 추가
 function removePad (str) {
     str = str.toString();
