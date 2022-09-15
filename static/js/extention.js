@@ -125,6 +125,7 @@ function paging(total, size, page){
         pageNum = 1;
     }
     var tmp = total % size;
+    
     var pageCnt = tmp>0 ? ((total-tmp) / size) +1 : total / size;
     var startPage = 1;
     var endPage = startPage+pageBlock - 1;
@@ -140,7 +141,7 @@ function paging(total, size, page){
             if(tmp == pageBlock){
                 tmp = 0;
             }
-            bCount = (pageNum+tmp) / pageBlock;
+            bCount = (Number(pageNum)+Number(tmp)) / pageBlock;
         }
         startPage = pageBlock*(bCount -1) +1;
         endPage = startPage + pageBlock - 1;
@@ -156,7 +157,6 @@ function paging(total, size, page){
     prevItem += "<a data-page='"+prevData+"' id='prev_page_btn' class='pagebtn prev'></a>";
     
     var item = "";
-    console.log(startPage+"/"+endPage+"/"+pageCnt);
     for(var i=startPage; i<=endPage; i++){
         var active = "";
         if(page == i){

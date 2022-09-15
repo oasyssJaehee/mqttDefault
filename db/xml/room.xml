@@ -318,6 +318,86 @@
     ORDER BY API_LOG_DATE DESC, API_LOG_KEY DESC
     LIMIT ${page},${pageSize}
     </select>
+    <select id="key_log_list">
+    SELECT
+    (select count(*) from fo_api_log 
+    WHERE API_LOG_BS = #{bsCode}
+    <choose>
+        <when test="type != ''">
+            AND API_LOG_TYPE = #{type}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(API_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="gname == ''">
+        </when>
+        <otherwise>
+            AND API_LOG_GNAME LIKE CONCAT('%', #{gname}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="acno == ''">
+        </when>
+        <otherwise>
+            AND API_LOG_ACNO LIKE CONCAT('%', #{acno}, '%')
+        </otherwise>
+    </choose>
+    ORDER BY API_LOG_DATE DESC
+    ) as counts,
+    API_LOG_KEY,
+    API_LOG_SEQ,
+    API_LOG_BS,
+    API_LOG_ACNO,
+    API_LOG_RONO,
+    DATE_FORMAT(API_LOG_IDATE, '%Y-%m-%d %p %H:%i') AS API_LOG_IDATE,
+    DATE_FORMAT(API_LOG_ODATE, '%Y-%m-%d %p %H:%i') AS API_LOG_ODATE,
+    API_LOG_GNAME,
+    cast(AES_DECRYPT(API_LOG_PHONE, #{AES_KEY}) as CHAR) AS PHONE,
+    API_LOG_TYPE,
+    API_LOG_TF,
+    DATE_FORMAT(API_LOG_DATE, '%Y-%m-%d %p %H:%i') AS API_LOG_DATE,
+    API_LOG_USER
+    FROM fo_api_log
+    WHERE API_LOG_BS = #{bsCode}
+    <choose>
+        <when test="type != ''">
+            AND API_LOG_TYPE = #{type}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(API_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="gname == ''">
+        </when>
+        <otherwise>
+            AND API_LOG_GNAME LIKE CONCAT('%', #{gname}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="acno == ''">
+        </when>
+        <otherwise>
+            AND API_LOG_ACNO LIKE CONCAT('%', #{acno}, '%')
+        </otherwise>
+    </choose>
+    ORDER BY API_LOG_DATE DESC, API_LOG_KEY DESC
+    LIMIT ${page},${pageSize}
+    </select>
     <select id="action_log_select">
     SELECT 
         (select count(*) from mqtt_action
@@ -349,8 +429,8 @@
         WHERE MQTT_ACTION_HOTEL = #{bsCode}
         AND MQTT_ACTION_NUM = #{rono}
         <if test="code != ''">
-    AND OPEN.CODE_CODE = #{code}
-    </if>
+        AND OPEN.CODE_CODE = #{code}
+        </if>
         ORDER BY MQTT_ACTION_REQDATE DESC
         ) as counts,
         MQTT_ACTION_KEY,
@@ -406,6 +486,176 @@
     <if test="code != ''">
     AND OPEN.CODE_CODE = #{code}
     </if>
+    ORDER BY MQTT_ACTION_REQDATE DESC
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="action_log_list">
+    SELECT 
+        (select count(*) from mqtt_action
+         LEFT JOIN bridge_code OPEN
+        ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
+        LEFT JOIN MQTT_LIST 
+        ON MQTT_LIST_NUM = MQTT_ACTION_NUM
+        LEFT JOIN bridge_code CODE
+            ON CODE.CODE_CODE = MQTT_LIST_DCOD
+            LEFT JOIN bridge_code CODE2
+            ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+        LEFT JOIN (
+        SELECT
+        BRIDGE_TRAN_ACNO,
+        BRIDGE_TRAN_RSPK,
+        BRIDGE_TRAN_GNAME
+        FROM fo_bridge_tran
+        ) TRAN 
+        ON TRAN.BRIDGE_TRAN_ACNO = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', 1)
+        AND TRAN.BRIDGE_TRAN_RSPK = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', -1)
+        LEFT JOIN(
+        SELECT
+        ADMIN_NAME,
+        ADMIN_ID,
+        ADMIN_KEY
+        FROM co_user_admin
+        ) USER
+        ON USER.ADMIN_ID = MQTT_ACTION_USER
+        WHERE MQTT_ACTION_HOTEL = #{bsCode}
+        <if test="code != ''">
+    AND OPEN.CODE_CODE = #{code}
+    </if>
+    <if test="rono != ''">
+    AND MQTT_ACTION_NUM LIKE CONCAT('%', #{rono}, '%')
+    </if>
+    <if test="type != ''">
+    AND MQTT_ACTION_OPEN = #{type}
+    </if>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <if test="div != ''">
+    <choose>
+        <when test="div == '2041'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '1')
+        </when>
+        <when test="div == '20415'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '15')
+        </when>
+        <when test="div == '20412'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '12')
+        </when>
+        <when test="div == '2045'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '5')
+        </when>
+        <when test="div == '20423'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '23')
+        </when>
+        <when test="div == '20424'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '24')
+        </when>
+        <when test="div == '2101'">
+            AND (MQTT_ACTION_CMD = '210' AND MQTT_ACTION_STATE = '1')
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    </if>
+        ORDER BY MQTT_ACTION_REQDATE DESC
+        ) as counts,
+        MQTT_ACTION_KEY,
+        MQTT_ACTION_NUM,
+        DATE_FORMAT(MQTT_ACTION_REQDATE, '%y.%m.%d %T') AS MQTT_ACTION_REQDATE,
+        MQTT_ACTION_ANSDATE,
+        MQTT_ACTION_CMD,
+        MQTT_ACTION_USER,
+        MQTT_ACTION_LOG,
+        IFNULL(CODE.CODE_CONTENT,'') AS DCOD_NAME,
+        IFNULL(CODE2.CODE_CONTENT,'') AS FLOOR_NAME,
+        MQTT_LIST_NAME,
+        IFNULL(TIMESTAMPDIFF(SECOND, MQTT_ACTION_REQDATE, MQTT_ACTION_ANSDATE), '99') AS DIFF,
+        IFNULL(OPEN.CODE_CONTENT, '스마트키') AS OPEN_TYPE,
+        MQTT_ACTION_STATE,
+        TRAN.BRIDGE_TRAN_ACNO,
+        CASE
+        WHEN
+        TRAN.BRIDGE_TRAN_ACNO IS NULL
+        THEN
+        CONCAT(USER.ADMIN_ID, '(관리자)')
+        ELSE
+        CONCAT(TRAN.BRIDGE_TRAN_GNAME, '(손님)')
+        END AS BRIDGE_TRAN_GNAME
+    FROM mqtt_action
+    LEFT JOIN bridge_code OPEN
+    ON OPEN.CODE_CODE = MQTT_ACTION_OPEN
+    LEFT JOIN MQTT_LIST 
+    ON MQTT_LIST_NUM = MQTT_ACTION_NUM
+    LEFT JOIN bridge_code CODE
+        ON CODE.CODE_CODE = MQTT_LIST_DCOD
+        LEFT JOIN bridge_code CODE2
+        ON CODE2.CODE_CODE = MQTT_LIST_FLOOR
+    LEFT JOIN (
+      SELECT
+      BRIDGE_TRAN_ACNO,
+      BRIDGE_TRAN_RSPK,
+      BRIDGE_TRAN_GNAME
+      FROM fo_bridge_tran
+    ) TRAN 
+    ON TRAN.BRIDGE_TRAN_ACNO = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', 1)
+    AND TRAN.BRIDGE_TRAN_RSPK = SUBSTRING_INDEX(MQTT_ACTION_USER, '/', -1)
+    LEFT JOIN(
+      SELECT
+      ADMIN_NAME,
+      ADMIN_ID,
+      ADMIN_KEY
+      FROM co_user_admin
+    ) USER
+    ON USER.ADMIN_ID = MQTT_ACTION_USER
+    WHERE MQTT_ACTION_HOTEL = #{bsCode}
+    <if test="code != ''">
+    AND OPEN.CODE_CODE = #{code}
+    </if>
+    <if test="rono != ''">
+    AND MQTT_ACTION_NUM LIKE CONCAT('%', #{rono}, '%')
+    </if>
+    <if test="type != ''">
+    AND MQTT_ACTION_OPEN = #{type}
+    </if>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(MQTT_ACTION_REQDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <if test="div != ''">
+    <choose>
+        <when test="div == '2041'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '1')
+        </when>
+        <when test="div == '20415'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '15')
+        </when>
+        <when test="div == '20412'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '12')
+        </when>
+        <when test="div == '2045'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '5')
+        </when>
+        <when test="div == '20423'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '23')
+        </when>
+        <when test="div == '20424'">
+            AND (MQTT_ACTION_CMD = '204' AND MQTT_ACTION_STATE = '24')
+        </when>
+        <when test="div == '2101'">
+            AND (MQTT_ACTION_CMD = '210' AND MQTT_ACTION_STATE = '1')
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    </if>
+    
     ORDER BY MQTT_ACTION_REQDATE DESC
     LIMIT ${page},${pageSize}
     </select>
@@ -505,6 +755,27 @@
     SELECT
         (select count(*) from fo_cleaner_log
         WHERE CLEANER_LOG_BS = #{bsCode}
+        <choose>
+        <when test="dcod != ''">
+            ROOM_CODE_DCOD = #{dcod}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(CLEANER_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="keyword == ''">
+        </when>
+        <otherwise>
+            AND CLEANER_LOG_NUM LIKE CONCAT('%', #{keyword}, '%')
+        </otherwise>
+    </choose>
     order by CLEANER_LOG_KEY desc
         ) as counts,
         CLEANER_LOG_BS,
@@ -535,7 +806,94 @@
             AND DATE_FORMAT(CLEANER_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
         </otherwise>
     </choose>
+    <choose>
+        <when test="keyword == ''">
+        </when>
+        <otherwise>
+            AND CLEANER_LOG_NUM LIKE CONCAT('%', #{keyword}, '%')
+        </otherwise>
+    </choose>
     order by CLEANER_LOG_KEY desc
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="sms_log_list">
+    SELECT (select count(*) from fo_sms_log
+    where SMS_LOG_BS = #{bsCode}
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(SMS_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="acno == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_ACNO LIKE CONCAT('%', #{acno}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="rono == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_RONO LIKE CONCAT('%', #{rono}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="gname == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_GNAME LIKE CONCAT('%', #{gname}, '%')
+        </otherwise>
+    </choose>
+    ) AS counts,
+        SMS_LOG_KEY,
+        SMS_LOG_BS,
+        SMS_LOG_STEL,
+        cast(AES_DECRYPT(SMS_LOG_RTEL, #{AES_KEY}) as CHAR) AS SMS_LOG_RTEL,
+        SMS_LOG_TITLE,
+        SMS_LOG_CONT,
+        SMS_LOG_ACNO,
+        SMS_LOG_RONO,
+        SMS_LOG_GNAME,
+        DATE_FORMAT(SMS_LOG_DATE, '%Y-%m-%d %p %H:%i') AS SMS_LOG_DATE,
+        SMS_LOG_USER,
+        SMS_LOG_CPID,
+        SMS_LOG_ASP,
+        SMS_LOG_TYPE,
+        SMS_LOG_TEMP
+    FROM fo_sms_log
+    WHERE SMS_LOG_BS = #{bsCode}
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(SMS_LOG_DATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="acno == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_ACNO LIKE CONCAT('%', #{acno}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="rono == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_RONO LIKE CONCAT('%', #{rono}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="gname == ''">
+        </when>
+        <otherwise>
+            AND SMS_LOG_GNAME LIKE CONCAT('%', #{gname}, '%')
+        </otherwise>
+    </choose>
+    order by SMS_LOG_KEY desc
     LIMIT ${page},${pageSize}
     </select>
 </mapper>

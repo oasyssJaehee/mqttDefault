@@ -374,7 +374,9 @@ app.get('/mysql/room', function (req, res) {
     data.AES_KEY = AppInfo.AES_KEY;
     var format = {language: 'sql', indent: '  '};
     var xml_name = data.xml;
+    
     var query = mysql.roomMapper().getStatement("room", xml_name, data, format);
+    console.log(query);
     connection.query(query, function (err, rows, fields) {
         if(err){
             console.log(err);

@@ -293,9 +293,9 @@ function actionLog(){
                         }else if(res[i].MQTT_ACTION_STATE == "5"){
                             action = "도어락 현재 시간";
                         }else if(res[i].MQTT_ACTION_STATE == "23"){
-                            action = "관리자 비밀번호 설정";
+                            action = "마스터 비밀번호 설정";
                         }else if(res[i].MQTT_ACTION_STATE == "24"){
-                            action = "클리너 비밀번호 설정";
+                            action = "메이드 비밀번호 설정";
                         }
                     }else if(res[i].MQTT_ACTION_CMD == "210"){
                         if(res[i].MQTT_ACTION_STATE == "1"){

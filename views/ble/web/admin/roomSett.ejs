@@ -26,6 +26,7 @@
     var sdate="";
     var edate="";
     function init(){
+        $.loading.start(''); 
         $.ajax({
             url:"/mysql/room",
             data:{
@@ -75,6 +76,7 @@
                 paging(pageTotal, pageSize, selectPage);
                 $("#log_table tbody").empty();
                 $("#log_table tbody").append(item);
+                $.loading.end(); 
             }
         });
     }
@@ -111,23 +113,23 @@
         $("#pop_confirm_btn").on("click", function(){
             $("#log_pop").css("display", "none");
         });
-        $(document).on("click", "#log_table tbody tr", function(){
-            var key = $(this).attr("data-key");
-            $.ajax({
-                url:"/mysql/room",
-                data:{
-                    xml:"room_sync_log_select",
-                    key:key,
-                    bsCode:bsCode
-                }, success:function(res){
-                    $("#pop_title").text(res[0].SYNC_LOG_MSG);
-                    $("#pop_cont").text(res[0].SYNC_LOG_RONO.slice(0, -1));
-                    $("#tot_origin").text(comma(res[0].SYNC_LOG_ORIGIN));
-                    $("#tot_change").text(comma(res[0].SYNC_LOG_CHANGE));
-                }
-            });
-            $("#log_pop").css("display", "flex");
-        });
+        // $(document).on("click", "#log_table tbody tr", function(){
+        //     var key = $(this).attr("data-key");
+        //     $.ajax({
+        //         url:"/mysql/room",
+        //         data:{
+        //             xml:"room_sync_log_select",
+        //             key:key,
+        //             bsCode:bsCode
+        //         }, success:function(res){
+        //             $("#pop_title").text(res[0].SYNC_LOG_MSG);
+        //             $("#pop_cont").text(res[0].SYNC_LOG_RONO.slice(0, -1));
+        //             $("#tot_origin").text(comma(res[0].SYNC_LOG_ORIGIN));
+        //             $("#tot_change").text(comma(res[0].SYNC_LOG_CHANGE));
+        //         }
+        //     });
+        //     $("#log_pop").css("display", "flex");
+        // });
         $("#upload_btn").on("click", function(){
             $("#id_file_upload").click();
         });
@@ -627,7 +629,7 @@
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table id="log_table" class="table_list hover_table">
+                    <table id="log_table" class="table_list">
                         <colgroup>
                             <col width="200px">
                             <col width="200px">

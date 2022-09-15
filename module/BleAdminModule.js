@@ -62,6 +62,45 @@ router.get('/mqttSett', function (req, res) {
       res.redirect("/ble/admin/login");
   }
 });
+router.get('/keyLog', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/keyLog",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
+router.get('/smsList', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/smsList",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
+router.get('/actionLog', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/actionLog",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
 router.get('/cleanLog', function (req, res) {
   
   if(req.session.admin){
