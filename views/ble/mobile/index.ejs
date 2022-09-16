@@ -288,8 +288,9 @@
 	$(window).ready(function() {
         init();
         $("#connect").on("click", function(){
-            first();
+            
             if(!userTime){Alert(userUseMsg);return;}
+            first();
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
             setTimeout(function(){
