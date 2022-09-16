@@ -1519,8 +1519,8 @@ box-sizing: border-box;transition: 0.3s;}
 .popup_guide_img{ margin-bottom: 12px;;}
 .popup_guide_txt02{margin-bottom: 8px;;}
 
-.pop_close_bottom_btn{width:100%; border-radius: 100px; color:#fff;background-color:#ff6066;display: block; width: 100%; max-width: 160px;padding:15px 10px; text-align: center;
-font-size: 14px; font-weight: 500;; position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);}
+.pop_close_bottom_btn{width:100%; border-radius: 100px; color:#fff;background-color:#ff2d35;display: block; width: 100%; max-width: 160px;padding:12px 10px; text-align: center;
+font-size: 18px; font-weight: 600;; position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);}
 
 
 /* Check */
