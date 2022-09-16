@@ -397,6 +397,7 @@ function mqttCheck(){
         mqttCount++;
         if(mqttCount > 5){
             clearInterval(mqttInterver);
+            bleConnectClear();
             Alert("브릿지 연결을 확인해 주세요.");
             bleConnect = false;
             $.loading.end();
@@ -474,7 +475,8 @@ function userCheck(){
     $.ajax({
         url:"/socket/room",
         data:{
-            name: removePad(bsCode)+"_"+rono
+            name: removePad(bsCode)+"_"+rono,
+            id:socket.id
         },
         success:function(res){
             if(Number(res.room_size) == 0){

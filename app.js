@@ -2,6 +2,7 @@ const express = require('express')
 const expressLayouts = require('express-ejs-layouts');
 const app = express()
 const socket = require('socket.io')
+
 const ejs = require('ejs');
 
 const http = require('http')
@@ -281,20 +282,25 @@ app.get('/socket/room', function(req, res) {
     var uri = req.url;
     var data = url.parse(uri, true).query;
     var resData = {};
-    
+    console.log("헤이!! " + data.id);
     var roomCount = 0;
     for(var i=0; i<AppInfo.roomArray.length; i++){
         if(AppInfo.roomArray[i].rmName == "rm_"+data.name){
-            console.log(AppInfo.roomArray[i]);
-            roomCount++;
-            resData.admin = "0";
+            if(AppInfo.roomArray[i].id != data.id){
+                console.log(AppInfo.roomArray[i]);
+                roomCount++;
+                resData.admin = "0";
+            }
         }
     }
     for(var i=0; i<AppInfo.adminRoomArray.length; i++){
         if(AppInfo.adminRoomArray[i].rmName == "rm_"+data.name){
-            console.log(AppInfo.adminRoomArray[i]);
-            roomCount++;
-            resData.admin = "1";
+            if(AppInfo.adminRoomArray[i].id != data.id){
+                console.log(AppInfo.adminRoomArray[i]);
+                roomCount++;
+                resData.admin = "1";
+            }
+            
         }
     }
     resData.room_size = roomCount;
@@ -376,7 +382,6 @@ app.get('/mysql/room', function (req, res) {
     var xml_name = data.xml;
     
     var query = mysql.roomMapper().getStatement("room", xml_name, data, format);
-    console.log(query);
     connection.query(query, function (err, rows, fields) {
         if(err){
             console.log(err);
@@ -419,10 +424,11 @@ app.get('/mysql/mqtt', function (req, res) {
 io.use(function(socket, next){
     sessionMiddle(socket.request, socket.request.res || {}, next);
 });
-
+//소켓 연결체크
+var socketCheck = new Array();
 
 io.sockets.on("connection", function(socket){
-    console.log("socket connect ===>");
+    console.log("socket connect ===>"+socket.id);
     socket.on("error", function(err){
         console.log("err : ", err);
     });
@@ -467,6 +473,18 @@ io.sockets.on("connection", function(socket){
             }
         }
     });
+    socket.on("roomDisConnect", function(){
+        console.log("roomDisConnect " + socket.id);
+        var mainKey = "";
+
+        for(var i=0; i<AppInfo.roomArray.length; i++){
+            if(AppInfo.roomArray[i].id == socket.id){ 
+                mainKey = AppInfo.roomArray[i].mainKey;
+                AppInfo.roomArray.splice(i,1);
+                socket.leave("rm_"+mainKey);
+            }
+        }
+    });
     // 소켓 방접속
     socket.on("joinMain", (bsCode, userId, userName) => {
         socket.join("admin_"+bsCode);
@@ -482,6 +500,13 @@ io.sockets.on("connection", function(socket){
     });
     // 소켓 방접속
     socket.on("joinAdmin", (main_key, user, admin) => {
+        for(var i=0; i<AppInfo.adminRoomArray.length; i++){
+            if(AppInfo.adminRoomArray[i].id == socket.id){ 
+                mainKey = AppInfo.adminRoomArray[i].mainKey;
+                AppInfo.adminRoomArray.splice(i,1);
+                socket.leave("rm_"+mainKey);
+            }
+        }
         socket.join("rm_"+main_key);
 
         var obj = new Object();
@@ -494,6 +519,14 @@ io.sockets.on("connection", function(socket){
         AppInfo.adminRoomArray.push(obj);
     });
     socket.on("joinRoom", (main_key, user, admin) => {
+        console.log("joinRoom!!"+socket.id);
+        for(var i=0; i<AppInfo.roomArray.length; i++){
+            if(AppInfo.roomArray[i].id == socket.id){ 
+                mainKey = AppInfo.roomArray[i].mainKey;
+                AppInfo.roomArray.splice(i,1);
+                socket.leave("rm_"+mainKey);
+            }
+        }
         
         socket.join("rm_"+main_key)
         var obj = new Object();
@@ -531,16 +564,21 @@ io.sockets.on("connection", function(socket){
         if(data.rm == undefined){
             io.to("admin").emit("refresh", data);
         }else{
-            io.to(data.rm).emit("recvChat", {
-                msg : data.msg,
-                userId: data.userId,
-                admin: data.admin,
-                date: data.date,
-                userName: data.userName,
-                imgName: data.imgName,
-                imgPath: data.imgPath
-            });
-            io.to("admin").emit("refresh", "msgSend");
+            if(data.msg == "dis"){
+                io.to(data.rm).emit("disConnect", "msg");
+            }else{
+                io.to(data.rm).emit("recvChat", {
+                    msg : data.msg,
+                    userId: data.userId,
+                    admin: data.admin,
+                    date: data.date,
+                    userName: data.userName,
+                    imgName: data.imgName,
+                    imgPath: data.imgPath
+                });
+                io.to("admin").emit("refresh", "msgSend");
+            }
+            
         }
         
         

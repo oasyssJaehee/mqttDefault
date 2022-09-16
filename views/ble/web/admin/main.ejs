@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 <script src="/socket.io/socket.io.js"></script>
-
+<script type="text/javascript" src="/js/ifvisible.js"></script>
 <script type="text/javascript" src="/js/admin/main.js"></script>
 </head>
 <script type="text/javascript">
@@ -57,6 +57,14 @@
     var cleanStatus = "";
     var cleanStatu_oo = "";
     var cleanAcno = "";
+    //생명주기 체크
+    window.ifvisible.on("blur", function(){
+        socket.emit("adminRoomDisConnect");
+        socket.emit("msg",{
+            rm: "rm_"+removePad(bsCode)+"_"+rono,
+            msg:"dis"
+        });
+    });
     socket.on("refresh", function(data){
         var msg = "";
         if(data.type == "pmsStatus"){
@@ -391,11 +399,7 @@
             popTabClick(tab, $(this));
         });
         $("#connect").on("click", function(){
-            if(!socketConnect){
-                userCheck();
-            }else{
-                socketBleConnect();
-            }
+            userCheck();
             
         });
         $("#pop_maid_pw_div").dblclick(function() {
