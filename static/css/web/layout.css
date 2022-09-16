@@ -255,7 +255,7 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
 .main_cont_tit{font-size: 28px;}
 
 .total_numbox{margin-bottom: 12px;}
-.total_num_tit{color:#9ca2a9; font-size: 18px; font-weight: 600;}
+.total_num_tit{color:#9ca2a9; font-size: 18px; font-weight: 600; text-align: right;}
 .total_num_tit_sub{color:#9ca2a9; font-size: 15px; font-weight: 600;}
 .total_num_tit_box .total_num_tit{margin-right:8px;}
 .total_num_tit_box .total_num_tit:last-child{margin-right: 0;;}
@@ -431,7 +431,7 @@ font-weight:600;}
 
 .popup_close{width: 40px; height:40px; display:block; background-image: url('/static/img/opener/cancel_icon.png'); background-repeat: no-repeat ; background-position: center;
     background-size: 10px; background-color:#f3f5f6; border-radius: 8px; transition: 0.3s;}
-    .popup_close:hover{background-color:#e3e3e3;}
+.popup_close:hover{background-color:#e3e3e3;}
 
 
 .popup_body{padding:20px; box-sizing: border-box; display: flex; flex-direction: column; background-color:#f3f5f6;max-height: 60vh; overflow-y: auto;}
@@ -503,3 +503,5 @@ font-weight:600;}
 .main_cont_width_inp03 button{width: 100%;;}
 
 .max_width_200{max-width: 200px;}
+
+.connect_txt{font-size: 16px;;}
