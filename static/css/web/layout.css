@@ -504,4 +504,7 @@ font-weight:600;}
 
 .max_width_200{max-width: 200px;}
 
-.connect_txt{font-size: 16px;;}
+.connect_txt{font-size: 18px; margin-right: 12px;font-weight:600;}
+.connect_txt:last-child{margin-right:0;}
+.connect_txt01{}
+.connect_txt02{color:#ff0000;}
