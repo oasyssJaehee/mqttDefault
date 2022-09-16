@@ -45,7 +45,8 @@
                     var styleCl = "";
 
                     if(diff == "0"){
-                        $("#connect_h2").css("display", "none");
+                        $("#connect_p").css("display", "none");
+                        $("#notConnect_p").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) < 600){
                             if(res[i].CONNECT_DIFF != null){
                                 
@@ -65,7 +66,8 @@
                         }
                         
                     }else if(diff == "1"){
-                        $("#connect_h2").css("display", "none");
+                        $("#connect_p").css("display", "none");
+                        $("#notConnect_p").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
                             count++;
                             styleCl = "style='color:red;'";
@@ -81,7 +83,8 @@
                             connectCount++;
                         }
                     }else if(diff == ""){
-                        $("#connect_h2").css("display", "block");
+                        $("#connect_p").css("display", "block");
+                        $("#notConnect_p").css("display", "block");
                         count++;
                         if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
                             styleCl = "style='color:red;'";
@@ -99,7 +102,8 @@
                     }
                 }
                 $("#tot_h2").text("총 "+comma(count)+"개");
-                $("#connect_h2").text("-연결: "+comma(connectCount)+"개 -끊김: "+comma(notConnectCount));
+                $("#connect_p").text("연결: "+comma(connectCount)+"개");
+                $("#notConnect_p").text("끊김: "+comma(notConnectCount)+"개");
                 $("#mqtt_table tbody").empty();
                 $("#mqtt_table tbody").append(item);
                 $.loading.end(); 
@@ -179,8 +183,8 @@
             </div>
             <div class="total_numbox dis_flex_row dis_flex_center dis_flex_right">
                 <div class="connect_tbox dis_flex_row dis_flex_center">
-                    <p class="connect_txt connect_txt01">연결 : 0 개</p>
-                    <p class="connect_txt connect_txt02">끊김 : 0 개</p>
+                    <p id="connect_p" class="connect_txt connect_txt01">연결 : 0 개</p>
+                    <p id="notConnect_p"class="connect_txt connect_txt02">끊김 : 0 개</p>
                 </div>
                 <h2 id="tot_h2"class="total_num_tit" style="margin-left:12px;">총 3 개</h2>
                 <!-- <h2 id="connect_h2"class="total_num_tit"></h2> -->
