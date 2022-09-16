@@ -10,7 +10,7 @@
 
 
 <script src="/socket.io/socket.io.js"></script>
-
+<script type="text/javascript" src="/js/ifvisible.js"></script>
 <script type="text/javascript" src="/js/mobile/chat.js"></script>
 <script type="text/javascript" src="/js/upload/load-image.all.min.js"></script>
 <script type="text/javascript" src="/js/upload/img_upload.js"></script>
@@ -30,6 +30,17 @@
     var defaultTime = 0;
     var userTime = false;
     var userUseMsg = "";
+
+    //생명주기 체크
+    window.ifvisible.on("blur", function(){
+        socket.emit("roomDisConnect");
+    });
+    window.ifvisible.on("focus", function(){
+        first();
+    });
+    socket.on("disConnect", function(data){
+        socketConnect = true;
+    });
 
     function clickCheck(){
         var count = 0;
@@ -59,11 +70,13 @@
     }
     var mqttInterver;
     function mqttCheck(){
+        bleConnectTimerText();
         var mqttCount = 0;
         mqttInterver = setInterval(function(){
             mqttCount++;
             if(mqttCount > 5){
                 clearInterval(mqttInterver);
+                bleConnectClear();
                 Alert("브릿지 연결을 확인해 주세요.");
                 bleConnect = false;
                 $.loading.end();
@@ -245,30 +258,16 @@
         $.ajax({
             url:"/socket/room",
             data:{
-                name: roomName
+                name: roomName,
+                id: socket.id
             },
             success:function(res){
                 if(Number(res.room_size) == 0){
                     socketConnect = true;
                     socket.emit("joinRoom", roomName, gname, "0");
-                    // $.loading.start('도어락 연결 중입니다.');
-        
-                    // setTimeout(function(){
-                    //     $.ajax({
-                    //         url:"/mqttCheck",
-                    //         data:{
-                    //             topic: "oasyss32/"+topic,
-                    //             userId: acno+"/"+rspk
-                    //         },
-                    //         success : function(result){
-                    //             mqttCheck();
-                    //         }
-                    //     });  
-                    // },1000);
                     
                 }else{
                     socketConnect = false;
-                    Alert("현재 사용중인 폰키 입니다.");
                 }
                 doorStart();
             }
@@ -468,7 +467,7 @@
     $(window).ready(function() {
         
         $("#connect").on("click", function(){
-            
+            first();
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
             $.ajax({
@@ -525,7 +524,7 @@
     .sub_page_tit{font-size: 22px;}
 </style>
 </head>
-<body>
+<body">
 	<div class="contents">
         <div class="sub_page_wrap password_wrap dis_flex_column">
             <div class="sub_page_topbox">

@@ -213,14 +213,17 @@ function addDate(date,sep,flag,addNumber){
     }
 }
 //도어락 연결시 시간초 추가
+var connectinterver;
+function bleConnectClear(){
+    clearInterval(connectinterver);
+}
 function bleConnectTimerText(){
-    var interver;
     var count = 21;
-    interver = setInterval(function(){
+    connectinterver = setInterval(function(){
         count--;
         $(".spin-spinning").find(".tips").text("도어락 연결 중입니다..."+"("+count+")");
         if(count == 0){
-            clearInterval(interver);
+            clearInterval(connectinterver);
         }
     }, 1000);
 }
