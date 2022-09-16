@@ -42,19 +42,21 @@
                 var connectCount = 0;
                 var notConnectCount = 0;
                 for(var i=0; i<res.length; i++){
+                    var styleCl = "";
 
                     if(diff == "0"){
                         $("#connect_h2").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) < 600){
                             if(res[i].CONNECT_DIFF != null){
+                                
                                 count++;
                                 notConnectCount++;
                                 item += "<tr>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
                                 + "</tr>";
                             }else{
                                 connectCount++;
@@ -66,14 +68,14 @@
                         $("#connect_h2").css("display", "none");
                         if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
                             count++;
-                            
+                            styleCl = "style='color:red;'";
                             notConnectCount++;
                             item += "<tr>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
                                 + "</tr>";
                         }else{
                             connectCount++;
@@ -82,17 +84,17 @@
                         $("#connect_h2").css("display", "block");
                         count++;
                         if(Number(res[i].CONNECT_DIFF) > 600 || res[i].CONNECT_DIFF == null){
+                            styleCl = "style='color:red;'";
                             notConnectCount++;
                         }else{
                             connectCount++;
-                            
                         }
                         item += "<tr>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
-                                + "<td class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_NUM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_FLOOR+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].ROOM_CODE_HNAM+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].START_TIME+"</td>"
+                                + "<td "+styleCl+" class='table_list_td text_left'>"+res[i].CONNECT_TIME+"</td>"
                                 + "</tr>";
                     }
                 }
