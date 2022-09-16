@@ -358,22 +358,6 @@
 <body >
 	<div id="index_con" class="contents" style="display:none;">
         <div class="key_wrap">
-            <div class="key_grp_cont key_grp_cont01">
-                <div class="key_top_tbox">
-                    <h2 class="eng_tit">Click the button to open the door</h2>
-                    <h2 class="kor_tit">버튼을 클릭하여 문을 열어주세요.</h2>
-                </div>
-            </div>
-            <div class="key_grp_cont key_grp_cont02">
-                <div class="body_open_key_box mb20">
-                    <button class="door_open_btn dis_flex_row dis_flex_row_center" id="openBtn">
-                        <span class="open_icon">
-                            <img src="/static/img/mobile/door/open_lock04.png">
-                        </span>
-                        <em class="door_open_tit door_open_tit3">OPEN</em>
-                    </button>
-                </div>
-            </div>
             <div class="key_grp_cont key_grp_cont03">
                 <div class="mb20 cont_box dis_flex_row dis_flex_row_center dis_flex_row_end">
                     <div class="room_tbox">
@@ -393,7 +377,37 @@
                     <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-IN</em><em id="idate" class="ck_txt">2022-08-03 PM 15:00</em></p>
                     <p class="room_txt dis_flex_row dis_flex_row_center dis_flex_row_end"><em class="ck_state">CHECK-OUT</em><em id="odate" class="ck_txt">2022-08-04 AM 11:00</em></p>
                 </div>
-            </div> 
+            </div>
+            <div class="key_grp_cont key_grp_cont02">
+                <div class="body_open_key_box mb20">
+                    <button class="door_open_btn dis_flex_row dis_flex_row_center" id="openBtn">
+                        <span class="open_icon">
+                            <img src="/static/img/mobile/door/open_lock04.png">
+                        </span>
+                        <em class="door_open_tit door_open_tit3">OPEN</em>
+                    </button>
+                </div>
+                <div class="key_grp_cont key_grp_cont01">
+                    <div class="key_top_tbox">
+                        <h2 class="eng_tit">Click the button to open the door</h2>
+                        <h2 class="kor_tit">버튼을 클릭하여 문을 열어주세요.</h2>
+                    </div>
+                </div> 
+                <div class="sub_btn_contbox">
+                    <div class="sub_btn_grp">
+                        <button class="sub_btn sub_btn01">
+                            <em class="body_key_tit_sub">Front Door Open</em>
+                            <h2 class="body_key_tit">공동현관문 열기</h2>
+                            <span class="body_key_sub_icon front_door"></span>
+                        </button>
+                        <button class="sub_btn sub_btn02">
+                            <em class="body_key_tit_sub">Cleaning Request</em>
+                            <h2 class="body_key_tit">청소 요청</h2>
+                            <span class="body_key_sub_icon cleaning"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="key_body">
             <div class="password_set_box">
@@ -468,6 +482,25 @@
                         <a id="pri_confirm" class="popup_bottom_btn popup_bottom_btn_save">확인</a>
                     </li>
                 </ul>
+            </div>
+        </div>
+
+        <!-- 가이드 팝업 -->
+        <div id="" class="popup_wrap popup_wrap02">
+            <div class="popup_box_bg">
+                <div class="popup_guide_box">
+                    <div class="popup_guide_tbox">
+                        <div class="popup_guide_state">Tip</div>
+                        <h2 class="popup_guide_tit">사용 전 상단에 위치한 연결버튼을 클릭하여 도어락 연결 후 원활한 조작이 가능합니다.</h2>
+                        <div class="popup_guide_txt popup_guide_txt01">도어락 연결 성공 예시</div>
+                        <div class="popup_guide_img">
+                            <img src="/static/img/mobile/door/guide_btn_img.png">
+                        </div>
+                        <div class="popup_guide_txt popup_guide_txt02">도어락 연결이 지속적으로 실패 시<br>담당자에게 문의 바랍니다.</div>
+                        <div class="popup_guide_txt popup_guide_txt03">담당자 : 042-000-0000</div>
+                    </div>
+                    <a class="pop_close_bottom_btn">닫기</a>
+                </div>
             </div>
         </div>
 	</div>
