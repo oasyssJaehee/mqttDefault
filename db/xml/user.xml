@@ -2,6 +2,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="user">
+    <select id="select_user_admin" resultType="casemap">
+    SELECT ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_BS_CODE,
+        ADMIN_FUSER,
+        ADMIN_FDATE,
+        ADMIN_LUSER,
+        ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        ADMIN_EDATE,
+        BS_NAME,
+        BS_LOGO,
+        BS_TEL
+    FROM co_user_admin
+    LEFT JOIN co_bs_code
+    ON BS_CODE = ADMIN_BS_CODE
+    WHERE ADMIN_ID = #{id}
+    AND ADMIN_PASS = PASSWORD(#{pw})
+    AND ADMIN_BS_CODE = #{bnum}
+    AND ADMIN_USE = '1'
+    </select>
     <select id="admin_list" resultType="casemap">
     SELECT 
         (select count(*) from co_user_admin
