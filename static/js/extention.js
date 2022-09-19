@@ -36,6 +36,13 @@ function PromptPw(msg, value, title, yes, no){
 
 	}); 
 }
+function PromptPwChange(msg, value, title, yes, no){ 
+	jPromptPwChange(msg, value, title, function(r){
+		if(r) yes(r);
+		else if(no) no();
+
+	}); 
+}
 function Prompt(msg, value, title, yes, no){ 
 	jPrompt(msg, value, title, function(r){
 		if(r) yes(r);

@@ -68,6 +68,12 @@
 				if( callback ) callback(result);
 			});
 		},
+		promptPwChange: function(message, value, title, callback) {
+			if( title == null ) title = '확인';
+			$.alerts._show(title, message, value, 'promptPwChange', function(result) {
+				if( callback ) callback(result);
+			});
+		},
 		
 		// Private methods
 		
@@ -137,7 +143,7 @@
 					});
 				break;
 				case 'prompt':
-					$("#popup_content").append('<br /><input type="text" size="30" id="popup_prompt" />').after('<div id="popup_panel"><input type="button" value="' + $.alerts.okButton + '" id="popup_ok" /> <input type="button" value="' + $.alerts.cancelButton + '" id="popup_cancel" /></div>');
+					$("#popup_content").append('<br /><input type="text" size="30" id="popup_prompt" />').after('<table cellpadding="0" cellspacing="0" class="ale_btnbox"><tr><td id="popup_cancel"><input type="button" value="' + $.alerts.cancelButton + '" id="popcan_focus" /></td><td id="popup_ok" class="ale_btn01"><input type="button" value="' + $.alerts.okButton + '" id="popok_focus" /></td></tr></table>');
 					$("#popup_prompt").width( $("#popup_message").width() );
 					$("#popup_ok").click( function() {
 						var val = $("#popup_prompt").val();
@@ -156,7 +162,26 @@
 					$("#popup_prompt").focus().select();
 				break;
 				case 'promptPw':
-					$("#popup_content").append('<br /><input type="password" size="30" id="popup_prompt" />').after('<div id="popup_panel"><input type="button" value="' + $.alerts.okButton + '" id="popup_ok" /> <input type="button" value="' + $.alerts.cancelButton + '" id="popup_cancel" /></div>');
+					$("#popup_content").append('<br /><input type="text" size="30" id="popup_prompt" />').after('<table cellpadding="0" cellspacing="0" class="ale_btnbox"><tr><td id="popup_cancel"><input type="button" value="' + $.alerts.cancelButton + '" id="popcan_focus" /></td><td id="popup_ok" class="ale_btn01"><input type="button" value="' + $.alerts.okButton + '" id="popok_focus" /></td></tr></table>');
+					$("#popup_prompt").width( $("#popup_message").width() );
+					$("#popup_ok").click( function() {
+						var val = $("#popup_prompt").val();
+						$.alerts._hide();
+						if( callback ) callback( val );
+					});
+					$("#popup_cancel").click( function() {
+						$.alerts._hide();
+						if( callback ) callback( null );
+					});
+					$("#popup_prompt, #popup_ok, #popup_cancel").keypress( function(e) {
+						if( e.keyCode == 13 ) $("#popup_ok").trigger('click');
+						if( e.keyCode == 27 ) $("#popup_cancel").trigger('click');
+					});
+					if( value ) $("#popup_prompt").val(value);
+					$("#popup_prompt").focus().select();
+				break;
+				case 'promptPwChange':
+					$("#popup_content").append('<br /><input type="text"  placeHolder="변경하실 비밀번호를 입력해 주세요." size="30" id="popup_prompt1" /><br /><input  placeHolder="비밀번호 확인" type="text" size="30" id="popup_prompt2" />').after('<table cellpadding="0" cellspacing="0" class="ale_btnbox"><tr><td id="popup_cancel"><input type="button" value="' + $.alerts.cancelButton + '" id="popcan_focus" /></td><td id="popup_ok" class="ale_btn01"><input type="button" value="' + $.alerts.okButton + '" id="popok_focus" /></td></tr></table>');
 					$("#popup_prompt").width( $("#popup_message").width() );
 					$("#popup_ok").click( function() {
 						var val = $("#popup_prompt").val();
@@ -258,6 +283,9 @@
 	};
 	jPromptPw = function(message, value, title, callback) {
 		$.alerts.promptPw(message, value, title, callback);
+	};
+	jPromptPwChange = function(message, value, title, callback) {
+		$.alerts.promptPwChange(message, value, title, callback);
 	};
 	
 })(jQuery);

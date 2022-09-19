@@ -75,7 +75,7 @@ function googleTranslateElementInit() {
             location.href = "./login";
         });
         $("#pass_change").on("click", function(){
-            Prompt("비밀번호를 입력해 주세요.", "", "비밀번호", function(r){
+            PromptPwChange("변경하실 비밀번호를 입력해 주세요.", "", "비밀번호 변경", function(r){
 				var xml = "user_pw_check";
 				
 				
