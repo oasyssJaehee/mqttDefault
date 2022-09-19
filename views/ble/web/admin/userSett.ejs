@@ -161,7 +161,7 @@
             <h2 class="main_cont_tit">회원 설정</h2>
             <div class="main_cont_btn_grp">
                 <div calss="main_cont_width main_cont_width01">
-                    <button class="icon_btn excel"></button>
+                    <button id="sync_btn" class="icon_btn_txt_left plus">회원 추가</button>
                 </div>
             </div>
         </div>
@@ -234,12 +234,12 @@
                         </colgroup>
                         <thead>
                             <tr>
-                                <th class="table_list_th text_left">권한</th>
                                 <th class="table_list_th text_left">ID</th>
+                                <th class="table_list_th text_left">권한</th>
+                                <th class="table_list_th text_left">사용유무</th>
                                 <th class="table_list_th text_left">이름</th>
                                 <th class="table_list_th text_left">연락처</th>
                                 <th class="table_list_th text_left">주소</th>
-                                <th class="table_list_th text_left">사용유무</th>
                                 <th class="table_list_th text_left">등록자</th>
                                 <th class="table_list_th text_left">등록 날짜</th>
                                 <th class="table_list_th text_left">처리자</th>
@@ -302,6 +302,112 @@
             </div>
         </div>
     </div>
-    
+    <div id="" class="popup_wrap" style="display:flex;">
+        <div class="popup_contbox">
+            <div class="popup_header_grp">
+                <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
+                    <div class="dis_flex_row dis_flex_center">
+                        <div class="dis_flex_row dis_flex_center">
+                            <h2 id="" class="popup_title popup_title01">회원 정보</h2>
+                            
+                        </div>
+                    </div>
+                    <div class="dis_flex_row dis_flex_center">
+                        <a id="pop_close_btn" class="popup_close"></a>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="popup_body">
+                <div class="pop_table_contbox">
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">ID</label>
+                            <input id="" value="오아시스" class="inp_style" type="text" disabled>
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">비밀번호</label>
+                            <div class="pw_btn_widthbox dis_flex_row dis_flex_center">
+                                <div class="pw_btn_width pw_btn_width01">
+                                    <input id="" value="*******" class="inp_style" type="password" disabled>
+                                </div>
+                                <div class="pw_btn_width pw_btn_width02">
+                                    <button class="default_btn">비밀번호 초기화</button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp01 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">권한</label>
+                            <select id="" class="sel_style">
+                                <option value="" selected="">전체</option>
+                                <option value="">청소부</option>
+                            </select>
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">사용유무</label>
+                            <select id="" class="sel_style">
+                                <option value="" selected="">사용</option>
+                                <option value="">미사용</option>
+                            </select>
+                           
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp01 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">이름</label>
+                            <input id="" value="홍길동" class="inp_style" type="text">
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">연락처</label>
+                            <input id="" value="010-1234-5678" class="inp_style" type="text">
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">주소</label>
+                            <input id="" value="대전광역시 동구 홍길동" class="inp_style" type="text">
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">상세 주소</label>
+                            <input id="" value="주택 101호" class="inp_style" type="text">
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">등록자</label>
+                            <input id="" value="admin" class="inp_style" type="text">
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">등록 날짜</label>
+                            <input id="" value="2022-09-16 PM 16:43" class="inp_style date_default_inp date" type="text">
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">처리자</label>
+                            <input id="" value="admin" class="inp_style" type="text">
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">처리 날짜</label>
+                            <input id="" value="2022-09-16 PM 16:43" class="inp_style date_default_inp date" type="text">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="popup_footer">
+                <div class="popup_btn_grp dis_flex_row dis_flex_center dis_flex_right">
+                    <div class="popup_btn_width popup_btn_width01">
+                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_darkengray">수정</button>
+                    </div>
+                    <div class="popup_btn_width popup_btn_width02">
+                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_gray">확인</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

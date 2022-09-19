@@ -188,12 +188,16 @@ background-image:url('/static/img/web/drop_arrow.png'); background-repeat: no-re
 select:placeholder{color:#ABB4B9; transition:0.3s; font-size:14px;}
 select:focus{border-color: #ffacaf;}
 
-.textarea_style{ height: 40px;border-radius: 8px; outline: none; border:1px solid #dbdbdb; min-width: 170px;box-sizing: border-box; width:100%; ;font-family: 'Pretendard', sans-serif;}
+.textarea_style{ height: 40px;border-radius: 8px; outline: none; border:1px solid #dbdbdb; min-width: 170px;box-sizing: border-box; width:100%; ;
+    font-family: 'Pretendard', sans-serif;}
 
 
 textarea:read-only{background:#F3F5F6;  border:1px solid #e3e3e3 !important;}
 textarea:disabled{background:#F3F5F6;  border:1px solid #e3e3e3 !important; color:#8998A0 !important;}
-textarea{font-size:14px; box-sizing: border-box; padding:0 8px;outline: none;}
+textarea{font-size:14px; box-sizing: border-box; padding:10px 8px;outline: none; display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;}
 textarea:placeholder{color:#ABB4B9; transition:0.3s; font-size:45px;}
 textarea:focus{border-color: #ffacaf;}
 
@@ -216,6 +220,12 @@ textarea:focus{border-color: #ffacaf;}
 .default_btn_gray:hover{background-color: #ddd;}
 
 .default_btn_gray:disabled{background-color:#ccc; color:#666;}
+
+.default_btn_darkengray{display: block; border-radius: 8px; border: 0; height:40px; text-align: center; background-color:#798185; color:#fff; font-weight:600; width:100% ; 
+    padding: 0 8px; box-sizing: border-box; transition: 0.3s;}
+.default_btn_darkengray:hover{background-color: #939b9f;}
+
+.default_btn_darkengray:disabled{background-color:#ccc; color:#666;}
 
 .default_btn_white{display: block; border-radius: 8px; border: 0; height:40px; text-align: center; background-color:#fff; color:#9ca2a9; font-weight:600; width:100% ; 
     padding: 0 8px; box-sizing: border-box; transition: 0.3s;}
@@ -242,6 +252,7 @@ textarea:focus{border-color: #ffacaf;}
 .icon_btn_txt_left.excel{background-image:url('/static/img/opener/excel_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
 .icon_btn_txt_left.download{background-image:url('/static/img/opener/download_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
 .icon_btn_txt_left.refresh{background-image:url('/static/img/opener/refresh_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
+.icon_btn_txt_left.plus{background-image:url('/static/img/opener/btn_plus_icon.png'); background-repeat: no-repeat; background-position:left 8px center; background-size:20px;}
 .icon_btn_txt_left:hover{background-color:#f6f6f6;}
 
 
@@ -259,6 +270,9 @@ background-image: url('/static/img/mobile/door/bluetooth_off.png');margin-bottom
     -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image:url('/img/opener/drop_icon.png'); background-repeat:no-repeat;
     background-position:right 8px center; background-size:8px; background-color:#fff;color:#000;}
   .key_list_sel::-ms-expand { display: none;}
+
+  select:disabled{background-color:#F3F5F6;  border:1px solid #e3e3e3 !important; color:#8998A0 !important;}
+  select::read-only{background-color:#F3F5F6;  border:1px solid #e3e3e3 !important; color:#8998A0 !important;}
 
 .text_center{text-align: center;}
 .text_left{text-align: left;}
@@ -502,7 +516,15 @@ font-weight:600;}
 .pop_cont_inp_grp_width .pop_cont_inp_box{width:100%;}
 .pop_cont_inp_grp_width .pop_cont_inp_box{margin-right: 8px;;}
 .pop_cont_inp_grp_width .pop_cont_inp_box:last-child{margin-right: 0;}
+
+.pw_btn_widthbox{width:100%;}
+.pw_btn_width {margin-right: 8px; width:100%;}
+.pw_btn_width:last-child{margin-right: 0;}
+.pw_btn_width02{max-width: 110px;;}
+
+
 .max_height_180{height:180px;}
+.max_height_80{height:80px;}
 
 
 
