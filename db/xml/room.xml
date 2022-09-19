@@ -905,4 +905,25 @@ WHERE ROOM_CODE_BS = #{bsCode}
 AND ROOM_CODE_NUM = #{rono}
 
     </select>
+    <select id="sms_select">
+        select
+        SMS_LOG_KEY,
+        SMS_LOG_BS,
+        SMS_LOG_STEL,
+        cast(AES_DECRYPT(SMS_LOG_RTEL, #{AES_KEY}) as CHAR) AS SMS_LOG_RTEL,
+        SMS_LOG_TITLE,
+        SMS_LOG_CONT,
+        SMS_LOG_ACNO,
+        SMS_LOG_RONO,
+        SMS_LOG_GNAME,
+        DATE_FORMAT(SMS_LOG_DATE, '%Y-%m-%d %p %H:%i') AS SMS_LOG_DATE,
+        SMS_LOG_USER,
+        SMS_LOG_CPID,
+        SMS_LOG_ASP,
+        SMS_LOG_TYPE,
+        SMS_LOG_TEMP
+    FROM fo_sms_log
+    WHERE SMS_LOG_BS = #{bsCode}
+    AND SMS_LOG_KEY = #{key}
+    </select>
 </mapper>

@@ -43,7 +43,6 @@
                 rono:rono,
                 gname:gname
             }, success:function(res){
-                console.log(res);
                 if(res.length > 0){
                     $("#tot_h2").text("총 "+comma(res[0].counts)+"개");
                     pageTotal = res[0].counts;
@@ -100,6 +99,36 @@
     }
     $(window).ready(function() {
         init();
+        $("#pop_confirm_btn").on("click", function(){
+            $("#sms_info_pop").css("display","none");
+            init();
+        });
+        $("#pop_close_btn").on("click", function(){
+            $("#sms_info_pop").css("display","none");
+            init();
+        });
+        $(document).on("click", "#log_table tbody tr", function(){
+            $.loading.start(''); 
+            $("#sms_info_pop").css("display","flex");
+            var key = $(this).attr("data-key");
+            $.ajax({
+                url:"/mysql/room",
+                data:{
+                    xml: "sms_select",
+                    key: key,
+                    bsCode: pad(bsCode, 7)
+                }, success:function(res){
+                    $("#pop_rono").val(res[0].SMS_LOG_RONO);
+                    $("#pop_acno").val(res[0].SMS_LOG_ACNO);
+                    $("#pop_gname").val(res[0].SMS_LOG_GNAME);
+                    $("#pop_title").val(res[0].SMS_LOG_TITLE);
+                    $("#pop_cont").val(res[0].SMS_LOG_CONT);
+                    $("#pop_send").val(res[0].SMS_LOG_DATE);
+                    $("#pop_rtel").val(res[0].SMS_LOG_RTEL);
+                    $("#pop_stel").val(res[0].SMS_LOG_STEL);
+                }
+            });
+        });
         var myCal = bulmaCalendar.attach('.date_default_inp', {
             isRange: true,
             type: 'date',
@@ -238,28 +267,7 @@
                             <col width="150px">
                         </colgroup>
                         <tbody>
-                            <tr>
-                                <td class="table_list_td text_left">로비</td>
-                                <td class="table_list_td text_left">BLE</td>
-                                <td class="table_list_td text_left">BOARD 제어</td>
-                                <td class="table_list_td text_left">BOARD ON/OFF</td>
-                                <td class="table_list_td text_left">
-                                    <p class="table_list_td_ok">정상</p>
-                                </td>
-                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                <td class="table_list_td text_left">00:00:01</td>
-                            </tr>
-                            <tr>
-                                <td class="table_list_td text_left">로비</td>
-                                <td class="table_list_td text_left">BLE</td>
-                                <td class="table_list_td text_left">BOARD 제어</td>
-                                <td class="table_list_td text_left">BOARD ON/OFF</td>
-                                <td class="table_list_td text_left">
-                                    <p class="table_list_td_no">지연</p>
-                                </td>
-                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                <td class="table_list_td text_left">00:00:01</td>
-                            </tr>
+                            
                         </tbody>
                     </table>
                 </div>
@@ -277,7 +285,7 @@
             </div>
         </div>
     </div>
-    <div id="" class="popup_wrap" style="display:flex;">
+    <div id="sms_info_pop" class="popup_wrap" style="display:none;">
         <div class="popup_contbox">
             <div class="popup_header_grp">
                 <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
@@ -298,33 +306,44 @@
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp01 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">객실</label>
-                            <input id="" value="538" class="inp_style" type="text" disabled>
+                            <input id="pop_rono" value="538" class="inp_style" type="text" disabled>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">예약번호</label>
-                            <input id="" value="202200000077" class="inp_style" type="text" disabled>
+                            <input id="pop_acno" value="202200000077" class="inp_style" type="text" disabled>
                         </div>
                     </div>
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">성명</label>
-                            <input id="" value="오아시스" class="inp_style" type="text" disabled>
+                            <input id="pop_gname" value="오아시스" class="inp_style" type="text" disabled>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">발급 날짜</label>
-                            <input id="" value="2022-09-16 PM 16:43" class="inp_style" type="text" disabled>
+                            <input id="pop_send" value="2022-09-16 PM 16:43" class="inp_style" type="text" disabled>
+                        </div>
+                    </div>
+                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
+                        <div class="pop_cont_inp_box pop_cont_inp_box01">
+                            <label class="setup_title">발신 번호</label>
+                            <input id="pop_stel" value="" class="inp_style" type="text" disabled>
+                        </div>
+                        <div class="pop_cont_inp_box pop_cont_inp_box02">
+                            <label class="setup_title">수신 번호</label>
+                            <input id="pop_rtel" value="" class="inp_style" type="text" disabled>
                         </div>
                     </div>
                     <div class="pop_cont_inp_grp pop_cont_inp_grp03">
                         <div class="pop_cont_inp_box pop_cont_inp_box01 margin_bottom_16">
                             <label class="setup_title">제목</label>
-                            <textarea class="textarea_style" disabled></textarea>
+                            <textarea id="pop_title" class="textarea_style" disabled></textarea>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">내용</label>
-                            <textarea class="textarea_style max_height_180" disabled></textarea>
+                            <textarea id="pop_cont" class="textarea_style max_height_180" disabled></textarea>
                         </div>
                     </div>
+                    
                 </div>
             </div>
             <div class="popup_footer">
