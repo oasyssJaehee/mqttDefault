@@ -317,7 +317,6 @@ app.get('/mysql/user', function (req, res) {
     var data = url.parse(uri, true).query;
     var format = {language: 'sql', indent: '  '};
     var xml_name = data.xml;
-    console.log(data);
     var query = mysql.userMapper().getStatement("user", xml_name, data, format);
     connection.query(query, function (err, rows, fields) {
         if(err){
@@ -796,7 +795,56 @@ app.get('/masterPassSett', function(request, response) {
 
     response.send(query);
 })
+app.get('/mqttCheckUser', function(request, response) {
+    console.log("mqttCheckUser");
+    var uri = request.url;
+    var query = url.parse(uri, true).query;
+    var format = {language: 'sql', indent: '  '};
+    var sql = mysql.foMapper().getStatement("fo", "bridge_tran_time_check", query, format);
+    connection.query(sql, function (err, rows, fields) {
+        if(err){
+            response.setHeader('Content-Type', 'application/json');
+            response.send(JSON.stringify(err));
+            response.end();
+        }else{
+            response.setHeader('Content-Type', 'application/json');
+            if(rows.length>0){
+                if(rows[0].CHECKIN == "0"){
+                    var result = JSON.stringify(rows)
+                    response.send(result);
+                    response.end();
+                }else if(rows[0].BRIDGE_TRAN_KCDA != ""){
+                    var result = JSON.stringify(rows)
+                    response.send(result);
+                    response.end();
+                }else{
+                    var jsonData;
+                    jsonData = JSON.stringify(mqttModule.mqttCheck());
+                    client.publish(query.topic, jsonData, {qos:2})
+                
+                    let ms = JSON.parse(jsonData);
+                    var num = query.topic.toString().replace("oasyss32/", "");
+                    num = num.split('/');
+                    ms.hotel = num[0];
+                    ms.num = num[1];
+                    ms.cmd = mqttModule.mqttCheck()[0];
+                    ms.state = mqttModule.mqttCheck()[1];
+                    ms.type = "send";
+                    ms.userId = query.userId;
+                    ms.hd = "wifi";
+                    ms.recIp = getServerIp();
+                    ms.open = query.open;
+                    queryModule.insertMqttLog(ms)
+                    response.send(query);
+                }
+            }
+            
+        }
+    });
 
+    
+
+})
 app.get('/mqttCheck', function(request, response) {
     console.log("mqttCheck");
     var uri = request.url;

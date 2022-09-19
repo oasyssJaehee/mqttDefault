@@ -16,68 +16,71 @@
 .spin{display: none;}
 </style>
 <script type="text/javascript">
-    var level = "<%=session.level%>"
+    var oper = "<%=session.level%>"
     var logPage = 0;
     var pageSize = 10;
     var pageTotal = 0;
     var selectPage = 1;
     var bsCode = "<%=bsCode%>";
-    var dcod ="";
     var sdate="";
     var edate="";
-    var keyword="";
+    var name="";
+    var use="";
+    var level="";
     function init(){
         $.loading.start(''); 
         $.ajax({
-            url: "/mysql/room",
+            url: "/mysql/user",
             data:{
-                xml:"clean_log_list",
+                xml:"admin_list",
                 bsCode: pad(bsCode, 7),
-                dcod: dcod,
                 sdate:sdate,
                 edate:edate,
                 page:logPage,
                 pageSize:pageSize,
-                keyword:keyword
+                name:name,
+                use:use,
+                level:level
             }, success:function(res){
+                console.log(res);
                 if(res.length > 0){
                     $("#tot_h2").text("총 "+comma(res[0].counts)+"개");
                     pageTotal = res[0].counts;
                     var item ="";
                     
                     for(var i=0; i<res.length; i++){
-                        var type = "";
-                        var clean = "";
-                        var admin = "";
+                        var use = "";
 
-                        if(res[i].CLEANER_LOG_CLEAN == "1"){
-                            clean = "요청";
-                        }else{
-                            clean = "완료";
-                        }
-                        if(res[i].CLEANER_LOG_ADMIN == "3"){
-                            admin = "고객";
-                        }else{
-                            admin = res[i].CLEANER_LOG_USER;
-                        }
-                        item += "<tr data-key='"+res[i].SYNC_LOG_KEY+"'>"
+                        item += "<tr data-key='"+res[i].ADMIN_KEY+"'>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].CLEANER_LOG_NUM
+                            + res[i].CODE_CONTENT
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].ROOM_CODE_FLOOR
+                            + res[i].ADMIN_ID
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].ROOM_CODE_HNAM
+                            + res[i].ADMIN_NAME
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + clean
+                            + res[i].ADMIN_TEL
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + admin
+                            + res[i].ADMIN_ADDR1 +" " + res[i].ADMIN_ADDR2
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].CLEANER_LOG_DATE
+                            + use
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_FUSER
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_FDATE
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_LUSER
+                            + "</td>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_LDATE
                             + "</td>"
                             + "</tr>";
                     }
@@ -112,27 +115,33 @@
                 sdate = "";
             }
             if($("#search").val() != ""){
-                keyword = $("#search").val();
+                name = $("#search").val();
             }else{
-                keyword = "";
+                name = "";
             }
             init();
         });
         $.ajax({
-            url:"/mysql/room",
+            url:"/mysql/user",
             data:{
-                xml: "room_type_select",
-                bsCode:pad(bsCode, 7)
+                xml: "codeList_user",
+                cod:"001",
+                oper:oper
             }, success: function(res){
+                console.log(oper);
                 var item = "";
                 for(var i=0; i<res.length; i++){
-                    item += "<option value='"+res[i].ROOM_CODE_DCOD+"'>"+res[i].ROOM_CODE_HNAM+"</option>";
+                    item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
                 }
-                $("#rtype_select").append(item);
+                $("#level_select").append(item);
             }
         });
-        $("#rtype_select").on("change", function(){
-            dcod = $(this).val();
+        $("#level_select").on("change", function(){
+            level = $(this).val();
+            init();
+        });
+        $("#use_select").on("change", function(){
+            use = $(this).val();
             init();
         });
         $(document).on("click", "#foot_page a", function(){
@@ -149,7 +158,7 @@
 <body>
     <div class="right_contbox">
         <div class="main_cont_tbox dis_flex_row dis_flex_center dis_flex_end margin_bottom_20">
-            <h2 class="main_cont_tit">청소 내역</h2>
+            <h2 class="main_cont_tit">회원 설정</h2>
             <div class="main_cont_btn_grp">
                 <div calss="main_cont_width main_cont_width01">
                     <button class="icon_btn excel"></button>
@@ -160,11 +169,11 @@
             <div class="data_search_box dis_flex_row margin_bottom_16">
                 <div class="data_search_box dis_flex_row margin_bottom_16">
                     <div class="data_search_grp">
-                        <label class="setup_title">타입</label>
+                        <label class="setup_title">권한</label>
                         <div class="inp_moving_widthbox inp_moving_widthbox02">
                             <div class="inp_moving_width inp_moving_width01">
                                 <div class="data_search_inpbox">
-                                    <select id="rtype_select" class="sel_style">
+                                    <select id="level_select" class="sel_style">
                                         <option value="" selected>전체</option>
                                     </select>
                                 </div>
@@ -172,7 +181,21 @@
                         </div>
                     </div>
                     <div class="data_search_grp">
-                        <label class="setup_title">날짜</label>
+                        <label class="setup_title">사용 여부</label>
+                        <div class="inp_moving_widthbox inp_moving_widthbox02">
+                            <div class="inp_moving_width inp_moving_width01">
+                                <div class="data_search_inpbox">
+                                    <select id="use_select" class="sel_style">
+                                        <option value="" selected>전체</option>
+                                        <option value="1">사용</option>
+                                        <option value="0">사용 안함</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data_search_grp">
+                        <label class="setup_title">등록 날짜</label>
                         <div class="inp_moving_widthbox inp_moving_widthbox01 dis_flex_row dis_flex_center">
                             <div class="inp_moving_width inp_moving_width01">
                                 <div class="data_search_inpbox">
@@ -204,13 +227,21 @@
                             <col width="200px">
                             <col width="200px">
                             <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th class="table_list_th text_left">객실</th>
-                                <th class="table_list_th text_left">층</th>
-                                <th class="table_list_th text_left">타입</th>
-                                <th class="table_list_th text_left">청소 여부</th>
+                                <th class="table_list_th text_left">권한</th>
+                                <th class="table_list_th text_left">ID</th>
+                                <th class="table_list_th text_left">이름</th>
+                                <th class="table_list_th text_left">연락처</th>
+                                <th class="table_list_th text_left">주소</th>
+                                <th class="table_list_th text_left">사용유무</th>
+                                <th class="table_list_th text_left">등록자</th>
+                                <th class="table_list_th text_left">등록 날짜</th>
                                 <th class="table_list_th text_left">처리자</th>
                                 <th class="table_list_th text_left">처리 날짜</th>
                             </tr>
@@ -220,6 +251,10 @@
                 <div class="table_contbox table_body">
                     <table id="log_table" class="table_list">
                         <colgroup>
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
+                            <col width="200px">
                             <col width="200px">
                             <col width="200px">
                             <col width="200px">

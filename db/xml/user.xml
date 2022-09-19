@@ -2,8 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="user">
-    <select id="select_user_admin" resultType="casemap">
-    SELECT ADMIN_KEY,
+    <select id="admin_list" resultType="casemap">
+    SELECT 
+        (select count(*) from co_user_admin
+        LEFT JOIN BRIDGE_CODE ON
+    CODE_CODE = ADMIN_LEVEL
+    WHERE ADMIN_BS_CODE = #{bsCode}
+        <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="name == ''">
+        </when>
+        <otherwise>
+            AND ADMIN_NAME LIKE CONCAT('%', #{name}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="use != ''">
+            AND ADMIN_USE = #{use}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="level != ''">
+            AND ADMIN_LEVEL = #{level}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    order by ADMIN_KEY desc
+        ) as counts,
+        ADMIN_KEY,
         ADMIN_NAME,
         ADMIN_TEL,
         ADMIN_ADDR1,
@@ -13,23 +48,68 @@
         ADMIN_LEVEL,
         ADMIN_BS_CODE,
         ADMIN_FUSER,
-        ADMIN_FDATE,
+        DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d %p %H:%i') AS ADMIN_FDATE,
         ADMIN_LUSER,
-        ADMIN_LDATE,
+        DATE_FORMAT(ADMIN_LDATE, '%Y-%m-%d %p %H:%i') AS ADMIN_LDATE,
         ADMIN_USE,
         ADMIN_IMGNAME,
         ADMIN_IMGPATH,
         ADMIN_EDATE,
-        BS_NAME,
-        BS_LOGO,
-        BS_TEL
+        CODE_CONTENT
     FROM co_user_admin
-    LEFT JOIN co_bs_code
-    ON BS_CODE = ADMIN_BS_CODE
-    WHERE ADMIN_ID = #{id}
-    AND ADMIN_PASS = PASSWORD(#{pw})
-    AND ADMIN_BS_CODE = #{bnum}
-    AND ADMIN_USE = '1'
+    LEFT JOIN BRIDGE_CODE ON
+    CODE_CODE = ADMIN_LEVEL
+    WHERE ADMIN_BS_CODE = #{bsCode}
+    <choose>
+        <when test="sdate == ''">
+        </when>
+        <otherwise>
+            AND DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{sdate}, '%Y-%m-%d') AND DATE_FORMAT(#{edate}, '%Y-%m-%d')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="name == ''">
+        </when>
+        <otherwise>
+            AND ADMIN_NAME LIKE CONCAT('%', #{name}, '%')
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="user != ''">
+            AND ADMIN_USE = #{dcod}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    <choose>
+        <when test="level != ''">
+            AND ADMIN_LEVEL = #{level}
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    order by ADMIN_KEY desc
+    LIMIT ${page},${pageSize}
+    </select>
+    <select id="codeList_user">
+    SELECT CODE_CODE,
+        CODE_INFO,
+        CODE_CONTENT,
+        CODE_LUSER,
+        CODE_LDATE,
+        CODE_USE
+    FROM bridge_code
+    WHERE CODE_CODE LIKE CONCAT(#{cod}, '%')
+    <choose>
+        <when test="oper == '0010001'">
+            AND CODE_CODE IN('0010002', '0010003')
+        </when>
+        <when test="oper == '0010003'">
+            AND CODE_CODE IN('0010002')
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
     </select>
 </mapper>
 

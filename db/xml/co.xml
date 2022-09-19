@@ -28,6 +28,15 @@
     ,'1'
     )
     </insert>
+    <select id="code_select">
+    SELECT
+    CODE_CODE,
+    CODE_INFO,
+    CODE_CONTENT,
+    CODE_USE
+    FROM bridge_code
+    WHERE CODE_CODE LIKE CONCAT('%', #{code})
+    </select>
     <select id="bs_select">
     SELECT BS_CODE,
         BS_ENC,

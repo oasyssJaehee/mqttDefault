@@ -152,6 +152,7 @@
     var topic;
     var gname="";
     var odate = "";
+    var initRono = "";
     function init(){
         topic = removePad(hotelCode)+"/"+rono;
         roomName = removePad(hotelCode)+"_"+rono;
@@ -188,10 +189,13 @@
                         Alert(userUseMsg);
                         userTime = false;
                     }else if(res[0].BRIDGE_TRAN_KCDA != ""){
+                        $("#pri_warp").css("display", "none");
+                        $("#guide_pop").css("display", "none");
                         userTime = false;
                         userUseMsg = "취소된 폰키 입니다.";
                         Alert(userUseMsg);
                     }else{
+                        
                         userTime = true;
                         first();
                     }
@@ -295,13 +299,36 @@
             $.loading.start('도어락 연결 중입니다.');
             setTimeout(function(){
                 $.ajax({
-                    url:"/mqttCheck",
+                    url:"/mqttCheckUser",
                     data:{
                         topic: "oasyss32/"+topic,
-                        userId: acno+"/"+rspk
+                        open: "0110001",
+                        userId: acno+"/"+rspk,
+                        acno: acno,
+                        hotelCode: hotelCode,
+                        rspk: rspk,
+                        rono: rono
                     },
                     success : function(result){
-                        mqttCheck();
+                        if(typeof result[0] == "undefined"){
+                            mqttCheck();
+                        }else{
+                            if(result[0].CHECKIN == '0'){
+                                $.loading.end();
+                                userUseMsg = "사용기간이 아닙니다.";
+                                Alert(userUseMsg);
+                                userTime = false;
+                            }else if(result[0].BRIDGE_TRAN_KCDA != ""){
+                                $.loading.end();
+                                $("#pri_warp").css("display", "none");
+                                $("#guide_pop").css("display", "none");
+                                userTime = false;
+                                userUseMsg = "취소된 폰키 입니다.";
+                                Alert(userUseMsg);
+                            }else{
+                                mqttCheck();
+                            }
+                        }
                     }
                 });  
             },1000);
@@ -329,11 +356,67 @@
                 });
             });
 		});
+        $("#clean_request_btn").on("click", function(){
+            if(!userTime){Alert(userUseMsg);return;}
+            Confirm("청소 요청 하시겠습니까?", function(){
+                $.ajax({
+                    url:"/mysql/room",
+                    data:{
+                        xml:"guset_clean_check",
+                        bsCode:hotelCode,
+                        rono: rono
+                    },success:function(re){
+                        if(re.length > 0){
+                            if(re[0].ROOM_CODE_CLEAN == "1"){
+                                Alert("현재 청소요청 상태 입니다.");
+                            }else{
+                                $.ajax({
+                                    url:"./room_set_stau",
+                                    data:{
+                                        bcode:hotelCode,
+                                        user:acno+"/"+rspk,
+                                        admin:"3",
+                                        clean:"1",
+                                        rono:rono,
+                                        acno:acno,
+                                        status:"0030001",
+                                        stau_oo:"Check In"
+                                    },success:function(res){
+                                        if(res.data.res == "101"){
+                                            Alert("요청 되었습니다.",function(){
+                                                
+                                            });
+                                        }else{
+                                            Alert("실패 하였습니다.");
+                                        }
+                                    }
+                                });
+                            }
+                            
+                        }else{
+                            Alert("연동되지 않은 객실 입니다.");
+                        }
+                        
+                    }
+                });
+                
+            });
+        });
         if("<%=pri_check%>" != ""){
             $("#pri_warp").css("display", "none");
         }else{
             $("#pri_warp").css("display", "block");
         }
+        if("<%=guide_check%>" != ""){
+            $("#guide_pop").css("display", "none");
+        }else{
+            $("#guide_pop").css("display", "block");
+        }
+        var question_btn = false;
+        $("#question_btn").on("click", function(){
+            question_btn = true;
+            $("#guide_pop").css("display", "block");
+        });
         $("#pri_confirm").on("click", function(){
             var ck = $("#pri_check").is(":checked");
             if(ck){
@@ -347,6 +430,29 @@
             }else{
                 Alert("약관에 동의해 주세요.");
             }
+        });
+        $("#guide_pop_btn").on("click", function(){
+            if(question_btn){
+                $("#guide_pop").css("display", "none");
+                $.ajax({
+                    url:"./guide_cookie",
+                    success:function(){
+
+                    }
+                });
+            }else{
+                Alert("해당 팝업은 상단에 물음표 버튼으로\n다시 확인 가능합니다.", function(){
+                    $("#guide_pop").css("display", "none");
+                    $.ajax({
+                        url:"./guide_cookie",
+                        success:function(){
+
+                        }
+                    });
+                });
+            }
+            
+            
         });
         $(".password_set_btn").on("click", function(){
             if(!userTime){Alert(userUseMsg);return;}
@@ -396,12 +502,12 @@
                 </div> 
                 <div class="sub_btn_contbox">
                     <div class="sub_btn_grp">
-                        <button class="sub_btn sub_btn01">
+                        <button id="open_main_door" class="not_fun sub_btn sub_btn01">
                             <em class="body_key_tit_sub">Front Door Open</em>
                             <h2 class="body_key_tit">공동현관문 열기</h2>
                             <span class="body_key_sub_icon front_door"></span>
                         </button>
-                        <button class="sub_btn sub_btn02">
+                        <button id="clean_request_btn" class="sub_btn sub_btn02">
                             <em class="body_key_tit_sub">Cleaning Request</em>
                             <h2 class="body_key_tit">청소 요청</h2>
                             <span class="body_key_sub_icon cleaning"></span>
@@ -420,21 +526,21 @@
             </div>
             <div class="body_key_btn_grp">
                 <div class="body_key_box body_key_box01">
-                    <div class="bg_cont_box">
+                    <div class="bg_cont_box not_fun">
                         <h2 class="body_key_tit_sub">Room Control</h2>
                         <h2 class="body_key_tit">객실 제어</h2>
                         <span class="body_key_sub_icon body_key_sub_icon01"></span>
                     </div>
                 </div>
                 <div class="body_key_box body_key_box02">
-                    <div class="bg_cont_box">
+                    <div class="bg_cont_box not_fun">
                         <h2 class="body_key_tit_sub">Smart Order</h2>
                         <h2 class="body_key_tit">스마트 오더</h2>
                         <span class="body_key_sub_icon body_key_sub_icon02"></span>
                     </div>
                 </div>
             </div>
-            <div class="body_key_btn_grp">
+            <!-- <div class="body_key_btn_grp">
                 <div class="body_key_box body_key_box01">
                     <div class="bg_cont_box">
                         <h2 class="body_key_tit_sub">Hotel News</h2>
@@ -449,9 +555,9 @@
                         <span class="body_key_sub_icon body_key_sub_icon04"></span>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
-        <div id="pri_warp" style="display: none;" class="popup_wrap">
+        <div id="pri_warp" style="display: none; z-index: 9999;" class="popup_wrap">
             <div class="popup_box popup_box_ver02">
                 <div class="popup_tbox">
                     <h2 class="popup_tit dis_flex_row dis_flex_row_center"><span class="warning_icon"></span>사용 안내</h2>
@@ -487,7 +593,7 @@
         </div>
 
         <!-- 가이드 팝업 -->
-        <div id="" class="popup_wrap popup_wrap02">
+        <div id="guide_pop" class="popup_wrap popup_wrap02">
             <div class="popup_box_bg">
                 <div class="popup_guide_box">
                     <div class="popup_guide_tbox">
@@ -500,7 +606,7 @@
                         <div class="popup_guide_txt popup_guide_txt02">도어락 연결이 지속적으로 실패 시<br>담당자에게 문의 바랍니다.</div>
                         <div class="popup_guide_txt popup_guide_txt03">담당자 : 042-000-0000</div>
                     </div>
-                    <a class="pop_close_bottom_btn">확인</a>
+                    <a id="guide_pop_btn" class="pop_close_bottom_btn">확인</a>
                 </div>
             </div>
         </div>

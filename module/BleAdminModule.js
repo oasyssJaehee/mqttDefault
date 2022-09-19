@@ -114,6 +114,19 @@ router.get('/cleanLog', function (req, res) {
       res.redirect("/ble/admin/login");
   }
 });
+router.get('/userSett', function (req, res) {
+  
+  if(req.session.admin){
+    res.render("ble/web/admin/userSett",{
+        session: req.session.admin,
+        title:req.session.admin.bsTitle,
+        bsCode: req.session.admin.bsCode,
+        logoName: req.session.admin.bsLogo
+    })
+  }else{
+      res.redirect("/ble/admin/login");
+  }
+});
 router.get('/index3', function (req, res) {
   
   res.render("ble/web/admin/index3",{

@@ -43,6 +43,7 @@ router.get('/index', function (req, res) {
   console.log(dec);
 
   var pri_check = req.cookies["pri_check"];
+  var guide_check = req.cookies["guide_check"];
   res.render("ble/mobile/index",{
     page:"index",
     hotelCode: decArr[0],
@@ -50,7 +51,8 @@ router.get('/index', function (req, res) {
     acno : decArr[2],
     rono: decArr[3],
     key: query.key,
-    pri_check: pri_check
+    pri_check: pri_check,
+    guide_check:guide_check
   })
 });
 router.get('/keySett', function (req, res) {
@@ -141,6 +143,14 @@ const connection = mysql.connection()
 
 router.get('/pri_cookie', function (req, res) {
   res.cookie("pri_check", "1", {
+    maxAge: (1000*60*60*24) * 7
+  });
+  res.setHeader('Content-Type', 'application/json');
+  res.send();
+  res.end();
+});
+router.get('/guide_cookie', function (req, res) {
+  res.cookie("guide_check", "1", {
     maxAge: (1000*60*60*24) * 7
   });
   res.setHeader('Content-Type', 'application/json');
@@ -309,6 +319,73 @@ var query = mysql.mqttMapper().getStatement("mqtt", "door_time_check", input, fo
           });
         }
     }
+  });
+});
+router.get('/room_set_stau', function (req, res) {
+  var uri = req.url;
+  var inputData = url.parse(uri, true).query;
+  if(inputData.stau_oo != "Repair" && inputData.stau_oo != "Check In"){
+    if(inputData.clean == "0"){
+      inputData.status = "0030004";
+    }
+    if(inputData.clean == "1"){
+      inputData.status = "0030005";
+    }
+  }
+  var format = {language: 'sql', indent: '  '};
+  var query ;
+  var jsonObj = new Object();
+  res.setHeader('Content-Type', 'application/json');
+  query = mysql.apiMapper().getStatement("api", "room_clean_update", inputData, format);
+  connection.query(query, function (err, rows, fields) {
+      if(err){
+          console.log(err);
+      }else{
+        
+          query = mysql.apiMapper().getStatement("api", "cleaner_log_insert", inputData, format);
+          connection.query(query, function (err, rows, fields) {
+              if(err){
+                  console.log(err);
+              }else{
+                  var jsonObj = new Object();
+                  var resData = {};
+                  resData.res = "101"
+                  jsonObj.data = resData;
+                  var result = JSON.stringify(jsonObj)
+                  res.send(result);
+                  res.end();
+                  for(var i=0; i<AppInfo.adminSocketArray.length; i++){
+                    var bsCode = AppInfo.adminSocketArray[i].bsCode;
+                    const io = req.app.get("io");
+                    var socketTypeMsg = "";
+                    if(inputData.clean == "1"){
+                        socketTypeMsg = "guestClean1"
+                    }else{
+                        socketTypeMsg = "guestClean0"
+                    }
+                    io.to("admin_"+bsCode).emit("refresh",{
+                        type:socketTypeMsg,
+                        rono:inputData.rono
+                    });
+                }
+                  //pms에도 보내줌
+                  var api_url = AppInfo.pmsUrl+"/api/app/room_set_stau.do";
+                  var request = require('request');
+                  var options = {
+                      url: api_url,
+                      method:'POST',
+                      form:inputData
+                  };
+                  request.post(options, function (error, response, body) {
+                      console.log(body);
+                      if (!error && response.statusCode == 200) {
+                      } else {
+                          console.log('error = ' + response.statusCode);
+                      }
+                  });
+              }
+          });
+      }
   });
 });
 router.get('/mysql/fo', function (req, res) {

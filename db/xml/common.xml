@@ -9,7 +9,7 @@
         CODE_LUSER,
         CODE_LDATE,
         CODE_USE
-    FROM opener_code
+    FROM bridge_code
     WHERE CODE_CODE LIKE CONCAT(#{cod}, '%') 
     </select>
     <select id="codeList_two">

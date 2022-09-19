@@ -27,16 +27,33 @@
         BS_NAME,
         BS_LOGO,
         BS_TEL,
-        BS_CODE
+        BS_CODE,
+        IFNULL(ROOM_CODE_NUM, '') AS ROOM_CODE_NUM
     FROM fo_bridge_tran
     LEFT JOIN co_bs_code BS
     ON BS.BS_CODE = BRIDGE_TRAN_BS
+    LEFT JOIN FO_ROOM_CODE ROOM
+    ON ROOM.ROOM_CODE_NUM = BRIDGE_TRAN_RONO
+    AND ROOM.ROOM_CODE_BS = BRIDGE_TRAN_BS
     WHERE BRIDGE_TRAN_BS = #{hotelCode}
     AND BRIDGE_TRAN_RSPK = #{rspk}
     AND BRIDGE_TRAN_ACNO = #{acno}
     AND BRIDGE_TRAN_RONO = #{rono}
-
-
     </select>
-    
+    <select id="bridge_tran_time_check">
+    SELECT 
+        CASE
+        WHEN
+          NOW() BETWEEN BRIDGE_TRAN_IDATE AND BRIDGE_TRAN_ODATE
+        THEN
+          '1'
+        ELSE '0'
+        END AS CHECKIN,
+        IFNULL(BRIDGE_TRAN_KCDA, '') AS BRIDGE_TRAN_KCDA
+    FROM fo_bridge_tran
+    WHERE BRIDGE_TRAN_BS = #{hotelCode}
+    AND BRIDGE_TRAN_RSPK = #{rspk}
+    AND BRIDGE_TRAN_ACNO = #{acno}
+    AND BRIDGE_TRAN_RONO = #{rono}
+    </select>
 </mapper>

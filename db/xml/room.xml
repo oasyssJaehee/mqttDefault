@@ -757,7 +757,7 @@
         WHERE CLEANER_LOG_BS = #{bsCode}
         <choose>
         <when test="dcod != ''">
-            ROOM_CODE_DCOD = #{dcod}
+            AND ROOM_CODE_DCOD = #{dcod}
         </when>
         <otherwise>
         </otherwise>
@@ -794,7 +794,7 @@
     WHERE CLEANER_LOG_BS = #{bsCode}
     <choose>
         <when test="dcod != ''">
-            ROOM_CODE_DCOD = #{dcod}
+            AND ROOM_CODE_DCOD = #{dcod}
         </when>
         <otherwise>
         </otherwise>
@@ -895,5 +895,14 @@
     </choose>
     order by SMS_LOG_KEY desc
     LIMIT ${page},${pageSize}
+    </select>
+    <select id="guset_clean_check">
+    SELECT
+ROOM_CODE_NUM,
+ROOM_CODE_CLEAN
+FROM FO_ROOM_CODE
+WHERE ROOM_CODE_BS = #{bsCode}
+AND ROOM_CODE_NUM = #{rono}
+
     </select>
 </mapper>
