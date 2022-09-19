@@ -59,12 +59,20 @@
     var cleanAcno = "";
     //생명주기 체크
     window.ifvisible.on("blur", function(){
-        socket.emit("adminRoomDisConnect");
-        socket.emit("msg",{
-            rm: "rm_"+removePad(bsCode)+"_"+rono,
-            msg:"dis"
-        });
+        if(socketConnect){
+            socket.emit("adminRoomDisConnect");
+            socket.emit("msg",{
+                rm: "rm_"+removePad(bsCode)+"_"+rono,
+                msg:"dis"
+            });
+            socketConnect = false;
+            bleConnect = false;
+            $("#connect").removeClass("on");
+            $("#connect").addClass("disabled");
+        }
+        
     });
+    
     socket.on("refresh", function(data){
         var msg = "";
         if(data.type == "pmsStatus"){

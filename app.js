@@ -565,6 +565,8 @@ io.sockets.on("connection", function(socket){
         }else{
             if(data.msg == "dis"){
                 io.to(data.rm).emit("disConnect", "msg");
+            }else if(data.msg == "bleConnect"){
+                io.to(data.rm).emit("bleConnect", "msg");
             }else{
                 io.to(data.rm).emit("recvChat", {
                     msg : data.msg,

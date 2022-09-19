@@ -36,6 +36,13 @@ function PromptPw(msg, value, title, yes, no){
 
 	}); 
 }
+function Prompt(msg, value, title, yes, no){ 
+	jPrompt(msg, value, title, function(r){
+		if(r) yes(r);
+		else if(no) no();
+
+	}); 
+}
 function jqueryLoadingStart () {
 // 	    $('#container').loading('start');
 	var div = "<div id='custom-overlay' style='display:none;'>"

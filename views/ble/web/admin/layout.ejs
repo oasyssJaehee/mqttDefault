@@ -69,8 +69,16 @@ function googleTranslateElementInit() {
             $.ajax({
 				url:"./user_log_out",
 				success: function(re){
-					location.href = "./login";
+					
 				}
+			});
+            location.href = "./login";
+        });
+        $("#pass_change").on("click", function(){
+            Prompt("비밀번호를 입력해 주세요.", "", "비밀번호", function(r){
+				var xml = "user_pw_check";
+				
+				
 			});
         });
     });
@@ -153,11 +161,19 @@ function googleTranslateElementInit() {
                         </li>
                     </ul>
                     <ul class="left_menu_ul">
-                        <li class="left_menu_li"  data-url="userSett">
-                            <a class="left_menu_page_btn"  href="./userSett">
-                                회원 설정
-                            </a>
-                        </li>
+                        <%if(session.level == '0010001' || session.level == '0010000'){ %>
+                            <li class="left_menu_li"  data-url="userSett">
+                                <a class="left_menu_page_btn"  href="./userSett">
+                                    회원 설정
+                                </a>
+                            </li>
+                        <%}else {%>
+                            <li id="pass_change" class="left_menu_li">
+                                <a class="left_menu_page_btn" >
+                                    비밀번호 변경
+                                </a>
+                            </li>
+                        <%}%>
                     </ul>
                 </div>
                 <a class="admin_logout_btn logout_btn">로그아웃</a>

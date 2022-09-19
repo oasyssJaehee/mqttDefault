@@ -31,6 +31,11 @@
     //생명주기 체크
     window.ifvisible.on("blur", function(){
         socket.emit("roomDisConnect");
+        socketConnect = false;
+        bleConnect = false;
+        $("#connect").removeClass("on");
+        $("#connect").addClass("disabled");
+        
     });
     window.ifvisible.on("focus", function(){
         first();
@@ -50,6 +55,7 @@
             bleConnect = true;
             $.loading.end();
             oDateCheck();
+
         }else if(data.msg == "disconnect"){
             $("#connect").removeClass("on");
             $("#connect").addClass("disabled");
@@ -81,6 +87,7 @@
                 Alert("도어락이 연결 되었습니다.");
                 $.loading.end();
                 oDateCheck();
+
             }
         }else if(data.msg == "open"){
             clearInterval(actionInterver);
