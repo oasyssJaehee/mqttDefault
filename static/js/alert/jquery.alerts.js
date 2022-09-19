@@ -181,7 +181,7 @@
 					$("#popup_prompt").focus().select();
 				break;
 				case 'promptPwChange':
-					$("#popup_content").append('<br /><input type="text"  placeHolder="변경하실 비밀번호를 입력해 주세요." size="30" id="popup_prompt1" /><br /><input  placeHolder="비밀번호 확인" type="text" size="30" id="popup_prompt2" />').after('<table cellpadding="0" cellspacing="0" class="ale_btnbox"><tr><td id="popup_cancel"><input type="button" value="' + $.alerts.cancelButton + '" id="popcan_focus" /></td><td id="popup_ok" class="ale_btn01"><input type="button" value="' + $.alerts.okButton + '" id="popok_focus" /></td></tr></table>');
+					$("#popup_content").append('<input type="text"  placeHolder="변경하실 비밀번호를 입력해 주세요." size="30" id="popup_prompt1" /><input  placeHolder="비밀번호 확인" type="text" size="30" id="popup_prompt2" />').after('<table cellpadding="0" cellspacing="0" class="ale_btnbox"><tr><td id="popup_cancel"><input type="button" value="' + $.alerts.cancelButton + '" id="popcan_focus" /></td><td id="popup_ok" class="ale_btn01"><input type="button" value="' + $.alerts.okButton + '" id="popok_focus" /></td></tr></table>');
 					$("#popup_prompt").width( $("#popup_message").width() );
 					$("#popup_ok").click( function() {
 						var val = $("#popup_prompt").val();
