@@ -10,7 +10,8 @@
 <!-- <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-
+<!-- 다음지도 -->
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <style>
 .spin{display: none;}
@@ -153,6 +154,20 @@
 
             init();
         });
+
+        $("#pop_addr1").on("click", function(){
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    console.log(data);
+                    if(data.userSelectedType == "R"){
+                        $("#pop_addr1").val(data.roadAddress);
+                    }else{
+                        $("#pop_addr1").val(data.jibunAddress);
+                    }
+                    
+                }
+            }).open();
+        });
     });
 </script>
 <body>
@@ -263,28 +278,6 @@
                             <col width="140px">
                         </colgroup>
                         <tbody>
-                            <tr>
-                                <td class="table_list_td text_left">로비</td>
-                                <td class="table_list_td text_left">BLE</td>
-                                <td class="table_list_td text_left">BOARD 제어</td>
-                                <td class="table_list_td text_left">BOARD ON/OFF</td>
-                                <td class="table_list_td text_left">
-                                    <p class="table_list_td_ok">정상</p>
-                                </td>
-                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                <td class="table_list_td text_left">00:00:01</td>
-                            </tr>
-                            <tr>
-                                <td class="table_list_td text_left">로비</td>
-                                <td class="table_list_td text_left">BLE</td>
-                                <td class="table_list_td text_left">BOARD 제어</td>
-                                <td class="table_list_td text_left">BOARD ON/OFF</td>
-                                <td class="table_list_td text_left">
-                                    <p class="table_list_td_no">지연</p>
-                                </td>
-                                <td class="table_list_td text_left">2022-08-08 AM 10:05:53</td>
-                                <td class="table_list_td text_left">00:00:01</td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -302,7 +295,7 @@
             </div>
         </div>
     </div>
-    <div id="" class="popup_wrap" style="display:flex;">
+    <div id="pop_div" class="popup_wrap" style="display:none;">
         <div class="popup_contbox">
             <div class="popup_header_grp">
                 <div class="popup_header dis_flex_row dis_flex_center dis_flex_end">
@@ -368,11 +361,11 @@
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">주소</label>
-                            <input id="" value="대전광역시 동구 홍길동" class="inp_style" type="text">
+                            <input id="pop_addr1" value="" class="inp_style" type="text" readonly>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">상세 주소</label>
-                            <input id="" value="주택 101호" class="inp_style" type="text">
+                            <input id="pop_addr2" value="" class="inp_style" type="text">
                         </div>
                     </div>
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
