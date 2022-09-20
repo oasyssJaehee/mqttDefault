@@ -94,7 +94,6 @@ function googleTranslateElementInit() {
             }, success: function(res){
                 if(res.length>0){
                     var chatNotCount = res[0].CHAT_NOT_COUNT;
-                    console.log(chatNotCount);
                     $(".bottom_talk_num").css("display", "block");
                     if(Number(chatNotCount) == 0){
                         $(".bottom_talk_num").css("display", "none");
@@ -163,7 +162,7 @@ function googleTranslateElementInit() {
         <% }else { %>
         <% } %>
         
-        <a class="logo"><img src="/static/img/opener/oasys_logo.png"></a>
+        <a class="logo"><img id="layout_logo" src="/static/img/opener/oasys_logo.png"></a>
         <a class="lang_btn1"><span class="stem03"></span>Language</a>
         <div id="google_translate_element"></div> 
         </header>

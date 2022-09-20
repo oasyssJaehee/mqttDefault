@@ -282,7 +282,6 @@ app.get('/socket/room', function(req, res) {
     var uri = req.url;
     var data = url.parse(uri, true).query;
     var resData = {};
-    console.log("헤이!! " + data.id);
     var roomCount = 0;
     for(var i=0; i<AppInfo.roomArray.length; i++){
         if(AppInfo.roomArray[i].rmName == "rm_"+data.name){

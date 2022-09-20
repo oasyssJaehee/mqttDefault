@@ -34,7 +34,12 @@
 
 <script type="text/javascript">
     $(window).ready(function() {
-        
+        if("<%=id%>" != ""){
+            $("#log_ck").prop("checked", true);
+            $("input[name='id']").val("<%=id%>");
+            $("input[name='bnum']").val("<%=code%>");
+            $("input[name='pw']").focus();
+        }
         $("input[name='pw']").keypress(function(e){
 			if (e.keyCode == 13){
 				$(".log_btn").click();
@@ -69,7 +74,12 @@
                     bnum:bnum
                 }, success:function(res){
                     if(res.length > 0){
-                        location.href="/ble/admin/main";
+                        if(res[0].ADMIN_LEVEL == "0010002"){
+                            location.href="/ble/admin/cleanLog";
+                        }else{
+                            location.href="/ble/admin/main";
+                        }
+                        
                     }else{
                         Alert("아이디 비밀번호를 확인해 주세요.");
                     }

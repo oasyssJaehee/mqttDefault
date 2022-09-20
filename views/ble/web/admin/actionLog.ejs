@@ -42,7 +42,6 @@
                 div:div,
                 rono:rono
             }, success:function(res){
-                console.log(res);
                 if(res.length > 0){
                     $("#tot_h2").text("총 "+comma(res[0].counts)+"개");
                     pageTotal = res[0].counts;

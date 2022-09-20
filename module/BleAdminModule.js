@@ -17,9 +17,19 @@ router.get('/login', function (req, res) {
   //     res.redirect("/opener/mobile/login")
   //     return;
   // } 
+  var id_save = req.cookies["id_save"];
+  console.log(id_save);
+  var id = "";
+  var code = "";
+  if(typeof id_save != "undefined"){
+    id = id_save.id;
+    code = id_save.code;
+  }
   res.render("ble/web/admin/login",{
       title:'로그인',
-      layout: false
+      layout: false,
+      id:id,
+      code:code
   })
 });
 router.get('/main', function (req, res) {
@@ -168,6 +178,17 @@ router.get('/mysql/admin_login', function (req, res) {
                 bsTel: rows[0].BS_TEL,
                 authorized: true
             };
+          }
+          var save = {
+            id: data.id,
+            code: data.bnum
+          };
+          if(data.ck == "1"){
+            res.cookie("id_save", save, {
+              maxAge: (1000*60*60*24) * 365
+            });
+          }else{
+            res.clearCookie("id_save");
           }
           var result = JSON.stringify(rows)
           
@@ -485,10 +506,15 @@ router.get('/room_sync_check', function (req, res) {
     try {
         if (session.admin) { //세션정보가 존재하는 경우
             req.session.destroy(function (err) {
+              res.setHeader('Content-Type', 'application/json');
                 if (err)
                     console.log(err)
                 else {
-                  res.redirect("/opener/admin/login")
+                  var resc = {};
+                  resc.suc = "101";
+                  var result = JSON.stringify(resc)
+                  res.send(result);
+                  res.end();
                 }
             });
         }

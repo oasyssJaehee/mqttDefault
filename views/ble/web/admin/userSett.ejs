@@ -18,6 +18,7 @@
 </style>
 <script type="text/javascript">
     var oper = "<%=session.level%>"
+    var userId = "<%=session.id%>";
     var logPage = 0;
     var pageSize = 10;
     var pageTotal = 0;
@@ -28,6 +29,7 @@
     var name="";
     var use="";
     var level="";
+    var selectKey="";
     function init(){
         $.loading.start(''); 
         $.ajax({
@@ -41,9 +43,9 @@
                 pageSize:pageSize,
                 name:name,
                 use:use,
-                level:level
+                level:level,
+                    oper:oper
             }, success:function(res){
-                console.log(res);
                 if(res.length > 0){
                     $("#tot_h2").text("총 "+comma(res[0].counts)+"개");
                     pageTotal = res[0].counts;
@@ -51,13 +53,26 @@
                     
                     for(var i=0; i<res.length; i++){
                         var use = "";
+                        if(res[i].ADMIN_USE == "1"){
+                            use = "사용";
+                        }else{
+                            use = "미사용";
+                        }
+                        var addr = res[i].ADMIN_ADDR1 +" " + res[i].ADMIN_ADDR2;
+                        if(addr != " "){
+                            addr = addr.substring(0,6)+"...";
+                        }
+                        
 
                         item += "<tr data-key='"+res[i].ADMIN_KEY+"'>"
+                            + "<td class='table_list_td text_left'>"
+                            + res[i].ADMIN_ID
+                            + "</td>"
                             + "<td class='table_list_td text_left'>"
                             + res[i].CODE_CONTENT
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].ADMIN_ID
+                            + use
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
                             + res[i].ADMIN_NAME
@@ -66,11 +81,9 @@
                             + res[i].ADMIN_TEL
                             + "</td>"
                             + "<td class='table_list_td text_left'>"
-                            + res[i].ADMIN_ADDR1 +" " + res[i].ADMIN_ADDR2
+                            + addr
                             + "</td>"
-                            + "<td class='table_list_td text_left'>"
-                            + use
-                            + "</td>"
+                            
                             + "<td class='table_list_td text_left'>"
                             + res[i].ADMIN_FUSER
                             + "</td>"
@@ -129,7 +142,6 @@
                 cod:"001",
                 oper:oper
             }, success: function(res){
-                console.log(oper);
                 var item = "";
                 for(var i=0; i<res.length; i++){
                     item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
@@ -154,11 +166,146 @@
 
             init();
         });
+        $("#pop_confirm_btn").on("click", function(){
+            $("#pop_div").css("display","none");
+            init();
+        });
+        $("#pop_close_btn").on("click", function(){
+            $("#pop_div").css("display","none");
+            init();
+        });
+        $("#add_btn").on("click",function(){
+            $("#pop_id").val("");
+            $("#pop_level_select option:eq(0)").attr("selected","selected");
+            $("#pop_use_select option:eq(0)").attr("selected","selected");
+            $("#pop_name").val("");
+            $("#pop_tel").val("");
+            $("#pop_addr1").val("");
+            $("#pop_addr2").val("");
+            $("#pop_id").attr("readonly", false);
+            $("#pop_pass").attr("placeHolder", "초기 비밀번호로 설정 됩니다.");
+            selectKey = "";
+            $("#pop_pass_change").parent("div").css("display","none");
+            $.ajax({
+                url:"/mysql/user",
+                data:{
+                    xml: "codeList_user",
+                    cod:"001",
+                    oper:oper
+                }, success: function(res){
+                    var item = "";
+                    
+                    for(var i=0; i<res.length; i++){
+                        item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
+                    }
+                    $("#pop_level_select").empty();
+                    $("#pop_level_select").append(item);
 
+
+                    $("#pop_div").css("display","flex");
+                    
+                }
+            });
+        });
+        $(document).on("click", "#log_table tbody tr", function(){
+            $("#pop_pass_change").parent("div").css("display","block");
+            $("#pop_id").attr("readonly", true);
+            $("#pop_pass").attr("placeHolder", "");
+            $.loading.start(''); 
+            var key = $(this).attr("data-key");
+            selectKey = key;
+            $.ajax({
+                url:"/mysql/user",
+                data:{
+                    xml: "codeList_user",
+                    cod:"001",
+                    oper:oper
+                }, success: function(res){
+                    var item = "";
+                    
+                    for(var i=0; i<res.length; i++){
+                        item += "<option value='"+res[i].CODE_CODE+"'>"+res[i].CODE_CONTENT+"</option>";
+                    }
+                    $("#pop_level_select").empty();
+                    $("#pop_level_select").append(item);
+
+
+                    $("#pop_div").css("display","flex");
+                    
+                    $.ajax({
+                        url:"/mysql/user",
+                        data:{
+                            xml: "user_select",
+                            key: key,
+                            bsCode: pad(bsCode, 7)
+                        }, success:function(res2){
+                            $.loading.end(); 
+                            $("#pop_id").val(res2[0].ADMIN_ID);
+                            $("#pop_level_select").val(res2[0].ADMIN_LEVEL);
+                            $("#pop_use_select").val(res2[0].ADMIN_USE);
+                            $("#pop_name").val(res2[0].ADMIN_NAME);
+                            $("#pop_tel").val(res2[0].ADMIN_TEL);
+                            $("#pop_addr1").val(res2[0].ADMIN_ADDR1);
+                            $("#pop_addr2").val(res2[0].ADMIN_ADDR2);
+                        }
+                    });
+                }
+            });
+        });
+        $("#pop_pass_change").on("click", function(){
+            Confirm("비밀번호를 초기화 하시겠습니까?\n초기비밀번호는 [123456]입니다.", function(){
+                $.ajax({
+                    url:"/mysql/user",
+                    data:{
+                        xml:"user_pass_reset",
+                        key:selectKey,
+                        userId:userId,
+                        bsCode:pad(bsCode)
+                    },success:function(res){
+                        Alert("초기화 되었습니다.");
+                    }
+                });
+            });
+        });
+        $("#pop_save_btn").on("click", function(){
+            var xml = "user_insert";
+            var id = $("#pop_id").val();
+            var level = $("#pop_level_select").val();
+            var use = $("#pop_use_select").val();
+            var name = $("#pop_name").val();
+            var tel = $("#pop_tel").val();
+            var addr1 = $("#pop_addr1").val();
+            var addr2 = $("#pop_addr2").val();
+
+
+            if(selectKey == ""){
+            }else{
+                xml = "user_update";
+            }
+            $.ajax({
+                url:"/mysql/user",
+                data:{
+                    key:selectKey,
+                    xml: xml,
+                    id:id,
+                    level:level,
+                    use:use,
+                    name:name,
+                    tel:tel,
+                    addr1:addr1,
+                    addr2:addr2,
+                    userId:userId,
+                    bsCode:pad(bsCode)
+                }, success:function(res){
+                    Alert("저장 되었습니다.", function(){
+                        location.reload();
+                    });
+                }
+            });
+        });
         $("#pop_addr1").on("click", function(){
             new daum.Postcode({
                 oncomplete: function(data) {
-                    console.log(data);
                     if(data.userSelectedType == "R"){
                         $("#pop_addr1").val(data.roadAddress);
                     }else{
@@ -176,7 +323,7 @@
             <h2 class="main_cont_tit">회원 설정</h2>
             <div class="main_cont_btn_grp">
                 <div calss="main_cont_width main_cont_width01">
-                    <button id="sync_btn" class="icon_btn_txt_left plus">회원 추가</button>
+                    <button id="add_btn" class="icon_btn_txt_left plus">회원 추가</button>
                 </div>
             </div>
         </div>
@@ -236,11 +383,11 @@
                 <div class="table_contbox table_header">
                     <table class="table_list">
                         <colgroup>
-                            <col width="100px">
+                            <col width="80px">
                             <col width="100px">
                             <col width="100px">
                             <col width="120px">
-                            <col width="200px">
+                            <col width="100px">
                             <col width="80px">
                             <col width="100px">
                             <col width="140px">
@@ -264,13 +411,13 @@
                     </table>
                 </div>
                 <div class="table_contbox table_body">
-                    <table id="log_table" class="table_list">
+                    <table id="log_table" class="table_list hover_table">
                         <colgroup>
-                            <col width="100px">
+                            <col width="80px">
                             <col width="100px">
                             <col width="100px">
                             <col width="120px">
-                            <col width="200px">
+                            <col width="100px">
                             <col width="80px">
                             <col width="100px">
                             <col width="140px">
@@ -316,16 +463,16 @@
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">ID</label>
-                            <input id="" value="오아시스" class="inp_style" type="text" disabled>
+                            <input id="pop_id" value="" class="inp_style" type="text" readonly>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">비밀번호</label>
                             <div class="pw_btn_widthbox dis_flex_row dis_flex_center">
                                 <div class="pw_btn_width pw_btn_width01">
-                                    <input id="" value="*******" class="inp_style" type="password" disabled>
+                                    <input id="pop_pass" value="" class="inp_style" type="password" disabled>
                                 </div>
                                 <div class="pw_btn_width pw_btn_width02">
-                                    <button class="default_btn">비밀번호 초기화</button>
+                                    <button id="pop_pass_change" class="default_btn">비밀번호 초기화</button>
                                 </div>
                             </div>
                             
@@ -334,16 +481,15 @@
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp01 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">권한</label>
-                            <select id="" class="sel_style">
+                            <select id="pop_level_select" class="sel_style">
                                 <option value="" selected="">전체</option>
-                                <option value="">청소부</option>
                             </select>
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">사용유무</label>
-                            <select id="" class="sel_style">
-                                <option value="" selected="">사용</option>
-                                <option value="">미사용</option>
+                            <select id="pop_use_select" class="sel_style">
+                                <option value="1">사용</option>
+                                <option value="0">미사용</option>
                             </select>
                            
                         </div>
@@ -351,11 +497,11 @@
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp01 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">이름</label>
-                            <input id="" value="홍길동" class="inp_style" type="text">
+                            <input id="pop_name" value="" class="inp_style" type="text">
                         </div>
                         <div class="pop_cont_inp_box pop_cont_inp_box02">
                             <label class="setup_title">연락처</label>
-                            <input id="" value="010-1234-5678" class="inp_style" type="text">
+                            <input id="pop_tel" value="" class="inp_style" type="text">
                         </div>
                     </div>
                     <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
@@ -368,7 +514,7 @@
                             <input id="pop_addr2" value="" class="inp_style" type="text">
                         </div>
                     </div>
-                    <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
+                    <!-- <div class="pop_cont_inp_grp pop_cont_inp_grp_width pop_cont_inp_grp02 dis_flex_row dis_flex_center margin_bottom_16">
                         <div class="pop_cont_inp_box pop_cont_inp_box01">
                             <label class="setup_title">등록자</label>
                             <input id="" value="admin" class="inp_style" type="text">
@@ -387,16 +533,16 @@
                             <label class="setup_title">처리 날짜</label>
                             <input id="" value="2022-09-16 PM 16:43" class="inp_style date_default_inp date" type="text">
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
             <div class="popup_footer">
                 <div class="popup_btn_grp dis_flex_row dis_flex_center dis_flex_right">
                     <div class="popup_btn_width popup_btn_width01">
-                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_darkengray">수정</button>
+                        <button id="pop_save_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_darkengray">저장</button>
                     </div>
                     <div class="popup_btn_width popup_btn_width02">
-                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_gray">확인</button>
+                        <button id="pop_confirm_btn" class="popup_btn popup_btn02 popup_btn_save default_btn_gray">취소</button>
                     </div>
                 </div>
             </div>

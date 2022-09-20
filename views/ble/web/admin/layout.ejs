@@ -69,16 +69,38 @@ function googleTranslateElementInit() {
             $.ajax({
 				url:"./user_log_out",
 				success: function(re){
-					
+					location.href = "./login";
 				}
 			});
-            location.href = "./login";
+            
         });
         $("#pass_change").on("click", function(){
             PromptPwChange("변경하실 비밀번호를 입력해 주세요.", "", "비밀번호 변경", function(r){
 				var xml = "user_pw_check";
-				
-				
+				if(r.pass1 != ""){
+                    if(r.pass1 != r.pass2){
+                        Alert("비밀번호를 확인해 주세요.");
+                    }else{
+                        $.ajax({
+                            url:"/mysql/user",
+                            data:{
+                                xml:"user_pass_update",
+                                pass:r.pass1,
+                                userId:"<%=session.id%>",
+                                bsCode:pad("<%=bsCode%>")
+                            },success:function(res){
+                                Alert("변경 되었습니다.\n변경된 비밀번호로 로그인해 주세요.",function(){
+                                    $.ajax({
+                                        url:"./user_log_out",
+                                        success: function(re){
+                                            location.href = "./login";
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    }
+                }
 			});
         });
     });
@@ -102,64 +124,80 @@ function googleTranslateElementInit() {
             <div class="left_menu_acco">
                 <div class="home_logo_box dis_flex_row">
                     <div class="home_logo">
-                        <a class="home_logo_btn dis_inblock" href="/opener/admin/main">
-                            <img src="/static/img/opener/oasys_logo.png">
+                        <a class="home_logo_btn dis_inblock" href="/ble/admin/main">
+                            <img id="layout_logo" src="<%=session.bsLogo%>">
                         </a>
                     </div>
                 </div>
                 <div class="left_menu_box">
-                    <div class="left_menu_titbox dis_flex_row dis_flex_center">
-                        <div class="menu_icon control">
-                            <img src="/static/img/opener/control_icon.png">
+                    <%if(session.level == '0010002'){ %>
+                        <div class="left_menu_titbox dis_flex_row dis_flex_center">
+                            <div class="menu_icon history">
+                                <img src="/static/img/opener/history_icon.png">
+                            </div>
+                            <h2 class="left_menu_tit">로그</h2>
                         </div>
-                        <h2 class="left_menu_tit">객실 관리</h2>
-                    </div>
-                    <ul class="left_menu_ul">
-                        <li class="left_menu_li">
-                            <a class="left_menu_page_btn" href="./main">
-                                객실 제어
-                            </a>
-                        </li>
-                        <li class="left_menu_li"  data-url="mqttSett">
-                            <a class="left_menu_page_btn"  href="./mqttSett">
-                                연결 현황
-                            </a>
-                        </li>
-                    </ul>
-                    <div class="left_menu_titbox dis_flex_row dis_flex_center">
-                        <div class="menu_icon history">
-                            <img src="/static/img/opener/history_icon.png">
+                            <li class="left_menu_li" data-url="cleanLog">
+                                <a class="left_menu_page_btn" href="./cleanLog">
+                                    청소 내역
+                                </a>
+                            </li>
+                    <%}else {%>
+                        <div class="left_menu_titbox dis_flex_row dis_flex_center">
+                            <div class="menu_icon control">
+                                <img src="/static/img/opener/control_icon.png">
+                            </div>
+                            <h2 class="left_menu_tit">객실 관리</h2>
                         </div>
-                        <h2 class="left_menu_tit">로그</h2>
-                    </div>
-                    <ul class="left_menu_ul">
-                        <li class="left_menu_li" data-url="actionLog">
-                            <a class="left_menu_page_btn" href="./actionLog">
-                                동작 내역
-                            </a>
-                        </li>
-                        <li class="left_menu_li" data-url="keyLog">
-                            <a class="left_menu_page_btn" href="./keyLog">
-                                발급 내역
-                            </a>
-                        </li>
-                        <li class="left_menu_li" data-url="cleanLog">
-                            <a class="left_menu_page_btn" href="./cleanLog">
-                                청소 내역
-                            </a>
-                        </li>
-                        <li class="left_menu_li" data-url="smsList">
-                            <a class="left_menu_page_btn" href="./smsList">
-                                문자 내역
-                            </a>
-                        </li>
-                    </ul>
+                        <ul class="left_menu_ul">
+                            <li class="left_menu_li">
+                                <a class="left_menu_page_btn" href="./main">
+                                    객실 제어
+                                </a>
+                            </li>
+                            <li class="left_menu_li"  data-url="mqttSett">
+                                <a class="left_menu_page_btn"  href="./mqttSett">
+                                    연결 현황
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="left_menu_titbox dis_flex_row dis_flex_center">
+                            <div class="menu_icon history">
+                                <img src="/static/img/opener/history_icon.png">
+                            </div>
+                            <h2 class="left_menu_tit">로그</h2>
+                        </div>
+                        <ul class="left_menu_ul">
+                            <li class="left_menu_li" data-url="actionLog">
+                                <a class="left_menu_page_btn" href="./actionLog">
+                                    동작 내역
+                                </a>
+                            </li>
+                            <li class="left_menu_li" data-url="keyLog">
+                                <a class="left_menu_page_btn" href="./keyLog">
+                                    발급 내역
+                                </a>
+                            </li>
+                            <li class="left_menu_li" data-url="cleanLog">
+                                <a class="left_menu_page_btn" href="./cleanLog">
+                                    청소 내역
+                                </a>
+                            </li>
+                            <li class="left_menu_li" data-url="smsList">
+                                <a class="left_menu_page_btn" href="./smsList">
+                                    문자 내역
+                                </a>
+                            </li>
+                        </ul>
+                    <%}%>
                     <div class="left_menu_titbox dis_flex_row dis_flex_center">
                         <div class="menu_icon setting">
                             <img src="/static/img/opener/setting_icon.png">
                         </div>
                         <h2 class="left_menu_tit">환경 설정</h2>
                     </div>
+                    
+                    <%if(session.level == '0010001' || session.level == '0010000'){ %>
                     <ul class="left_menu_ul">
                         <li class="left_menu_li"  data-url="roomSett">
                             <a class="left_menu_page_btn"  href="./roomSett">
@@ -168,20 +206,28 @@ function googleTranslateElementInit() {
                         </li>
                     </ul>
                     <ul class="left_menu_ul">
-                        <%if(session.level == '0010001' || session.level == '0010000'){ %>
-                            <li class="left_menu_li"  data-url="userSett">
-                                <a class="left_menu_page_btn"  href="./userSett">
-                                    회원 설정
-                                </a>
-                            </li>
-                        <%}else {%>
+                        <li class="left_menu_li"  data-url="userSett">
+                            <a class="left_menu_page_btn"  href="./userSett">
+                                회원 설정
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="left_menu_ul">
+                        <li id="pass_change" class="left_menu_li">
+                            <a class="left_menu_page_btn" >
+                                비밀번호 변경
+                            </a>
+                        </li>
+                    </ul>
+                    <%}else {%>
+                        <ul class="left_menu_ul">
                             <li id="pass_change" class="left_menu_li">
                                 <a class="left_menu_page_btn" >
                                     비밀번호 변경
                                 </a>
                             </li>
-                        <%}%>
-                    </ul>
+                        </ul>
+                    <%}%>
                 </div>
                 <a class="admin_logout_btn logout_btn">로그아웃</a>
             </div>

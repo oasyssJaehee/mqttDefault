@@ -65,6 +65,16 @@
         <otherwise>
         </otherwise>
     </choose>
+    <choose>
+        <when test="oper == '0010001'">
+            AND ADMIN_LEVEL IN('0010002', '0010003')
+        </when>
+        <when test="oper == '0010003'">
+            AND ADMIN_LEVEL IN('0010002')
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
     order by ADMIN_KEY desc
         ) as counts,
         ADMIN_KEY,
@@ -117,7 +127,17 @@
         <otherwise>
         </otherwise>
     </choose>
-    order by ADMIN_KEY desc
+    <choose>
+        <when test="oper == '0010001'">
+            AND ADMIN_LEVEL IN('0010002', '0010003')
+        </when>
+        <when test="oper == '0010003'">
+            AND ADMIN_LEVEL IN('0010002')
+        </when>
+        <otherwise>
+        </otherwise>
+    </choose>
+    order by ADMIN_USE = '0',ADMIN_FDATE
     LIMIT ${page},${pageSize}
     </select>
     <select id="codeList_user">
@@ -140,6 +160,93 @@
         </otherwise>
     </choose>
     </select>
+    <select id="user_select">
+    SELECT 
+    ADMIN_KEY,
+        ADMIN_NAME,
+        ADMIN_TEL,
+        ADMIN_ADDR1,
+        ADMIN_ADDR2,
+        ADMIN_ID,
+        ADMIN_PASS,
+        ADMIN_LEVEL,
+        ADMIN_BS_CODE,
+        ADMIN_FUSER,
+        DATE_FORMAT(ADMIN_FDATE, '%Y-%m-%d %p %H:%i') AS ADMIN_FDATE,
+        ADMIN_LUSER,
+        DATE_FORMAT(ADMIN_LDATE, '%Y-%m-%d %p %H:%i') AS ADMIN_LDATE,
+        ADMIN_USE,
+        ADMIN_IMGNAME,
+        ADMIN_IMGPATH,
+        ADMIN_EDATE,
+        CODE_CONTENT,
+        CODE_CODE
+    FROM co_user_admin
+    LEFT JOIN BRIDGE_CODE ON
+    CODE_CODE = ADMIN_LEVEL
+    WHERE ADMIN_BS_CODE = #{bsCode}
+    AND ADMIN_KEY = #{key}
+    </select>
+    <update id="user_pass_reset">
+        UPDATE co_user_admin SET
+        ADMIN_PASS = PASSWORD('123456')
+        ,ADMIN_LUSER = #{userId}
+        ,ADMIN_LDATE = SYSDATE()
+    WHERE ADMIN_KEY = #{key}
+    AND ADMIN_BS_CODE = #{bsCode}
+    </update>
+    <update id="user_update">
+    UPDATE co_user_admin SET
+        ADMIN_NAME = #{name}
+        ,ADMIN_TEL = #{tel}
+        ,ADMIN_ADDR1 = #{addr1}
+        ,ADMIN_ADDR2 = #{addr2}
+        ,ADMIN_LEVEL = #{level}
+        ,ADMIN_LUSER = #{userId}
+        ,ADMIN_LDATE = SYSDATE()
+        ,ADMIN_USE = #{use}
+    WHERE ADMIN_KEY = #{key}
+    AND ADMIN_BS_CODE = #{bsCode}
+    </update>
+    <insert id="user_insert">
+    INSERT INTO co_user_admin (
+    ADMIN_NAME
+    ,ADMIN_TEL
+    ,ADMIN_ADDR1
+    ,ADMIN_ADDR2
+    ,ADMIN_ID
+    ,ADMIN_PASS
+    ,ADMIN_LEVEL
+    ,ADMIN_BS_CODE
+    ,ADMIN_FUSER
+    ,ADMIN_FDATE
+    ,ADMIN_LUSER
+    ,ADMIN_LDATE
+    ,ADMIN_USE
+    ) VALUES (
+    #{name}
+    ,#{tel}
+    ,#{addr1}
+    ,#{addr2}
+    ,#{id}
+    ,PASSWORD('123456')
+    ,#{level}
+    ,#{bsCode}
+    ,#{userId}
+    ,SYSDATE()
+    ,#{userId}
+    ,SYSDATE()
+    ,#{use}
+    )
+    </insert>
+    <update id="user_pass_update">
+        UPDATE co_user_admin SET
+        ADMIN_PASS = PASSWORD(#{pass})
+        ,ADMIN_LUSER = #{userId}
+        ,ADMIN_LDATE = SYSDATE()
+    WHERE ADMIN_ID = #{userId}
+    AND ADMIN_BS_CODE = #{bsCode}
+    </update>
 </mapper>
 
 

@@ -49,6 +49,7 @@
             $.loading.end();
         }else if(data.msg == "connect"){
             clearInterval(actionInterver);
+            bleConnectClear();
             $("#connect").removeClass("disabled");
             $("#connect").addClass("on");
             Alert("도어락이 연결 되었습니다.");
@@ -81,6 +82,7 @@
                 });
             }else{
                 clearInterval(actionInterver);
+                bleConnectClear();
                 $("#connect").removeClass("disabled");
                 $("#connect").addClass("on");
                 bleConnect = true;
@@ -166,7 +168,6 @@
         hotelCode = pad(hotelCode, 7);
         
         $.loading.start("");
-        console.log(acno +"/"+hotelCode+"/"+rspk+"/"+rono);
         $.ajax({
             url:"./mysql/fo",
             data:{
@@ -253,7 +254,6 @@
                 rono:rono,
                 bsCode:pad(hotelCode, 7)
             },success:function(res){
-                console.log(res);
                 if(res.length > 0){
                     var setEdate = res[0].ROOM_TIME_PASS;
                     if(setEdate != ""){
