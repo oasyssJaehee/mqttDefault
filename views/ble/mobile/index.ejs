@@ -36,6 +36,7 @@
         $("#connect").removeClass("on");
         $("#connect").addClass("disabled");
         
+        
     });
     window.ifvisible.on("focus", function(){
         first();
@@ -61,7 +62,7 @@
             $("#connect").removeClass("on");
             $("#connect").addClass("disabled");
             Alert("도어락 연결이 종료 되었습니다.");
-            
+            bleConnectClear();
             bleConnect = false;
             $.loading.end();
         }else if(data.msg == "mqttConnect"){
@@ -226,11 +227,6 @@
                     
                 }else{
                     socketConnect = false;
-                    // if(res.admin == "1"){
-                    //     Alert("현재 관리자 설정 중입니다.\n잠시 후 다시 시도하세요.");
-                    // }else{
-                    //     Alert("현재 사용중인 폰키 입니다.");
-                    // }
                     
                 }
             }
@@ -299,51 +295,64 @@
 	$(window).ready(function() {
         init();
         $("#connect").on("click", function(){
-            
             if(!userTime){Alert(userUseMsg);return;}
-            first();
-            if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
-            $.loading.start('도어락 연결 중입니다.');
-            setTimeout(function(){
-                $.ajax({
-                    url:"/mqttCheckUser",
-                    data:{
-                        topic: "oasyss32/"+topic,
-                        open: "0110001",
-                        userId: acno+"/"+rspk,
-                        acno: acno,
-                        hotelCode: hotelCode,
-                        rspk: rspk,
-                        rono: rono
-                    },
-                    success : function(result){
-                        if(typeof result[0] == "undefined"){
-                            mqttCheck();
-                        }else{
-                            if(result[0].CHECKIN == '0'){
-                                $.loading.end();
-                                userUseMsg = "사용기간이 아닙니다.";
-                                Alert(userUseMsg);
-                                userTime = false;
-                            }else if(result[0].BRIDGE_TRAN_KCDA != ""){
-                                $.loading.end();
-                                $("#pri_warp").css("display", "none");
-                                $("#guide_pop").css("display", "none");
-                                userTime = false;
-                                userUseMsg = "취소된 폰키 입니다.";
-                                Alert(userUseMsg);
-                            }else{
-                                mqttCheck();
-                            }
-                        }
+            $.ajax({
+                url:"/socket/room",
+                data:{
+                    name: roomName,
+                    id: socket.id
+                },
+                success:function(res){
+                    if(Number(res.room_size) == 0){
+                        socketConnect = true;
+                        socket.emit("joinRoom", roomName, gname, "0");
+
+                        $.loading.start('도어락 연결 중입니다.');
+                        setTimeout(function(){
+                            $.ajax({
+                                url:"/mqttCheckUser",
+                                data:{
+                                    topic: "oasyss32/"+topic,
+                                    open: "0110001",
+                                    userId: acno+"/"+rspk,
+                                    acno: acno,
+                                    hotelCode: hotelCode,
+                                    rspk: rspk,
+                                    rono: rono
+                                },
+                                success : function(result){
+                                    if(typeof result[0] == "undefined"){
+                                        mqttCheck();
+                                    }else{
+                                        if(result[0].CHECKIN == '0'){
+                                            $.loading.end();
+                                            userUseMsg = "사용기간이 아닙니다.";
+                                            Alert(userUseMsg);
+                                            userTime = false;
+                                        }else if(result[0].BRIDGE_TRAN_KCDA != ""){
+                                            $.loading.end();
+                                            $("#pri_warp").css("display", "none");
+                                            $("#guide_pop").css("display", "none");
+                                            userTime = false;
+                                            userUseMsg = "취소된 폰키 입니다.";
+                                            Alert(userUseMsg);
+                                        }else{
+                                            mqttCheck();
+                                        }
+                                    }
+                                }
+                            });  
+                        },500);
+                    }else{
+                        socketConnect = false;
+                        if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
                     }
-                });  
-            },1000);
+                }
+            });
         });
 		
 		$("#openBtn").on("click", function(){
             if(!userTime){Alert(userUseMsg);return;}
-            if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             if(!bleConnect){Alert("도어락을 연결해 주세요.");return;}
             if(openClick){Alert("잠시 뒤 시도해 주세요.");return;}
             Confirm("문을 여시겠습니까?", function(){

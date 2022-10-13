@@ -122,6 +122,7 @@
             $("#connect").addClass("disabled");
             bleConnect = false;
             $.loading.end();
+            bleConnectClear();
             Alert("도어락 연결이 종료 되었습니다.", function(){
             });
             
@@ -532,6 +533,7 @@
             actionCode = code;
             $("#pop_action_table tbody").empty();
             actionTotal = 0;
+            actionPage = 0;
             actionLog();
         });
         $("#room_status_tab div").on("click", function(){
