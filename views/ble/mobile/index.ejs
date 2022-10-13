@@ -304,41 +304,39 @@
             first();
             if(!socketConnect){Alert("현재 사용중인 폰키 입니다.");return;}
             $.loading.start('도어락 연결 중입니다.');
-            setTimeout(function(){
-                $.ajax({
-                    url:"/mqttCheckUser",
-                    data:{
-                        topic: "oasyss32/"+topic,
-                        open: "0110001",
-                        userId: acno+"/"+rspk,
-                        acno: acno,
-                        hotelCode: hotelCode,
-                        rspk: rspk,
-                        rono: rono
-                    },
-                    success : function(result){
-                        if(typeof result[0] == "undefined"){
-                            mqttCheck();
+            $.ajax({
+                url:"/mqttCheckUser",
+                data:{
+                    topic: "oasyss32/"+topic,
+                    open: "0110001",
+                    userId: acno+"/"+rspk,
+                    acno: acno,
+                    hotelCode: hotelCode,
+                    rspk: rspk,
+                    rono: rono
+                },
+                success : function(result){
+                    if(typeof result[0] == "undefined"){
+                        mqttCheck();
+                    }else{
+                        if(result[0].CHECKIN == '0'){
+                            $.loading.end();
+                            userUseMsg = "사용기간이 아닙니다.";
+                            Alert(userUseMsg);
+                            userTime = false;
+                        }else if(result[0].BRIDGE_TRAN_KCDA != ""){
+                            $.loading.end();
+                            $("#pri_warp").css("display", "none");
+                            $("#guide_pop").css("display", "none");
+                            userTime = false;
+                            userUseMsg = "취소된 폰키 입니다.";
+                            Alert(userUseMsg);
                         }else{
-                            if(result[0].CHECKIN == '0'){
-                                $.loading.end();
-                                userUseMsg = "사용기간이 아닙니다.";
-                                Alert(userUseMsg);
-                                userTime = false;
-                            }else if(result[0].BRIDGE_TRAN_KCDA != ""){
-                                $.loading.end();
-                                $("#pri_warp").css("display", "none");
-                                $("#guide_pop").css("display", "none");
-                                userTime = false;
-                                userUseMsg = "취소된 폰키 입니다.";
-                                Alert(userUseMsg);
-                            }else{
-                                mqttCheck();
-                            }
+                            mqttCheck();
                         }
                     }
-                });  
-            },1000);
+                }
+            });  
         });
 		
 		$("#openBtn").on("click", function(){
