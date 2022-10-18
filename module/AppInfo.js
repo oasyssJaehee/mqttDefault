@@ -11,7 +11,7 @@ var AES_KEY = "ioptoprr89u34547yhdt";
 // var pmsUrl = "http://182.215.211.211:8080";
 // var httpUrl = "http://192.168.10.152:6001";
 // var pmsUrl = "http://192.168.10.152:8080";
-var httpUrl = "http://bridge.oasyss.co.kr";
+var httpUrl = "http://bap.theconnoisseur.co.kr";
 var pmsUrl = "http://pms.theconnoisseur.co.kr";
 
 const mysql = require("./MySQL.js");
