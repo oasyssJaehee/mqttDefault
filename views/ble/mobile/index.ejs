@@ -27,7 +27,7 @@
     var socketConnect = false;
     var userTime = false;
     var userUseMsg = "";
-
+    console.log("check");
     //생명주기 체크
     window.ifvisible.on("blur", function(){
         socket.emit("roomDisConnect");
