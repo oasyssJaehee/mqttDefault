@@ -78,8 +78,8 @@ const { MqttClient } = require('mqtt');
 
 
 const options = {
-    username:"user",
-    password:"1234",
+    username:AppInfo.mqttUser,
+    password:AppInfo.mqttPass,
 };
 //mqtt 연결
 const client = mqtt.connect(AppInfo.mqttUrl, options);
@@ -126,11 +126,6 @@ client.on("message", function(topic, message){
         ms.cmd = String(parseInt(hex, 16));
     }
     
-    // if(ms.cmd == "c"){
-    //     ms.cmd = "12";
-    // }else if(ms.cmd == "f"){
-    //     ms.cmd = "15";
-    // }
     num = num.split('/');
     ms.hotel = num[0];
     ms.num = num[1];
@@ -253,9 +248,9 @@ client.on("message", function(topic, message){
 
 
 //모듈 설정
-const openerMobileModule = require('./module/BleMobileModule.js')
+const openerMobileModule = require('./module/MobileModule.js')
 app.use('/ble/mobile', openerMobileModule)
-const openerAdminModule = require('./module/BleAdminModule.js')
+const openerAdminModule = require('./module/AdminModule.js')
 app.use('/ble/admin', openerAdminModule)
 const ApiReceiveModule = require('./module/ApiReceive.js')
 app.use('/api/rec', ApiReceiveModule)
@@ -278,36 +273,6 @@ app.get('/', function(req, res) {
     // }
     
 })
-app.get('/socket/room', function(req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    var resData = {};
-    var roomCount = 0;
-    for(var i=0; i<AppInfo.roomArray.length; i++){
-        if(AppInfo.roomArray[i].rmName == "rm_"+data.name){
-            if(AppInfo.roomArray[i].id != data.id){
-                console.log(AppInfo.roomArray[i]);
-                roomCount++;
-                resData.admin = "0";
-            }
-        }
-    }
-    for(var i=0; i<AppInfo.adminRoomArray.length; i++){
-        if(AppInfo.adminRoomArray[i].rmName == "rm_"+data.name){
-            if(AppInfo.adminRoomArray[i].id != data.id){
-                console.log(AppInfo.adminRoomArray[i]);
-                roomCount++;
-                resData.admin = "1";
-            }
-            
-        }
-    }
-    resData.room_size = roomCount;
-    res.setHeader('Content-Type', 'application/json');
-    var result = JSON.stringify(resData)
-    res.send(result);
-    res.end();
-})
 
 const connection = mysql.connection()
 
@@ -317,89 +282,6 @@ app.get('/mysql/user', function (req, res) {
     var format = {language: 'sql', indent: '  '};
     var xml_name = data.xml;
     var query = mysql.userMapper().getStatement("user", xml_name, data, format);
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(err));
-            res.end();
-        }else{
-            res.setHeader('Content-Type', 'application/json');
-            var result = JSON.stringify(rows)
-            res.send(result);
-            res.end();
-        }
-    });
-});
-
-app.get('/mysql/chat', function (req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    var format = {language: 'sql', indent: '  '};
-    var xml_name = data.xml;
-    
-    var query = mysql.chatMapper().getStatement("chat", xml_name, data, format);
-    
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(err));
-            res.end();
-        }else{
-            res.setHeader('Content-Type', 'application/json');
-            var result = JSON.stringify(rows)
-            res.send(result);
-            res.end();
-        }
-    });
-});
-app.get('/mysql/common', function (req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    var format = {language: 'sql', indent: '  '};
-    var xml_name = data.xml;
-    var query = mysql.commonMapper().getStatement("common", xml_name, data, format);
-    
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(err));
-            res.end();
-        }else{
-            res.setHeader('Content-Type', 'application/json');
-            var result = JSON.stringify(rows)
-            res.send(result);
-            res.end();
-        }
-    });
-});
-app.get('/mysql/room', function (req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    data.AES_KEY = AppInfo.AES_KEY;
-    var format = {language: 'sql', indent: '  '};
-    var xml_name = data.xml;
-    
-    var query = mysql.roomMapper().getStatement("room", xml_name, data, format);
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            console.log(err);
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(err));
-            res.end();
-        }else{
-            res.setHeader('Content-Type', 'application/json');
-            var result = JSON.stringify(rows)
-            res.send(result);
-            res.end();
-        }
-    });
-});
-app.get('/mysql/mqtt', function (req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    var format = {language: 'sql', indent: '  '};
-    var xml_name = data.xml;
-    var query = mysql.commonMapper().getStatement("mqtt", xml_name, data, format);
     connection.query(query, function (err, rows, fields) {
         if(err){
             res.setHeader('Content-Type', 'application/json');
@@ -435,54 +317,9 @@ io.sockets.on("connection", function(socket){
     });
     socket.on("disconnect", function(){
         console.log("접속 종료" + socket.id);
-        var mainKey = "";
-
-        for(var i=0; i<AppInfo.roomArray.length; i++){
-            if(AppInfo.roomArray[i].id == socket.id){
-                mainKey = AppInfo.roomArray[i].mainKey;
-                AppInfo.roomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-        for(var i=0; i<AppInfo.adminRoomArray.length; i++){
-            if(AppInfo.adminRoomArray[i].id == socket.id){ 
-                mainKey = AppInfo.adminRoomArray[i].mainKey;
-                AppInfo.adminRoomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-        for(var i=0; i<AppInfo.adminSocketArray.length; i++){
-            if(AppInfo.adminSocketArray[i].id == socket.id){ 
-                var bsCode = AppInfo.adminSocketArray[i].bsCode;
-                AppInfo.adminSocketArray.splice(i,1);
-                socket.leave("rm_"+bsCode);
-            }
-        }
+        
     });
-    socket.on("adminRoomDisConnect", function(){
-        console.log("adminRoomDisConnect " + socket.id);
-        var mainKey = "";
-
-        for(var i=0; i<AppInfo.adminRoomArray.length; i++){
-            if(AppInfo.adminRoomArray[i].id == socket.id){ 
-                mainKey = AppInfo.adminRoomArray[i].mainKey;
-                AppInfo.adminRoomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-    });
-    socket.on("roomDisConnect", function(){
-        console.log("roomDisConnect " + socket.id);
-        var mainKey = "";
-
-        for(var i=0; i<AppInfo.roomArray.length; i++){
-            if(AppInfo.roomArray[i].id == socket.id){ 
-                mainKey = AppInfo.roomArray[i].mainKey;
-                AppInfo.roomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-    });
+   
     // 소켓 방접속
     socket.on("joinMain", (bsCode, userId, userName) => {
         socket.join("admin_"+bsCode);
@@ -496,65 +333,7 @@ io.sockets.on("connection", function(socket){
 
         AppInfo.adminSocketArray.push(obj);
     });
-    // 소켓 방접속
-    socket.on("joinAdmin", (main_key, user, admin) => {
-        for(var i=0; i<AppInfo.adminRoomArray.length; i++){
-            if(AppInfo.adminRoomArray[i].id == socket.id){ 
-                mainKey = AppInfo.adminRoomArray[i].mainKey;
-                AppInfo.adminRoomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-        socket.join("rm_"+main_key);
-
-        var obj = new Object();
-        obj.id = socket.id;
-        obj.user = user;
-        obj.mainKey = main_key;
-        obj.rmName = 'rm_'+main_key;
-        obj.admin = admin
-
-        AppInfo.adminRoomArray.push(obj);
-    });
-    socket.on("joinRoom", (main_key, user, admin) => {
-        console.log("joinRoom!!"+socket.id);
-        for(var i=0; i<AppInfo.roomArray.length; i++){
-            if(AppInfo.roomArray[i].id == socket.id){ 
-                mainKey = AppInfo.roomArray[i].mainKey;
-                AppInfo.roomArray.splice(i,1);
-                socket.leave("rm_"+mainKey);
-            }
-        }
-        
-        socket.join("rm_"+main_key)
-        var obj = new Object();
-        obj.id = socket.id;
-        obj.user = user;
-        obj.mainKey = main_key;
-        obj.rmName = 'rm_'+main_key;
-        obj.admin = admin
-
-        
-
-        AppInfo.roomArray.push(obj);
-        //room접속 로그
-        var data = {};
-        data = {
-            user:user,
-            mainKey: main_key,
-            admin: admin,
-            socket: socket.id
-        }
-        
-        // var format = {language: 'sql', indent: '  '};
-        // var query = mysql.chatMapper().getStatement("chat", "chat_room_insert", data, format);
-        // connection.query(query, function (err, rows, fields) {
-        //     if(err){
-        //         console.log(err)
-        //     }else{
-        //     }
-        // });
-    })
+   
     //채팅 메세지
     socket.on("msg", function(data){
         console.log(data);
@@ -580,345 +359,8 @@ io.sockets.on("connection", function(socket){
             }
             
         }
-        
-        
     });
 })
-
-//채팅 인서트
-app.get('/mysql/insertChat', function (req, res) {
-    var uri = req.url;
-    var data = url.parse(uri, true).query;
-    var format = {language: 'sql', indent: '  '};
-    var xml_name = data.xml;
-    var query = mysql.chatMapper().getStatement("chat", xml_name, data, format);
-    connection.query(query, function (err, rows, fields) {
-        if(err){
-            res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(err));
-            res.end();
-        }else{
-            var insertId = rows.insertId;
-            data = {insertId: insertId};
-            query = mysql.chatMapper().getStatement("chat", "select_chat_server_time", data, format);
-            
-            connection.query(query, function (err, rows, fields) {
-                if(err){
-                    res.setHeader('Content-Type', 'application/json');
-                    res.send(JSON.stringify(err));
-                    res.end();
-                }else{
-                    res.setHeader('Content-Type', 'application/json');
-                    var result = JSON.stringify(rows)
-                    res.send(result);
-                    res.end();
-                }
-            });
-        }
-    });
-});
-//ble command
-app.get('/doorTime', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorTime());
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.doorTime()[0];
-    ms.state = mqttModule.doorTime()[1];
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-
-})
-app.get('/doorOn', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorOpen());
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.doorOpen()[0];
-    ms.state = mqttModule.doorOpen()[1];
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/doorTimeSett', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorTime());
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.doorTime()[0];
-    ms.state = mqttModule.doorTime()[1];
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/passTimeSett', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var date = query.date;
-    date = date.replace(/-/gi, "");
-    date = date.replace(/ /gi, "");
-    date = date.replace(/PM/gi, "");
-    date = date.replace(/AM/gi, "");
-    date = date.replace(/:/gi, "");
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorPassTime(date));
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = 204;
-    ms.state = 12;
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/passSett', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorPass(query.pass));
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = 204;
-    ms.state = 15;
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    ms.remark = query.pass;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/maidPassSett', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorPassMaid(query.pass));
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = 204;
-    ms.state = 24;
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    ms.remark = query.pass;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/masterPassSett', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.doorPassMaster(query.pass));
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = 204;
-    ms.state = 23;
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    ms.remark = query.pass;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-})
-app.get('/mqttCheckUser', function(request, response) {
-    console.log("mqttCheckUser");
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    var format = {language: 'sql', indent: '  '};
-    var sql = mysql.foMapper().getStatement("fo", "bridge_tran_time_check", query, format);
-    connection.query(sql, function (err, rows, fields) {
-        if(err){
-            response.setHeader('Content-Type', 'application/json');
-            response.send(JSON.stringify(err));
-            response.end();
-        }else{
-            response.setHeader('Content-Type', 'application/json');
-            if(rows.length>0){
-                if(rows[0].CHECKIN == "0"){
-                    var result = JSON.stringify(rows)
-                    response.send(result);
-                    response.end();
-                }else if(rows[0].BRIDGE_TRAN_KCDA != ""){
-                    var result = JSON.stringify(rows)
-                    response.send(result);
-                    response.end();
-                }else{
-                    var jsonData;
-                    jsonData = JSON.stringify(mqttModule.mqttCheck());
-                    client.publish(query.topic, jsonData, {qos:2})
-                
-                    let ms = JSON.parse(jsonData);
-                    var num = query.topic.toString().replace("oasyss32/", "");
-                    num = num.split('/');
-                    ms.hotel = num[0];
-                    ms.num = num[1];
-                    ms.cmd = mqttModule.mqttCheck()[0];
-                    ms.state = mqttModule.mqttCheck()[1];
-                    ms.type = "send";
-                    ms.userId = query.userId;
-                    ms.hd = "wifi";
-                    ms.recIp = getServerIp();
-                    ms.open = query.open;
-                    queryModule.insertMqttLog(ms)
-                    response.send(query);
-                }
-            }
-            
-        }
-    });
-
-    
-
-})
-app.get('/mqttCheck', function(request, response) {
-    console.log("mqttCheck");
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.mqttCheck());
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.mqttCheck()[0];
-    ms.state = mqttModule.mqttCheck()[1];
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-    response.send(query);
-
-})
-app.get('/bleConnect', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("bleConnect ====>" + query.topic);
-    var jsonData;
-    jsonData = JSON.stringify(mqttModule.bleConnect(query.rono));
-    client.publish(query.topic, jsonData, {qos:2})
-
-    let ms = JSON.parse(jsonData);
-    var num = query.topic.toString().replace("oasyss32/", "");
-    num = num.split('/');
-    ms.hotel = num[0];
-    ms.num = num[1];
-    ms.cmd = mqttModule.bleConnect(query.rono)[0];
-    ms.state = mqttModule.bleConnect(query.rono)[1];
-    ms.type = "send";
-    ms.userId = query.userId;
-    ms.hd = "wifi";
-    ms.recIp = getServerIp();
-    ms.open = query.open;
-    queryModule.insertMqttLog(ms)
-
-    response.send(query);
-
-})
-app.get('/bleDisConnect', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleDisConnect()), {qos:2})
-
-    response.send(query);
-
-})
-app.get('/bleOpen', function(request, response) {
-  
-    var uri = request.url;
-    var query = url.parse(uri, true).query;
-    console.log("open ====>" + query.topic);
-    client.publish(query.topic, JSON.stringify(mqttModule.bleOpen()), {qos:2})
-
-    response.send(query);
-
-})
-
-
 
 server.listen(AppInfo.serverPort, function() {
     console.log('서버 실행 중..')

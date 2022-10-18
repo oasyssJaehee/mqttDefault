@@ -6,6 +6,8 @@ const serverPort = 6001;
 var saleType = "jebee";
 // var mqttUrl = "mqtt://210.114.18.108";
 var mqttUrl = "mqtt://210.114.18.107";
+var mqttUser = "user";
+var mqttPass = "1234";
 var AES_KEY = "ioptoprr89u34547yhdt";
 // var httpUrl = "http://182.215.211.211:6001";
 // var pmsUrl = "http://182.215.211.211:8080";
@@ -146,6 +148,8 @@ module.exports = {
 	roomArray,
 	adminRoomArray,
 	adminSocketArray,
-	pmsUrl
+	pmsUrl,
+	mqttUser,
+	mqttPass
 }
 module.exports.sendSms = sendSms
